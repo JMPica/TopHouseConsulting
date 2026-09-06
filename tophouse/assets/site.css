@@ -189,13 +189,16 @@ a{color:inherit;text-decoration:none}
    256px y se muestra a 38 para que quede nitido en pantallas de retina. */
 .mark{width:38px;height:38px;flex:none;display:block}
 .nav__word{display:flex;flex-direction:column;line-height:1.12}
+/* El rotulo va en Lato, que es la tipografia del logo del cliente, para que
+   emblema y texto lean como una sola marca y no como dos piezas pegadas. */
 .nav__name{
-  font-family:var(--b);font-weight:700;
-  font-size:.86rem;letter-spacing:.09em;text-transform:uppercase;
+  font-family:'Lato',var(--b);font-weight:700;
+  font-size:.9rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-primary);
 }
 .nav__kicker{
-  font-family:var(--m);font-size:.6rem;
-  letter-spacing:.24em;text-transform:uppercase;color:var(--accent);
+  font-family:'Lato',var(--b);font-weight:400;font-size:.58rem;
+  letter-spacing:.34em;text-transform:uppercase;color:var(--accent);
 }
 
 .nav__links{display:flex;gap:26px;font-size:.9rem;font-weight:500}
@@ -780,6 +783,42 @@ section{
 
 @media (max-width:700px){
   .proof__row{grid-template-columns:1fr;gap:34px}
+}
+
+/* ---------- Servicios ---------- */
+
+.svc{padding:clamp(84px,13vh,160px) var(--gut)}
+.svc__intro{max-width:var(--maxw);margin-bottom:clamp(30px,5vh,56px)}
+/* Una reticula de una sola pieza: los servicios son una lista, no siete
+   tarjetas sueltas, asi que comparten reglas en vez de flotar separados. */
+.svc__list{
+  list-style:none;margin:0 auto;padding:0;max-width:var(--maxw);
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(272px,1fr));
+  gap:1px;background:var(--line);
+  border:1px solid var(--line);border-radius:20px;overflow:hidden;
+}
+.svc__item{
+  background:var(--canvas);
+  padding:clamp(22px,2.6vw,34px);
+  display:flex;flex-direction:column;gap:.6rem;
+  transition:background .5s var(--ease);
+}
+.svc__item:hover{background:var(--panel)}
+/* Siete servicios no llenan cuatro columnas, asi que el primero ocupa dos.
+   No es relleno: la valoracion es a donde empuja toda la pagina, y ese peso
+   extra la senala como la puerta de entrada. */
+@media (min-width:1180px){
+  .svc__item:first-child{grid-column:span 2}
+  .svc__item:first-child h3{font-size:clamp(1.2rem,1.8vw,1.5rem)}
+}
+.svc__item h3{
+  font-family:var(--d);font-weight:500;
+  font-size:clamp(1.05rem,1.5vw,1.22rem);line-height:1.25;
+  color:var(--text-primary);margin:0;
+}
+.svc__item p{
+  margin:0;color:var(--text-secondary);
+  font-size:.95rem;line-height:1.6;
 }
 
 /* ---------- Preguntas ---------- */
