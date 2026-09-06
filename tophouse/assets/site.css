@@ -185,9 +185,9 @@ a{color:inherit;text-decoration:none}
 }
 
 .nav__brand{display:flex;align-items:center;gap:12px}
-.mark{width:38px;height:38px;flex:none}
-.mark__ring{fill:none;stroke:var(--accent);stroke-width:3}
-.mark__city{fill:none;stroke:var(--accent);stroke-width:2.4;stroke-linejoin:round;stroke-linecap:square}
+/* El emblema real de la marca, tal cual lo entrego el cliente. Se sirve a
+   256px y se muestra a 38 para que quede nitido en pantallas de retina. */
+.mark{width:38px;height:38px;flex:none;display:block}
 .nav__word{display:flex;flex-direction:column;line-height:1.12}
 .nav__name{
   font-family:var(--b);font-weight:700;
