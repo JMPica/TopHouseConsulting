@@ -499,19 +499,19 @@ section{
 .door--big{display:flex;flex-direction:column;align-items:flex-start}
 .door--small{display:flex;flex-direction:column;align-items:flex-start}
 .door--small p{margin-bottom:1rem}
-.door__arch{
+.door__gate{
   width:100%;max-width:230px;height:auto;display:block;
   margin:.4rem auto 1.6rem;opacity:.5;
   align-self:center;
 }
-.door__arch path{
+.door__gate path{
   fill:none;stroke:var(--accent);stroke-width:1;
   opacity:.55;
 }
-.door__arch path:nth-child(2){opacity:.38}
-.door__arch path:nth-child(3){opacity:.24}
-.door--small:hover .door__arch{opacity:.85}
-.door__arch{transition:opacity .6s var(--ease)}
+.door__gate path:nth-child(2){opacity:.38}
+.door__gate path:nth-child(3){opacity:.24}
+.door--small:hover .door__gate{opacity:.85}
+.door__gate{transition:opacity .6s var(--ease)}
 
 .ticks{list-style:none;padding:0;margin:0 0 1.9rem;display:grid;gap:.62rem}
 .ticks li{
@@ -537,16 +537,16 @@ section{
   align-items:end;
 }
 .premise__art{position:relative}
-.arch{width:100%;height:auto;display:block;overflow:visible}
-.arch__img{opacity:.92}
-.arch__bed{fill:#132327}
-.arch__wash{fill:rgba(11,20,23,.34)}
-.arch__line{
+.gate{width:100%;height:auto;display:block;overflow:visible}
+.gate__img{opacity:.92}
+.gate__bed{fill:#132327}
+.gate__wash{fill:rgba(11,20,23,.34)}
+.gate__line{
   fill:none;stroke:var(--accent);stroke-width:1.4;
-  stroke-dasharray:1300;stroke-dashoffset:1300;
+  stroke-dasharray:1400;stroke-dashoffset:1400;
   transition:stroke-dashoffset 2.1s var(--ease);
 }
-.premise.drawn .arch__line{stroke-dashoffset:0}
+.premise.drawn .gate__line{stroke-dashoffset:0}
 .premise__art::after{
   content:"";position:absolute;left:0;right:0;bottom:-1px;height:96px;
   background:linear-gradient(transparent,var(--canvas) 82%);
@@ -872,13 +872,13 @@ section{
   body{opacity:1}
   .reveal .part{opacity:1;transform:none}
   .premise__body .beat{opacity:1;transform:none}
-  .arch__line{stroke-dashoffset:0}
+  .gate__line{stroke-dashoffset:0}
   .thread i{transform:scaleY(1)}
   .zones__line{opacity:1;transform:none}
 }
 .rm .reveal .part{opacity:1;transform:none}
 .rm .premise__body .beat{opacity:1;transform:none}
-.rm .arch__line{stroke-dashoffset:0}
+.rm .gate__line{stroke-dashoffset:0}
 .rm .thread i{transform:scaleY(1)}
 .rm .zones__line{opacity:1;transform:none}
 

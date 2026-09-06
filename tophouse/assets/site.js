@@ -601,7 +601,7 @@
     if (img.complete && img.naturalWidth === 0) img.style.display = 'none';
   });
 
-  $$('.arch__img').forEach(function (im) {
+  $$('.gate__img').forEach(function (im) {
     im.addEventListener('error', function () { im.style.display = 'none'; });
   });
 

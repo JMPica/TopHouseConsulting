@@ -6,7 +6,9 @@ Tier 1. Un solo plano de 6 segundos, recorrido por scroll. Este documento es la 
 
 ## 1. La premisa de marca
 
-**El arco.** En Arenys todo mira al mar a través de algo: un arco, una puerta, una calle que baja. La web enseña y vende una sola idea: *una casa en Arenys no es un anuncio, es una posición en la ladera, y el precio lo marca la calle, no los metros*. Top House vende Arenys porque camina Arenys, calle a calle.
+**El umbral.** En Arenys toda casa mira al mar a través de algo: una puerta, un balcón, una calle que baja. La web enseña y vende una sola idea: *una casa en Arenys no es un anuncio, es una posición en la ladera, y el precio lo marca la calle, no los metros*. Top House vende Arenys porque camina Arenys, calle a calle.
+
+Nota de cambio de mundo: el plano aprobado no es un soportal de piedra sino un interior de lujo con puerta de cristal al mar. El elemento firma pasa de arco de piedra a umbral recto, para que la página y el vídeo sigan siendo el mismo sitio.
 
 Cada sección sirve a esa idea. La valoración es por tramo. El comprador entra por la calle, no por el filtro del portal. Las preguntas frecuentes contestan la objeción del precio con la calle. Si una sección no enseña eso, no va en la página.
 
@@ -47,15 +49,16 @@ Ni Inter ni Roboto como display.
 
 ## 4. El mapa de bandas del héroe
 
+Vídeo aprobado: Seedance 1.5 Pro, 8 segundos, 1080p, sin audio, 24 créditos.
 Altura del héroe: 760vh, es decir 660vh de recorrido. Rampas de 0.02 de progreso, o sea 13vh.
 
-El plano tiene un arco centrado con las paredes en sombra a izquierda y derecha. Por eso cada banda es **una frase partida en dos**, media a cada lado del arco, que se lee cruzando la abertura. Es el recurso de marca del héroe, elegido a propósito.
+El plano tiene una puerta de cristal centrada con las paredes en sombra a izquierda y derecha. Por eso cada banda es **una frase partida en dos**, media a cada lado del arco, que se lee cruzando la abertura. Es el recurso de marca del héroe, elegido a propósito.
 
 | Banda | Rango (punto de partida) | Momento del plano | Texto (literal) | Entrada |
 |---|---|---|---|---|
-| 1 | 0.00 a 0.19 | Dentro del soportal en sombra, el arco pequeño en el centro | Izq: "El Maresme" · Der: "de memoria." · Sub: "Arenys de Mar, casa por casa, desde hace más de diez años." | Mitades que se separan, eco del arco abriéndose |
-| 2 | 0.24 a 0.44 | Avance hacia el arco, que crece | Izq: "Un precio mal puesto" · Der: "se paga en meses." · Sub: "La casa que lleva medio año publicada ya no la mira nadie igual." | Aproximación desde la profundidad, eco del empuje adelante |
-| 3 | 0.49 a 0.69 | Cruce del plano del arco, la luz revienta y el objetivo respira | Izq: "Tu calle" · Der: "marca el precio." · Sub: "Valoramos con lo que se ha firmado en tu tramo, no con la media del pueblo." | De desenfoque a nitidez, eco del ojo acostumbrándose a la luz |
+| 1 | 0.00 a 0.19 | Dentro de la casa en sombra, la puerta pequeña en el centro | Izq: "El Maresme" · Der: "de memoria." · Sub: "Arenys de Mar, casa por casa, desde hace más de diez años." | Mitades que se separan, eco del umbral abriéndose |
+| 2 | 0.24 a 0.44 | Avance hacia la puerta, que crece | Izq: "Un precio mal puesto" · Der: "se paga en meses." · Sub: "La casa que lleva medio año publicada ya no la mira nadie igual." | Aproximación desde la profundidad, eco del empuje adelante |
+| 3 | 0.49 a 0.69 | Cruce del plano del cristal, la luz revienta y el objetivo respira | Izq: "Tu calle" · Der: "marca el precio." · Sub: "Valoramos con lo que se ha firmado en tu tramo, no con la media del pueblo." | De desenfoque a nitidez, eco del ojo acostumbrándose a la luz |
 | 4 | 0.76 a 1.00 | Reposo en la terraza, mar y primer sol, cielo abierto | Centrado: "Primero sabemos lo que vale." / "Después le ponemos precio." · Sub: "Valoración gratuita en tu casa. Sin compromiso y sin ataduras." · Botones: "Pedir mi valoración" y "Ver qué hay en venta" | Palabra a palabra hacia un posado en tres tiempos |
 
 La banda 1 no tiene entrada de opacidad y arranca ya montada con una rampa de carga. La banda 4 no tiene salida.
@@ -85,8 +88,8 @@ Dos tarjetas asimétricas, la del propietario a dos tercios y la del comprador a
 - Vendo: "Quiero saber qué vale mi casa" · "Media hora en tu casa y te vas con un precio real, lo vendas con nosotros o no." · Botón: "Pedir mi valoración"
 - Compro: "Quiero ver lo que hay en Arenys" · "Pisos, casas, locales y terreno en Arenys y en la costa del Maresme." · Botón: "Ver la cartera"
 
-### 6.2 El arco (el elemento firma)
-Sección de la premisa. Un arco dibujado a mano en SVG que se traza solo al bajar, y dentro la imagen de la calle. Tres tiempos de texto escalonados a la derecha.
+### 6.2 El umbral (el elemento firma)
+Sección de la premisa. Un umbral dibujado a mano en SVG que se traza solo al bajar, y dentro la imagen de la calle. Tres tiempos de texto escalonados a la derecha.
 
 - Kicker: "Calle a calle"
 - Titular: "Arenys baja de la montaña al mar en quince minutos a pie."
@@ -154,7 +157,7 @@ Top House Consulting · Riera del Bisbe Pol, 56 · 08350 Arenys de Mar (Barcelon
 ## 7. La capa vectorial
 
 - **El logo redibujado en SVG a mano**: círculo de oro con la silueta de edificios en línea. Va en la cabecera, en el pie y en el favicon.
-- **El arco firma**: dos trazos que suben y se encuentran arriba, dibujándose al bajar. Enmarca la imagen de cada sección grande.
+- **El umbral firma**: el trazo de una puerta que se dibuja solo al bajar y enmarca la imagen de la sección de la premisa. En la tarjeta de compradores se repite en tres umbrales encajados que se alejan, como un pasillo de puertas.
 - **El mapa de Arenys**: dibujado a mano, cinco tramos, con la costa y la riera. Estados de hover, de foco y de pulsado.
 - **El hilo de los cuatro pasos**: línea vertical que se traza sola al entrar la sección.
 - **Divisores**: una regla fina de oro que se abre desde el centro al entrar la sección.
