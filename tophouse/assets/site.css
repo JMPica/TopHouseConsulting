@@ -490,6 +490,33 @@ section{
 .reveal.done .part:nth-child(5),
 .reveal.done .part:nth-child(6){transition-delay:0s!important}
 
+/* ---------- La vista real del pueblo ---------- */
+/* Foto propia del cliente, no generada. Va antes del mapa: primero el pueblo
+   de verdad con sus tramos a la vista, y justo debajo el visitante elige el
+   suyo. Alineada al mismo ancho y radio que el panel del mapa. */
+.vista{max-width:var(--maxw);margin:0 0 clamp(22px,3.4vh,40px)}
+.vista__frame{
+  position:relative;overflow:hidden;
+  border:1px solid var(--line);border-radius:24px;
+  background:var(--panel);
+  box-shadow:0 26px 70px rgba(3,8,10,.5);
+}
+.vista__frame img{
+  display:block;width:100%;height:auto;
+  transform:scale(1.05);
+  transition:transform 1.6s var(--ease);
+}
+.zones.in .vista__frame img{transform:scale(1)}
+/* el borde inferior se funde con el lienzo, como en el umbral */
+.vista__frame::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(7,14,17,.16) 0%,rgba(7,14,17,0) 38%,rgba(7,14,17,.46) 100%);
+}
+.vista__cap{
+  margin:.85rem 0 0;color:var(--text-secondary);
+  font-family:var(--m);font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;
+}
+
 /* ---------- La bifurcación ---------- */
 
 .fork__grid{
