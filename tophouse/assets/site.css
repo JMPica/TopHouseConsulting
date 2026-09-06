@@ -527,11 +527,21 @@ section{
 
 /* ---------- La bifurcación ---------- */
 
+/* Tres puertas: la del propietario pesa mas porque es a donde empuja la
+   pagina; comprar y alquilar comparten el mismo peso entre ellas. */
 .fork__grid{
   display:grid;
-  grid-template-columns:1.72fr 1fr;
+  grid-template-columns:1.5fr 1fr 1fr;
   gap:clamp(16px,2.2vw,28px);
   align-items:stretch;
+}
+@media (max-width:1080px){
+  .fork__grid{grid-template-columns:1fr 1fr}
+  .door--big{grid-column:1 / -1}
+}
+@media (max-width:680px){
+  .fork__grid{grid-template-columns:1fr}
+  .door--big{grid-column:auto}
 }
 .door{
   position:relative;

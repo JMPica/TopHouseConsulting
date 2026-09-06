@@ -561,7 +561,7 @@
       var tel    = String(d.get('telefono') || '').trim();
 
       if (!nombre || !tel) {
-        formErr.textContent = 'Nos faltan tu nombre y un teléfono para poder llamarte.';
+        formErr.textContent = 'Nos faltan su nombre y un teléfono para poder llamarle.';
         formErr.hidden = false;
         (nombre ? $('#f-tel') : $('#f-nombre')).focus();
         return;
