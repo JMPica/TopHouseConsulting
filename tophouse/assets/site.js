@@ -36,9 +36,14 @@
   var VIDEO_URL   = 'assets/hero-scrub.mp4';
   var POSTER_URL  = 'assets/hero-poster.jpg';
   var ENDING_URL  = 'assets/hero-ending.jpg';
-  var VIDEO_BYTES = 8157354;   /* tamaño real, respaldo cuando falta Content-Length */
+  var VIDEO_BYTES = 8155401;   /* tamaño real, respaldo cuando falta Content-Length */
 
-  document.documentElement.style.setProperty('--hero-still', "url('" + ENDING_URL + "')");
+  /* La variable se consume desde assets/site.css, y ahi una ruta relativa se
+     resolveria contra la hoja de estilos (assets/assets/...). Se absolutiza
+     contra el documento para que apunte al fichero real. */
+  var ENDING_ABS = ENDING_URL;
+  try { ENDING_ABS = new URL(ENDING_URL, document.baseURI).href; } catch (e) {}
+  document.documentElement.style.setProperty('--hero-still', "url('" + ENDING_ABS + "')");
   var yearEl = $('#year');
   if (yearEl) yearEl.textContent = String(new Date().getFullYear());
 
