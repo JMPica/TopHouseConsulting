@@ -36,7 +36,7 @@
   var VIDEO_URL   = 'assets/hero-scrub.mp4';
   var POSTER_URL  = 'assets/hero-poster.jpg';
   var ENDING_URL  = 'assets/hero-ending.jpg';
-  var VIDEO_BYTES = 5600000;   /* respaldo cuando falta Content-Length */
+  var VIDEO_BYTES = 8157354;   /* tamaño real, respaldo cuando falta Content-Length */
 
   document.documentElement.style.setProperty('--hero-still', "url('" + ENDING_URL + "')");
   var yearEl = $('#year');
