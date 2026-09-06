@@ -1,0 +1,104 @@
+=======================================================================
+TOP HOUSE CONSULTING - PAGINA DE VALORACION
+Instrucciones para publicar
+=======================================================================
+
+QUE ES ESTO
+-----------
+Una pagina web independiente, hecha de ficheros sueltos. No es WordPress,
+no lleva base de datos, no necesita PHP ni ningun programa que instalar.
+Se sube tal cual y funciona.
+
+Contenido de la carpeta:
+
+  index.html          la pagina
+  assets/site.css     los estilos
+  assets/site.js      el comportamiento
+  assets/*.jpg        seis imagenes
+  assets/*.mp4        el video de cabecera (7,8 MB)
+
+Peso total: unos 11 MB.
+
+
+ORDEN PREVISTO
+--------------
+1. Primero la pagina se publica en una direccion PROVISIONAL, para verla
+   funcionando de verdad en movil y en ordenador y dar el visto bueno.
+2. Solo despues, y ya con el visto bueno dado, se decide donde queda
+   definitivamente y se apunta la direccion buena.
+
+Este documento sirve para el paso 2.
+
+
+AVISO IMPORTANTE
+----------------
+La web actual de Top House Consulting (www.tophouseconsulting.com) SIGUE
+FUNCIONANDO y no hay que tocarla. Esta pagina es nueva y va aparte.
+
+Decidid antes de subir nada donde tiene que quedar:
+
+  a) En un subdominio          valoracion.tophouseconsulting.com
+  b) En una carpeta            www.tophouseconsulting.com/valoracion/
+  c) Sustituyendo la home      (esto SI se come la web actual: no hacerlo
+                                sin haberlo hablado y sin copia de seguridad)
+
+
+COMO SE PUBLICA
+---------------
+1. Abrir index.html con un editor de texto.
+
+2. Buscar arriba del todo el bloque que empieza por "AL PUBLICAR".
+   Cambiar las TRES direcciones que hay justo debajo por la direccion
+   real donde vaya a quedar la pagina. Son las unicas lineas que hay
+   que tocar en todo el proyecto.
+
+   Si la pagina no va en la home y se deja ahi la direccion de la home,
+   Google entiende que la pagina buena es la otra y esta no sale en las
+   busquedas. Es el unico fallo grave que se puede cometer aqui.
+
+3. Subir por FTP, o por el gestor de ficheros del panel, el CONTENIDO de
+   la carpeta (index.html y la carpeta assets) al directorio que toque.
+   No subir la carpeta que los envuelve, sino lo que hay dentro.
+
+4. Abrir la direccion en el navegador y comprobar dos cosas:
+   - que al bajar con la rueda el video de arriba avanza con el scroll
+   - que se ven las seis imagenes de mas abajo
+
+
+COSAS A TENER EN CUENTA
+-----------------------
+- El video se descarga entero antes de reproducirse, a proposito. Asi
+  funciona en cualquier hosting, incluso en los que no admiten descarga
+  por partes. No hace falta configurar nada.
+
+- NO recomprimir ni optimizar el .mp4 desde el panel del hosting. Esta
+  preparado con un ajuste concreto para que el scroll no de tirones, y
+  cualquier optimizacion automatica lo estropea.
+
+- Si el hosting tiene compresion automatica de imagenes, se puede dejar.
+  Las imagenes van a proposito grandes y limpias.
+
+- En movil no se descarga el video: se ve una imagen fija. Es deliberado,
+  para no gastar los datos del visitante. No es un fallo.
+
+- El formulario no envia correos ni guarda nada en el servidor. Abre
+  WhatsApp en el telefono del visitante con el mensaje ya escrito hacia
+  el 605 27 31 50. Por eso no hace falta ni base de datos ni cuenta de
+  correo ni certificado de nada.
+
+- Se puede servir por HTTPS sin mas. No hay contenido mixto.
+
+
+SI ALGO NO SE VE
+----------------
+- Pagina en blanco o sin estilos: la carpeta assets no se ha subido, o se
+  ha subido al nivel equivocado. index.html y assets tienen que quedar
+  uno al lado del otro.
+
+- Se ve la pagina pero el video no avanza al bajar: falta el fichero
+  assets/hero-scrub.mp4, o el hosting lo esta bloqueando por tamano.
+
+- Se ven huecos donde deberian ir las fotos: falta alguno de los .jpg
+  de la carpeta assets.
+
+=======================================================================
