@@ -677,72 +677,85 @@ section{
   .step__art{grid-column:1/-1;max-width:none}
 }
 
-/* ---------- El mapa interactivo ---------- */
+/* ---------- La calculadora de pre-valoracion ---------- */
 
-.zones__intro{margin-bottom:clamp(30px,5vh,56px);max-width:var(--maxw)}
-.zones__panel{
-  display:grid;
-  grid-template-columns:1.15fr .85fr;
-  gap:clamp(24px,4vw,64px);
-  align-items:center;
-  border:1px solid var(--line);
-  border-radius:24px;
+.calc{padding:clamp(84px,13vh,160px) var(--gut)}
+.calc__intro{margin-bottom:clamp(30px,5vh,56px);max-width:var(--maxw)}
+.calc__panel{
+  max-width:var(--maxw);
+  border:1px solid var(--line);border-radius:24px;
   padding:clamp(22px,3.4vw,46px);
   background:linear-gradient(150deg,rgba(22,39,44,.56),rgba(11,20,23,.3));
-  max-width:var(--maxw);
+  display:grid;grid-template-columns:1.05fr .95fr;
+  gap:clamp(24px,4vw,56px);align-items:start;
 }
-
-.zmap{width:100%;height:auto;display:block}
-.zmap__sea{fill:url(#seaGrad)}
-.zmap__riera{fill:none;stroke:var(--accent-muted);stroke-width:2;stroke-dasharray:5 7}
-.zone{
-  fill:rgba(158,178,180,.07);
-  stroke:var(--line-strong);stroke-width:1;
-  cursor:pointer;
-  transition:fill .4s var(--ease),stroke .4s var(--ease);
+.calc__grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:clamp(14px,1.8vw,22px);margin-bottom:1.8rem;
 }
-.zone:hover{fill:rgba(212,169,75,.14);stroke:var(--accent)}
-.zone.on{fill:rgba(212,169,75,.24);stroke:var(--accent);stroke-width:1.6}
-.zlab{
-  fill:var(--text-secondary);font-family:var(--m);font-size:11px;
-  letter-spacing:.12em;text-transform:uppercase;text-anchor:middle;
-  pointer-events:none;
+.cfield{display:flex;flex-direction:column;gap:.45rem;min-width:0}
+.cfield--wide{grid-column:1 / -1}
+.cfield label,.cextras legend{
+  font-family:var(--m);font-size:.72rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--text-secondary);
 }
-
-.zones__pick{
-  font-family:var(--d);font-weight:300;
-  font-size:clamp(1.3rem,2.2vw,1.9rem);
-  margin:0 0 1.6rem;line-height:1.15;
+.cfield select,.cfield input[type=number]{
+  width:100%;padding:.78rem .9rem;
+  background:var(--panel);color:var(--text-primary);
+  border:1px solid var(--line);border-radius:10px;
+  font-family:var(--b);font-size:1rem;
 }
-.hold{position:relative;display:grid;justify-items:start;gap:.9rem}
-.hold__gauge{width:120px;height:66px;display:block}
-.hold__track{fill:none;stroke:var(--line);stroke-width:3;stroke-linecap:round}
-.hold__fill{
-  fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round;
-  stroke-dasharray:151;
-  stroke-dashoffset:calc(151 - 151*var(--hp,0));
+.cfield select{
+  appearance:none;padding-right:2.2rem;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%239EB2B4' stroke-width='1.6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right .9rem center;
 }
-.btn--hold{
-  background:rgba(16,29,33,.7);
-  border-color:var(--line-strong);
+.cextras{border:0;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:.7rem 1.4rem}
+.cextras legend{margin-bottom:.55rem}
+.chk{
+  display:inline-flex;align-items:center;gap:.5rem;cursor:pointer;
   color:var(--text-primary);
-  user-select:none;-webkit-user-select:none;touch-action:none;
 }
-.btn--hold:not(:disabled):hover{border-color:var(--accent);color:var(--accent)}
-.hold__hint{color:var(--text-secondary);margin:0;opacity:.7}
-.zones__line{
-  font-family:var(--d);font-weight:300;
-  font-size:clamp(1.05rem,1.6vw,1.35rem);
-  color:var(--accent);line-height:1.35;
-  margin:1.7rem 0 0;min-height:2.6em;max-width:30ch;
-  opacity:0;transform:translateY(12px);
-  transition:opacity .7s var(--ease),transform .7s var(--ease);
+/* .cfield label alcanzaba tambien a estas etiquetas y las dejaba en
+   versalitas de la mono; aqui vuelven a ser texto normal, que se lee mejor */
+.cextras .chk{
+  font-family:var(--b);font-size:.95rem;
+  letter-spacing:0;text-transform:none;color:var(--text-primary);
 }
-.zones__line.on{opacity:1;transform:none}
-.zones__go{margin-top:1.4rem}
+.chk input{
+  width:18px;height:18px;accent-color:var(--accent);cursor:pointer;flex:none;
+}
+.calc__go{width:100%}
 
-@media (max-width:860px){
-  .zones__panel{grid-template-columns:1fr}
+/* el resultado */
+.calc__out{
+  border:1px solid var(--accent-muted);border-radius:18px;
+  padding:clamp(20px,2.6vw,32px);
+  background:linear-gradient(160deg,rgba(212,169,75,.07),rgba(11,20,23,.2));
+  align-self:stretch;
+}
+.calc__lbl{
+  font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);margin:0 0 .7rem;
+}
+.calc__num{
+  font-family:var(--d);font-weight:300;
+  font-size:clamp(1.9rem,3.4vw,2.9rem);line-height:1.1;
+  color:var(--text-primary);margin:0 0 .5rem;
+  font-variant-numeric:tabular-nums;text-wrap:balance;
+}
+.calc__unit{font-size:.76rem;color:var(--text-secondary);margin:0 0 1.4rem;line-height:1.6}
+.calc__warn{
+  font-size:.92rem;line-height:1.6;color:var(--text-secondary);
+  padding-top:1.1rem;border-top:1px solid var(--line);margin:0 0 1.6rem;
+}
+.calc__cta{width:100%}
+
+@media (max-width:900px){
+  .calc__panel{grid-template-columns:1fr}
+}
+@media (max-width:520px){
+  .calc__grid{grid-template-columns:1fr}
 }
 
 /* ---------- La prueba ---------- */

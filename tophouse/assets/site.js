@@ -431,105 +431,117 @@
   }
 
   /* =========================================================
-     9. El mapa de tramos: el momento interactivo
+     9. La calculadora de pre-valoracion
+
+     ATENCION, TOP HOUSE: estos son los numeros que mueven el resultado.
+     Estan aqui arriba a proposito para que se puedan cambiar sin tocar
+     nada mas. Revisadlos, porque salen con vuestro nombre.
+
+     BASE por tipo, en euros por metro construido.
+       Sembrado con precios publicos de Arenys de Mar de julio de 2026:
+       media del municipio 2.871 EUR/m2, pisos entre 2.846 y 3.122,
+       casas entre 2.219 y 2.690. Fuentes: idealista y Fotocasa.
+       Conviene repasarlo cada seis meses o se queda viejo.
+
+     TRAMO: cuanto se aparta cada tramo de la media del pueblo.
+       ESTOS NUMEROS SON UNA ESTIMACION MIA Y HAY QUE CAMBIARLOS.
+       Nadie publica el precio por tramo de Arenys, y ese dato lo teneis
+       vosotros, que llevais diez anos firmando operaciones calle a calle.
+       Es justo lo que dice la web: la media del pueblo no sirve.
      ========================================================= */
 
-  var ZONES = {
-    passeig:  { name: 'Primera línia i passeig', line: 'Aquí se paga la vista, no los metros. Y se paga rápido.' },
-    centre:   { name: 'Centre i la Riera',       line: 'Casas de pueblo con planta baja. Lo que decide el precio es si tiene patio.' },
-    eixample: { name: 'Eixample i estació',      line: 'El comprador que llega de Barcelona empieza mirando aquí. Los diez minutos a la estación valen dinero.' },
-    alta:     { name: 'Zona alta',               line: 'Vistas y coche. Se vende más despacio y a mejor precio.' },
-    afores:   { name: 'Afores i Sant Elm',       line: 'Parcelas grandes. Aquí lo que se compra es el terreno.' }
+  var PRECIO = {
+    base:   { piso: 2900, atico: 3250, bajo: 2650, casa: 2450 },
+    tramo:  { passeig: 1.25, centre: 1.05, eixample: 1.00, alta: 0.92, afores: 0.85 },
+    estado: { reformar: 0.80, bien: 1.00, reformado: 1.14 },
+    extra:  { ascensor: 0.03, exterior: 0.04, parking: 0.05, mar: 0.08 },
+    horquilla: 0.07,          /* el resultado se da como +-7%, nunca como cifra unica */
+    fecha: 'julio de 2026'
   };
 
-  var zoneEls  = $$('.zone');
-  var zoneName = $('#zone-name');
-  var zoneLine = $('#zone-line');
-  var zoneGo   = $('#zone-go');
-  var holdBtn  = $('#hold-btn');
-  var holdWrap = $('#hold');
-  var holdLbl  = holdBtn ? $('.hold__label', holdBtn) : null;
-  var zoneSel  = $('#f-zona');
+  var NOMBRE_TRAMO = {
+    passeig: 'Primera línia i passeig', centre: 'Centre i la Riera',
+    eixample: 'Eixample i estació', alta: 'Zona alta', afores: 'Afores i Sant Elm'
+  };
+  var NOMBRE_TIPO   = { piso:'Piso', atico:'Ático', bajo:'Planta baja', casa:'Casa o torre' };
+  var NOMBRE_ESTADO = { reformar:'para reformar', bien:'en buen estado', reformado:'reformado' };
+  var NOMBRE_EXTRA  = { ascensor:'ascensor', exterior:'terraza o patio', parking:'parking', mar:'vistas al mar' };
 
-  var picked = null;
-  var hp = 0;          /* progreso del arco, 0 a 1 */
-  var holding = false;
-  var holdRaf = null;
-  var holdLast = 0;
-  var revealed = false;
+  var calcForm = $('#calc-form');
+  var calcOut  = $('#calc-out');
+  var ultimaValoracion = null;   /* lo que se arrastra hasta el formulario */
 
-  function pickZone(key) {
-    picked = key;
-    zoneEls.forEach(function (z) { z.classList.toggle('on', z.getAttribute('data-zone') === key); });
-    zoneName.textContent = ZONES[key].name;
-    holdBtn.disabled = false;
-    if (revealed) {
-      revealed = false;
-      zoneLine.classList.remove('on');
-      zoneGo.hidden = true;
-      holdLbl.textContent = 'Mantén pulsado para ver tu tramo';
+  function eur(n) {
+    return Math.round(n / 1000) * 1000 === 0
+      ? '0'
+      : new Intl.NumberFormat('es-ES').format(Math.round(n / 1000) * 1000);
+  }
+
+  function calcular(d) {
+    var tipo   = String(d.get('tipo') || 'piso');
+    var zona   = String(d.get('zona') || 'centre');
+    var estado = String(d.get('estado') || 'bien');
+    var m2     = Math.max(25, Math.min(600, parseInt(d.get('m2'), 10) || 90));
+    var extras = d.getAll('ex').map(String);
+
+    var eur_m2 = (PRECIO.base[tipo] || PRECIO.base.piso)
+               * (PRECIO.tramo[zona] || 1)
+               * (PRECIO.estado[estado] || 1);
+
+    /* Los extras suman sobre el precio del metro. El ascensor no cuenta en
+       una casa: alli no es una ventaja, se da por hecho que no lo lleva. */
+    var suma = 0;
+    for (var i = 0; i < extras.length; i++) {
+      if (extras[i] === 'ascensor' && tipo === 'casa') continue;
+      suma += PRECIO.extra[extras[i]] || 0;
     }
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) finishHold();
+    eur_m2 *= (1 + suma);
+
+    var total = eur_m2 * m2;
+    return {
+      bajo: total * (1 - PRECIO.horquilla),
+      alto: total * (1 + PRECIO.horquilla),
+      eur_m2: eur_m2,
+      tipo: tipo, zona: zona, estado: estado, m2: m2, extras: extras,
+      hab: String(d.get('hab') || '')
+    };
   }
 
-  zoneEls.forEach(function (z) {
-    var key = z.getAttribute('data-zone');
-    z.addEventListener('click', function () { pickZone(key); });
-    z.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickZone(key); }
+  if (calcForm) {
+    calcForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var r = calcular(new FormData(calcForm));
+      ultimaValoracion = r;
+
+      $('#calc-range').textContent = eur(r.bajo) + ' a ' + eur(r.alto) + ' €';
+      $('#calc-unit').textContent  =
+        'Unos ' + new Intl.NumberFormat('es-ES').format(Math.round(r.eur_m2)) +
+        ' €/m² · ' + r.m2 + ' m² · ' + NOMBRE_TRAMO[r.zona] +
+        ' · precios de ' + PRECIO.fecha;
+
+      calcOut.hidden = false;
+      /* Se rellena el formulario de abajo para que no lo repita a mano */
+      var fz = $('#f-zona'); if (fz) fz.value = NOMBRE_TRAMO[r.zona] || '';
+      var fq = $('#f-que');  if (fq) fq.value = 'Vender';
+
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        calcOut.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
     });
-  });
-
-  function setHold(v) {
-    hp = clamp(v, 0, 1);
-    holdWrap.style.setProperty('--hp', hp.toFixed(3));
   }
 
-  function holdTick(now) {
-    var dt = Math.min(60, now - (holdLast || now));
-    holdLast = now;
-    if (holding) setHold(hp + dt / 900);
-    else setHold(hp - dt / 1400);
-
-    if (hp >= 1) { holdRaf = null; holdLast = 0; finishHold(); return; }
-    if (!holding && hp <= 0) { holdRaf = null; holdLast = 0; return; }
-    holdRaf = requestAnimationFrame(holdTick);
-  }
-
-  function startHold(e) {
-    if (!picked || revealed) return;
-    if (e && e.cancelable) e.preventDefault();
-    holding = true;
-    if (holdRaf === null) { holdLast = 0; holdRaf = requestAnimationFrame(holdTick); }
-  }
-  function endHold() {
-    holding = false;
-    if (holdRaf === null && hp > 0) { holdLast = 0; holdRaf = requestAnimationFrame(holdTick); }
-  }
-
-  function finishHold() {
-    if (!picked || revealed) return;
-    revealed = true;
-    holding = false;
-    setHold(1);
-    zoneLine.textContent = ZONES[picked].line;
-    zoneLine.classList.add('on');
-    zoneGo.hidden = false;
-    holdLbl.textContent = 'Elige otro tramo del mapa';
-    if (zoneSel) zoneSel.value = ZONES[picked].name;
-  }
-
-  if (holdBtn) {
-    holdBtn.addEventListener('pointerdown', startHold);
-    holdBtn.addEventListener('pointerup', endHold);
-    holdBtn.addEventListener('pointercancel', endHold);
-    holdBtn.addEventListener('pointerleave', endHold);
-    holdBtn.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startHold(); }
-    });
-    holdBtn.addEventListener('keyup', function (e) {
-      if (e.key === 'Enter' || e.key === ' ') endHold();
-    });
+  function resumenInmueble() {
+    if (!ultimaValoracion) return null;
+    var r = ultimaValoracion;
+    var t = NOMBRE_TIPO[r.tipo] + ' de ' + r.m2 + ' m²';
+    if (r.hab) t += ', ' + r.hab + ' habitaciones';
+    t += ', ' + NOMBRE_ESTADO[r.estado];
+    if (r.extras.length) {
+      var nom = [];
+      for (var i = 0; i < r.extras.length; i++) nom.push(NOMBRE_EXTRA[r.extras[i]]);
+      t += ', con ' + nom.join(', ');
+    }
+    return { linea: t, horquilla: eur(r.bajo) + ' a ' + eur(r.alto) + ' €' };
   }
 
   /* =========================================================
@@ -563,6 +575,15 @@
       ];
       var zona = String(d.get('zona') || '').trim();
       if (zona) lines.push('Tramo: ' + zona);
+
+      /* Si viene de la calculadora, el mensaje lleva ya el inmueble entero,
+         para que quien reciba el WhatsApp no tenga que preguntarlo todo. */
+      var res = resumenInmueble();
+      if (res) {
+        lines.push('Inmueble: ' + res.linea);
+        lines.push('Horquilla que me ha salido en la web: ' + res.horquilla);
+      }
+
       var msg = String(d.get('mensaje') || '').trim();
       if (msg) lines.push('', msg);
 
