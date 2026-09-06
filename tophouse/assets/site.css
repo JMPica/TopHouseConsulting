@@ -762,6 +762,10 @@ section{
   font-size:.92rem;line-height:1.6;color:var(--text-secondary);
   padding-top:1.1rem;border-top:1px solid var(--line);margin:0 0 1.6rem;
 }
+.calc__warn--gen{
+  color:var(--accent);border-top:0;border-left:2px solid var(--accent-muted);
+  padding:0 0 0 .9rem;margin-bottom:1.1rem;
+}
 .calc__cta{width:100%}
 
 @media (max-width:900px){
@@ -938,6 +942,84 @@ section{
 @media (max-width:860px){
   .close{grid-template-columns:1fr}
   .form{grid-template-columns:1fr}
+}
+
+/* ---------- La cartera (comprar y alquilar) ---------- */
+
+.cart__head{padding:clamp(120px,17vh,190px) var(--gut) clamp(24px,4vh,44px);max-width:var(--maxw)}
+.cart{padding:0 var(--gut) clamp(60px,9vh,110px)}
+.cart__filtros{
+  max-width:var(--maxw);margin:0 auto clamp(22px,3.4vh,38px);
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;
+  gap:clamp(12px,1.8vw,20px);align-items:end;
+  padding-bottom:clamp(18px,2.6vh,28px);border-bottom:1px solid var(--line);
+}
+.cart__cuenta{color:var(--text-secondary);font-size:.72rem;letter-spacing:.14em;
+  text-transform:uppercase;margin:0 0 .7rem;justify-self:end}
+
+.cart__grid{
+  list-style:none;margin:0 auto;padding:0;max-width:var(--maxw);
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));
+  gap:clamp(18px,2.4vw,30px);
+}
+.inm{
+  display:flex;flex-direction:column;
+  border:1px solid var(--line);border-radius:18px;overflow:hidden;
+  background:linear-gradient(160deg,rgba(22,39,44,.5),rgba(11,20,23,.28));
+  transition:border-color .5s var(--ease),transform .5s var(--ease);
+}
+.inm:hover{border-color:var(--accent-muted);transform:translateY(-3px)}
+.inm--dest{border-color:var(--accent-muted)}
+.inm__foto{position:relative;aspect-ratio:4/3;background:var(--panel);overflow:hidden}
+.inm__foto img{width:100%;height:100%;object-fit:cover;display:block}
+.inm__foto--sin{display:grid;place-items:center;color:var(--text-secondary);
+  font-size:.7rem;letter-spacing:.14em;text-transform:uppercase}
+.inm__flag{
+  position:absolute;top:12px;left:12px;
+  background:var(--accent);color:#20170a;
+  font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;
+  padding:.3rem .6rem;border-radius:999px;
+}
+.inm__cuerpo{padding:clamp(16px,2vw,24px);display:flex;flex-direction:column;gap:.55rem;flex:1}
+.inm__sitio{color:var(--accent);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;margin:0}
+.inm__t{font-family:var(--d);font-weight:500;font-size:1.1rem;line-height:1.28;margin:0;color:var(--text-primary)}
+.inm__datos{margin:0;color:var(--text-secondary);font-size:.9rem}
+.inm__tags{list-style:none;margin:.2rem 0 0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
+.inm__tags li{
+  font-family:var(--m);font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--text-secondary);border:1px solid var(--line);
+  padding:.24rem .55rem;border-radius:999px;
+}
+.inm__precio{
+  font-family:var(--d);font-weight:500;font-size:1.35rem;
+  color:var(--text-primary);margin:.5rem 0 0;font-variant-numeric:tabular-nums;
+}
+.inm__mes{font-family:var(--b);font-size:.8rem;color:var(--text-secondary)}
+.inm__cta{margin-top:auto;align-self:flex-start}
+
+.cart__vacio{
+  max-width:640px;margin:clamp(30px,6vh,70px) auto;text-align:center;
+  border:1px solid var(--line);border-radius:20px;
+  padding:clamp(28px,4vw,52px);
+  background:linear-gradient(160deg,rgba(22,39,44,.44),rgba(11,20,23,.24));
+}
+.cart__vacio-t{font-family:var(--d);font-size:clamp(1.2rem,2.2vw,1.6rem);
+  color:var(--text-primary);margin:0 0 .7rem}
+.cart__vacio p{color:var(--text-secondary);line-height:1.6;margin:0}
+.cart__vacio-btns,.cart__cierre-btns{
+  display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:1.8rem;
+}
+.cart__cierre{padding:clamp(60px,9vh,120px) var(--gut) clamp(80px,12vh,150px);
+  border-top:1px solid var(--line)}
+.cart__cierre-in{max-width:640px;margin:0 auto;text-align:center}
+.cart__cierre-in .lede{margin-top:.8rem}
+
+@media (max-width:900px){
+  .cart__filtros{grid-template-columns:1fr 1fr}
+  .cart__cuenta{grid-column:1 / -1;justify-self:start;margin:0}
+}
+@media (max-width:520px){
+  .cart__filtros{grid-template-columns:1fr}
 }
 
 /* ---------- Pie ---------- */

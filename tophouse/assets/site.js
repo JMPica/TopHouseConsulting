@@ -451,21 +451,67 @@
      ========================================================= */
 
   var PRECIO = {
-    base:   { piso: 2900, atico: 3250, bajo: 2650, casa: 2450 },
-    tramo:  { passeig: 1.25, centre: 1.05, eixample: 1.00, alta: 0.92, afores: 0.85 },
+    base:   { piso: 1.00, atico: 1.12, bajo: 0.91, casa: 0.85 },  /* factor sobre el EUR/m2 de la poblacion */
     estado: { reformar: 0.80, bien: 1.00, reformado: 1.14 },
     extra:  { ascensor: 0.03, exterior: 0.04, parking: 0.05, mar: 0.08 },
     horquilla: 0.07,          /* el resultado se da como +-7%, nunca como cifra unica */
     fecha: 'julio de 2026'
   };
 
-  var NOMBRE_TRAMO = {
-    passeig: 'Primera línia i passeig', centre: 'Centre i la Riera',
-    eixample: 'Eixample i estació', alta: 'Zona alta', afores: 'Afores i Sant Elm'
-  };
   var NOMBRE_TIPO   = { piso:'Piso', atico:'Ático', bajo:'Planta baja', casa:'Casa o torre' };
   var NOMBRE_ESTADO = { reformar:'para reformar', bien:'en buen estado', reformado:'reformado' };
   var NOMBRE_EXTRA  = { ascensor:'ascensor', exterior:'terraza o patio', parking:'parking', mar:'vistas al mar' };
+
+  var POBLES = window.POBLACIONS || {};
+  var ZGEN   = window.ZONES_GENERIQUES || { costa: [], interior: [] };
+
+  function zonasDe(clau) {
+    var p = POBLES[clau];
+    if (!p) return [];
+    if (p.zones) return p.zones;
+    return p.costa ? ZGEN.costa : ZGEN.interior;
+  }
+
+  /* El desplegable de poblaciones va agrupado por comarca: son 65 y sin
+     agrupar no hay quien encuentre la suya. */
+  function montarPoblaciones(sel) {
+    var porComarca = {};
+    Object.keys(POBLES).forEach(function (k) {
+      var c = POBLES[k].comarca;
+      (porComarca[c] = porComarca[c] || []).push(k);
+    });
+    var orden = Object.keys(porComarca).sort(function (a, b) {
+      if (a === 'El Maresme') return -1;   /* el mercado propio, primero */
+      if (b === 'El Maresme') return 1;
+      if (a === 'Otras') return 1;
+      if (b === 'Otras') return -1;
+      return a.localeCompare(b, 'es');
+    });
+    orden.forEach(function (c) {
+      var g = document.createElement('optgroup');
+      g.label = c;
+      porComarca[c].sort(function (a, b) {
+        return POBLES[a].nom.localeCompare(POBLES[b].nom, 'es');
+      }).forEach(function (k) {
+        var o = document.createElement('option');
+        o.value = k; o.textContent = POBLES[k].nom;
+        if (k === 'arenys-de-mar') o.selected = true;
+        g.appendChild(o);
+      });
+      sel.appendChild(g);
+    });
+  }
+
+  function montarZonas(selZona, clauPoble) {
+    var z = zonasDe(clauPoble);
+    selZona.innerHTML = '';
+    z.forEach(function (par, i) {
+      var o = document.createElement('option');
+      o.value = par[0]; o.textContent = par[1];
+      if (i === Math.min(1, z.length - 1)) o.selected = true;
+      selZona.appendChild(o);
+    });
+  }
 
   var calcForm = $('#calc-form');
   var calcOut  = $('#calc-out');
@@ -479,20 +525,30 @@
 
   function calcular(d) {
     var tipo   = String(d.get('tipo') || 'piso');
-    var zona   = String(d.get('zona') || 'centre');
+    var poble  = String(d.get('poblacio') || 'arenys-de-mar');
+    var zona   = String(d.get('zona') || '');
     var estado = String(d.get('estado') || 'bien');
     var m2     = Math.max(25, Math.min(600, parseInt(d.get('m2'), 10) || 90));
     var extras = d.getAll('ex').map(String);
 
-    var eur_m2 = (PRECIO.base[tipo] || PRECIO.base.piso)
-               * (PRECIO.tramo[zona] || 1)
+    var P = POBLES[poble] || POBLES['arenys-de-mar'];
+    var zonas = zonasDe(poble);
+    var fZona = 1, nomZona = '';
+    for (var z = 0; z < zonas.length; z++) {
+      if (zonas[z][0] === zona) { fZona = zonas[z][2]; nomZona = zonas[z][1]; }
+    }
+
+    var eur_m2 = P.base
+               * (PRECIO.base[tipo] || 1)
+               * fZona
                * (PRECIO.estado[estado] || 1);
 
     /* Los extras suman sobre el precio del metro. El ascensor no cuenta en
-       una casa: alli no es una ventaja, se da por hecho que no lo lleva. */
+       una casa, y las vistas al mar no se ofrecen tierra adentro. */
     var suma = 0;
     for (var i = 0; i < extras.length; i++) {
       if (extras[i] === 'ascensor' && tipo === 'casa') continue;
+      if (extras[i] === 'mar' && !P.costa) continue;
       suma += PRECIO.extra[extras[i]] || 0;
     }
     eur_m2 *= (1 + suma);
@@ -501,13 +557,21 @@
     return {
       bajo: total * (1 - PRECIO.horquilla),
       alto: total * (1 + PRECIO.horquilla),
-      eur_m2: eur_m2,
-      tipo: tipo, zona: zona, estado: estado, m2: m2, extras: extras,
+      eur_m2: eur_m2, generica: !!P.generica,
+      tipo: tipo, poble: P.nom, zona: nomZona, estado: estado, m2: m2, extras: extras,
       hab: String(d.get('hab') || '')
     };
   }
 
   if (calcForm) {
+    var selPob  = $('#c-poblacio');
+    var selZona = $('#c-zona');
+    if (selPob && selZona) {
+      montarPoblaciones(selPob);
+      montarZonas(selZona, selPob.value);
+      selPob.addEventListener('change', function () { montarZonas(selZona, selPob.value); });
+    }
+
     calcForm.addEventListener('submit', function (e) {
       e.preventDefault();
       var r = calcular(new FormData(calcForm));
@@ -516,12 +580,18 @@
       $('#calc-range').textContent = eur(r.bajo) + ' a ' + eur(r.alto) + ' €';
       $('#calc-unit').textContent  =
         'Unos ' + new Intl.NumberFormat('es-ES').format(Math.round(r.eur_m2)) +
-        ' €/m² · ' + r.m2 + ' m² · ' + NOMBRE_TRAMO[r.zona] +
+        ' €/m² · ' + r.m2 + ' m² · ' + r.poble + (r.zona ? ', ' + r.zona : '') +
         ' · precios de ' + PRECIO.fecha;
 
+      /* Si han elegido el comodin, el numero es mucho mas grueso y hay que
+         decirlo, no dejar que parezca igual de fino que el de una poblacion
+         con dato propio. */
+      var aviso = $('#calc-generica');
+      if (aviso) aviso.hidden = !r.generica;
+
       calcOut.hidden = false;
-      /* Se rellena el formulario de abajo para que no lo repita a mano */
-      var fz = $('#f-zona'); if (fz) fz.value = NOMBRE_TRAMO[r.zona] || '';
+      var fz = $('#f-zona');
+      if (fz) fz.value = r.poble + (r.zona ? ', ' + r.zona : '');
       var fq = $('#f-que');  if (fq) fq.value = 'Vender';
 
       if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -533,7 +603,8 @@
   function resumenInmueble() {
     if (!ultimaValoracion) return null;
     var r = ultimaValoracion;
-    var t = NOMBRE_TIPO[r.tipo] + ' de ' + r.m2 + ' m²';
+    var t = NOMBRE_TIPO[r.tipo] + ' de ' + r.m2 + ' m² en ' + r.poble +
+            (r.zona ? ' (' + r.zona + ')' : '');
     if (r.hab) t += ', ' + r.hab + ' habitaciones';
     t += ', ' + NOMBRE_ESTADO[r.estado];
     if (r.extras.length) {

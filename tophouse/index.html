@@ -58,8 +58,8 @@
   </a>
   <div class="nav__links">
     <a href="#vender">Vender</a>
-    <a href="#comprar">Comprar</a>
-    <a href="#alquilar">Alquilar</a>
+    <a href="comprar.html">Comprar</a>
+    <a href="alquilar.html">Alquilar</a>
     <a href="#valorar">Valoración</a>
     <a href="#servicios">Servicios</a>
     <a href="#valoracion">Contacto</a>
@@ -176,7 +176,7 @@
         <path d="M56 150 V66 A8 8 0 0 1 64 58 H136 A8 8 0 0 1 144 66 V150"/>
         <path d="M88 150 V92 A5 5 0 0 1 93 87 H107 A5 5 0 0 1 112 92 V150"/>
       </svg>
-      <a class="btn btn--ghost" href="https://www.tophouseconsulting.com/es/venta" rel="noopener">Ver la cartera</a>
+      <a class="btn btn--ghost" href="comprar.html">Ver la cartera</a>
     </article>
 
     <article class="door door--small part" id="alquilar">
@@ -188,7 +188,7 @@
         <li>Inquilino con las máximas garantías</li>
         <li>Contrato y papeles incluidos</li>
       </ul>
-      <a class="btn btn--ghost" href="https://www.tophouseconsulting.com/es/alquiler" rel="noopener">Ver los alquileres</a>
+      <a class="btn btn--ghost" href="alquilar.html">Ver los alquileres</a>
     </article>
 
   </div>
@@ -288,14 +288,13 @@
         </div>
 
         <div class="cfield">
-          <label for="c-zona">En qué tramo</label>
-          <select id="c-zona" name="zona">
-            <option value="passeig">Primera línia i passeig</option>
-            <option value="centre" selected>Centre i la Riera</option>
-            <option value="eixample">Eixample i estació</option>
-            <option value="alta">Zona alta</option>
-            <option value="afores">Afores i Sant Elm</option>
-          </select>
+          <label for="c-poblacio">Población</label>
+          <select id="c-poblacio" name="poblacio"></select>
+        </div>
+
+        <div class="cfield">
+          <label for="c-zona">Zona</label>
+          <select id="c-zona" name="zona"></select>
         </div>
 
         <div class="cfield">
@@ -339,6 +338,7 @@
       <p class="calc__lbl mono">Horquilla orientativa</p>
       <p class="calc__num" id="calc-range"></p>
       <p class="calc__unit mono" id="calc-unit"></p>
+      <p class="calc__warn calc__warn--gen" id="calc-generica" hidden>Ha elegido una población sin dato propio en nuestra tabla, así que este número es todavía más grueso: sale de la media de Catalunya. Si nos dice cuál es, se lo afinamos por teléfono.</p>
       <p class="calc__warn">Esto es un cálculo automático a partir de precios de mercado en Arenys. No ve su calle exacta, ni la altura, ni la luz, ni el estado real, y esas cuatro cosas mueven el precio miles de euros. Para saber lo que vale de verdad hay que ir.</p>
       <a class="btn btn--solid btn--lg calc__cta" id="calc-cta" href="#valoracion">Quiero el precio real, con visita</a>
     </div>
@@ -462,16 +462,8 @@
       <input id="f-tel" name="telefono" type="tel" autocomplete="tel" required placeholder="Para llamarle hoy">
     </div>
     <div class="field">
-      <label for="f-zona">Su tramo de Arenys</label>
-      <select id="f-zona" name="zona">
-        <option value="">Elija uno</option>
-        <option value="Primera línia i passeig">Primera línia i passeig</option>
-        <option value="Centre i la Riera">Centre i la Riera</option>
-        <option value="Eixample i estació">Eixample i estació</option>
-        <option value="Zona alta">Zona alta</option>
-        <option value="Afores i Sant Elm">Afores i Sant Elm</option>
-        <option value="Fuera de Arenys">Fuera de Arenys</option>
-      </select>
+      <label for="f-zona">Dónde está el inmueble</label>
+      <input id="f-zona" name="zona" type="text" autocomplete="address-level2" placeholder="Población y zona">
     </div>
     <div class="field">
       <label for="f-que">Qué necesita</label>
@@ -525,6 +517,7 @@
   </div>
 </footer>
 
+<script src="assets/poblacions.js" defer></script>
 <script src="assets/site.js" defer></script>
 </body>
 </html>
