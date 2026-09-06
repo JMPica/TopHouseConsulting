@@ -954,6 +954,13 @@ section{
   gap:clamp(12px,1.8vw,20px);align-items:end;
   padding-bottom:clamp(18px,2.6vh,28px);border-bottom:1px solid var(--line);
 }
+/* La etiqueta envuelve al campo, que los asocia sin necesidad de id y deja
+   que varias carteras conviviesen en un mismo documento. */
+.cart__filtros label{display:flex;flex-direction:column;gap:.45rem}
+.cfield__t{
+  font-family:var(--m);font-size:.72rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--text-secondary);
+}
 .cart__cuenta{color:var(--text-secondary);font-size:.72rem;letter-spacing:.14em;
   text-transform:uppercase;margin:0 0 .7rem;justify-self:end}
 

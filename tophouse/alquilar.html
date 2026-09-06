@@ -70,28 +70,31 @@
   <p class="lede">Gestionamos todo tipo de alquiler. Si es propietario y quiere alquilar con garantías, también empezamos por aquí.</p>
 </section>
 
-<section class="cart" aria-labelledby="cart-h">
+<section class="cart" data-cartera="alquiler" aria-labelledby="cart-h">
   <h2 class="sr-only" id="cart-h">Inmuebles en alquiler</h2>
 
   <div class="cart__filtros" role="group" aria-label="Filtrar los inmuebles">
     <div class="cfield">
-      <label for="f-tipo">Tipo</label>
-      <select id="f-tipo"><option value="">Todos</option></select>
+      <label><span class="cfield__t">Tipo</span>
+        <select class="f-tipo"><option value="">Todos</option></select>
+      </label>
     </div>
     <div class="cfield">
-      <label for="f-pob">Población</label>
-      <select id="f-pob"><option value="">Todas</option></select>
+      <label><span class="cfield__t">Población</span>
+        <select class="f-pob"><option value="">Todas</option></select>
+      </label>
     </div>
     <div class="cfield">
-      <label for="f-max">Precio máximo</label>
-      <select id="f-max"><option value="">Sin límite</option></select>
+      <label><span class="cfield__t">Precio máximo</span>
+        <select class="f-max"><option value="">Sin límite</option></select>
+      </label>
     </div>
-    <p class="cart__cuenta mono" id="cart-cuenta" role="status" aria-live="polite"></p>
+    <p class="cart__cuenta mono"  role="status" aria-live="polite"></p>
   </div>
 
-  <ul class="cart__grid" id="cart-grid"></ul>
+  <ul class="cart__grid"></ul>
 
-  <div class="cart__vacio" id="cart-vacio" hidden>
+  <div class="cart__vacio"  hidden>
     <p class="cart__vacio-t">Ahora mismo no hay nada publicado aquí.</p>
     <p>Nuestra cartera se mueve deprisa y buena parte no llega a publicarse. Llámenos y le decimos en un minuto qué hay de lo que busca.</p>
     <div class="cart__vacio-btns">
@@ -144,7 +147,7 @@
     <p class="foot__note">Las imágenes de esta página son de ambiente y no corresponden a inmuebles en cartera.</p>
   </div>
 </footer>
-<script>window.CARTERA_OPERACION = 'alquiler';</script>
+<script>window.CARTERA_OPERACION_SIN_USO = 'alquiler';</script>
 <script src="assets/inmuebles.js" defer></script>
 <script src="assets/cartera.js" defer></script>
 </body>

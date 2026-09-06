@@ -24,18 +24,25 @@
     mirarNav();
     window.addEventListener('scroll', mirarNav, { passive: true });
   }
-  var OPER = window.CARTERA_OPERACION || 'venta';
-  var TODOS = (window.INMUEBLES || []).filter(function (i) { return i.operacion === OPER; });
+  /* Se monta por ambito y no con un global: asi pueden convivir la cartera
+     de venta y la de alquiler en un mismo documento, que es lo que necesita
+     la vista previa de las tres paginas juntas. */
+  var raices = document.querySelectorAll('[data-cartera]');
+  if (!raices.length) return;
 
   var NOM_TIPO = { piso:'Piso', atico:'Ático', casa:'Casa', bajo:'Planta baja',
                    local:'Local', terreno:'Terreno' };
 
-  var grid   = $('#cart-grid');
-  var vacio  = $('#cart-vacio');
-  var cuenta = $('#cart-cuenta');
-  var fTipo  = $('#f-tipo');
-  var fPob   = $('#f-pob');
-  var fMax   = $('#f-max');
+  Array.prototype.forEach.call(raices, function (raiz) {
+  var OPER = raiz.getAttribute('data-cartera') || 'venta';
+  var TODOS = (window.INMUEBLES || []).filter(function (i) { return i.operacion === OPER; });
+
+  var grid   = $('.cart__grid', raiz);
+  var vacio  = $('.cart__vacio', raiz);
+  var cuenta = $('.cart__cuenta', raiz);
+  var fTipo  = $('.f-tipo', raiz);
+  var fPob   = $('.f-pob', raiz);
+  var fMax   = $('.f-max', raiz);
   if (!grid) return;
 
   var eur = function (n) { return new Intl.NumberFormat('es-ES').format(n); };
@@ -126,11 +133,12 @@
       : '';
     /* Con la cartera entera vacia no tiene sentido enseñar filtros que no
        filtran nada, asi que se esconden y manda el aviso honesto. */
-    var cajaFiltros = document.querySelector('.cart__filtros');
+    var cajaFiltros = $('.cart__filtros', raiz);
     if (cajaFiltros) cajaFiltros.hidden = !TODOS.length;
   }
 
   montarFiltros();
   [fTipo, fPob, fMax].forEach(function (s) { s.addEventListener('change', pintar); });
   pintar();
+  });
 })();
