@@ -1,7 +1,25 @@
 /* =========================================================
-   La cartera: filtra y pinta los inmuebles de inmuebles.js
-   Sirve igual a comprar.html y a alquilar.html; lo unico que
-   cambia es window.CARTERA_OPERACION.
+   La cartera: filtra y pinta los inmuebles
+   =========================================================
+
+   DE DONDE SALEN LOS INMUEBLES
+
+   Top House trabaja con Mobilia, que ya empuja cada ficha nueva a su web.
+   Lo suyo es que esta web beba de esa misma fuente y no de una copia a mano,
+   que se quedaria vieja al dia siguiente.
+
+   Por eso hay dos caminos, y el codigo aguanta los dos:
+
+   1. CON FEED (lo que hay que conseguir). Si existe window.CARTERA_FEED con
+      la direccion del feed de Mobilia, se pide de ahi y siempre esta al dia.
+      Como cada CRM entrega los campos con nombres distintos, la traduccion
+      vive en una sola funcion, CARTERA_ADAPTADOR, abajo del todo de este
+      fichero. Hay que verla contra un feed de verdad antes de darla por buena.
+
+   2. SIN FEED (lo que hay hoy). Se usa lo que haya en inmuebles.js.
+
+   Si el feed falla, se cae al fichero local sin romper la pagina: mas vale
+   una cartera vieja que una pagina rota.
    ========================================================= */
 (function () {
   'use strict';
@@ -33,9 +51,34 @@
   var NOM_TIPO = { piso:'Piso', atico:'Ático', casa:'Casa', bajo:'Planta baja',
                    local:'Local', terreno:'Terreno' };
 
+  /* Trae los inmuebles del feed si lo hay, y si no del fichero local. */
+  function traerInmuebles() {
+    var local = window.INMUEBLES || [];
+    if (!window.CARTERA_FEED || !window.fetch) return Promise.resolve(local);
+
+    return fetch(window.CARTERA_FEED, { headers: { 'Accept': 'application/json' } })
+      .then(function (res) {
+        if (!res.ok) throw new Error('el feed responde ' + res.status);
+        return res.json();
+      })
+      .then(function (datos) {
+        var f = window.CARTERA_ADAPTADOR;
+        var lista = typeof f === 'function' ? f(datos) : datos;
+        if (!Array.isArray(lista) || !lista.length) throw new Error('el feed no trae inmuebles');
+        return lista;
+      })
+      .catch(function (e) {
+        /* Nunca se rompe la pagina por esto: se avisa en consola para quien
+           lo mantenga y se sigue con lo que haya en local. */
+        if (window.console) console.warn('Cartera: no se ha podido leer el feed (' + e.message + '). Se usa inmuebles.js.');
+        return local;
+      });
+  }
+
+  traerInmuebles().then(function (INMUEBLES_OK) {
   Array.prototype.forEach.call(raices, function (raiz) {
   var OPER = raiz.getAttribute('data-cartera') || 'venta';
-  var TODOS = (window.INMUEBLES || []).filter(function (i) { return i.operacion === OPER; });
+  var TODOS = INMUEBLES_OK.filter(function (i) { return i.operacion === OPER; });
 
   var grid   = $('.cart__grid', raiz);
   var vacio  = $('.cart__vacio', raiz);
@@ -141,4 +184,42 @@
   [fTipo, fPob, fMax].forEach(function (s) { s.addEventListener('change', pintar); });
   pintar();
   });
+  });
 })();
+
+/* =========================================================
+   EL TRADUCTOR DEL FEED DE MOBILIA
+
+   ATENCION: esto NO esta terminado, y a proposito. Cada CRM nombra sus
+   campos a su manera, y escribir esta traduccion adivinando el formato es
+   la forma segura de que salgan precios y metros equivocados.
+
+   PARA TERMINARLO hace falta ver UNA respuesta de verdad del feed. Con eso
+   se rellenan las cuatro lineas de abajo y queda hecho.
+
+   Lo que esta web necesita de cada inmueble:
+     ref, operacion ('venta' u 'alquiler'), tipo, titulo, poblacio, zona,
+     precio (numero), m2, hab, banys, extras (lista), foto (direccion)
+
+   Ejemplo de como quedaria si el feed devolviese {propiedades:[...]} con
+   campos en ingles. Cambiad los nombres por los que traiga Mobilia:
+
+     window.CARTERA_ADAPTADOR = function (datos) {
+       return (datos.propiedades || []).map(function (p) {
+         return {
+           ref:       p.reference,
+           operacion: p.operation === 'rent' ? 'alquiler' : 'venta',
+           tipo:      p.type,
+           titulo:    p.title,
+           poblacio:  p.town,
+           zona:      p.area,
+           precio:    Number(p.price) || 0,
+           m2:        Number(p.built_area) || 0,
+           hab:       Number(p.bedrooms) || 0,
+           banys:     Number(p.bathrooms) || 0,
+           extras:    p.features || [],
+           foto:      (p.images && p.images[0]) || ''
+         };
+       });
+     };
+   ========================================================= */

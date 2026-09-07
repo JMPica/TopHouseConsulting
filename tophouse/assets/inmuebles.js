@@ -2,8 +2,14 @@
    La cartera de inmuebles
    =========================================================
 
-   ATENCION, TOP HOUSE: este fichero es la cartera de la web. Se rellena a
-   mano desde Mobilia, que es como ya trabajais.
+   ATENCION, TOP HOUSE: este fichero es el PLAN B.
+
+   Mobilia ya empuja las fichas a vuestra web actual, asi que lo suyo es que
+   esta web lea ese mismo feed y no una copia a mano, que se quedaria vieja.
+   Como conseguirlo esta en CARTERA-Y-MOBILIA.txt, en la carpeta de la web.
+
+   Este fichero se usa mientras no haya feed, y como red de seguridad si el
+   feed falla algun dia.
 
    PARA ANADIR UN INMUEBLE, copiad un bloque y cambiad los datos. Los campos:
 

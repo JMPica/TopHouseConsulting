@@ -1,0 +1,70 @@
+=======================================================================
+DE DONDE SACA LA WEB LOS INMUEBLES
+Que hay que preguntarle a Mobilia
+=======================================================================
+
+EL PUNTO DE PARTIDA
+
+Mobilia ya empuja cada ficha nueva a la web actual. Lo sensato es que la web
+nueva beba de esa misma fuente. Teclear los inmuebles otra vez a mano seria
+hacer el trabajo dos veces y garantizar que la web nueva se quede vieja.
+
+La web ya esta preparada para ello. Solo falta un dato.
+
+
+LO QUE HAY QUE PREGUNTAR
+
+A quien lleve Mobilia, o a su soporte, literalmente esto:
+
+  "¿Nos podeis dar la direccion del feed de nuestros inmuebles, y en que
+   formato lo servis, XML o JSON?"
+
+Casi con seguridad existe, porque es como Mobilia publica en Idealista,
+Fotocasa o Habitaclia. Suele llamarse feed, export, XML de portales o
+sindicacion, y es una direccion de internet que devuelve todos los
+inmuebles.
+
+Preguntad tambien:
+
+  "¿Ese feed se puede leer desde un navegador en otro dominio?"
+   (en terminos tecnicos: si permite CORS)
+
+Esa segunda respuesta decide cual de los tres caminos de abajo se usa.
+
+
+LOS TRES CAMINOS
+
+  A. EL FEED SE PUEDE LEER DESDE EL NAVEGADOR
+     El mejor caso. Se pone la direccion en una linea y la web queda siempre
+     al dia sola. Cuando creeis una ficha en Mobilia, aparece.
+
+  B. EL FEED EXISTE PERO NO DEJA LEERLO DESDE OTRO DOMINIO
+     Es lo mas habitual, porque esos feeds estan pensados para portales, no
+     para navegadores. Se resuelve con un fichero pequeño en vuestro propio
+     alojamiento que hace de puente. Son unas pocas lineas y lo puede dejar
+     puesto quien lleve el hosting.
+
+  C. NO HAY FEED
+     Entonces se rellena a mano en assets/inmuebles.js, que ya lleva las
+     instrucciones dentro. Es el unico caso en el que hay trabajo repetido.
+
+
+CUANDO TENGAIS LA RESPUESTA
+
+Hace falta ver UNA respuesta de verdad del feed, aunque sea de un solo
+inmueble, para saber como llama Mobilia a cada campo. Sin eso, la traduccion
+de campos se escribiria adivinando, y eso acaba en precios y metros
+equivocados en la web.
+
+Con esa muestra delante se rellena la funcion CARTERA_ADAPTADOR, que esta al
+final de assets/cartera.js y ya lleva un ejemplo comentado.
+
+
+QUE PASA MIENTRAS TANTO
+
+La web funciona igual. Si no hay feed configurado usa el fichero local, y si
+el feed falla algun dia se cae al fichero local sin romperse: es preferible
+una cartera vieja a una pagina rota. Con la cartera vacia se muestra un
+aviso honesto que empuja al telefono.
+
+=======================================================================
