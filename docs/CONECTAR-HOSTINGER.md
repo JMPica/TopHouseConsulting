@@ -1,88 +1,125 @@
-# Conectar Hostinger para que los despliegues se hagan solos
+# Publicar tophouserealestate.es y dejarlo automatico
 
-Objetivo: que cualquier cambio en la web se publique sin que tengas que
-tocar el panel de Hostinger.
+La web se despliega desde GitHub. Configuras esto UNA vez y a partir de
+ahi cada cambio se publica solo, sin que tengas que tocar el panel.
 
-Ya está hecho el fichero `.mcp.json` de este repositorio, que hace que el
-conector de Hostinger se cargue solo en cada sesión nueva. Faltan dos
-ajustes que solo puedes hacer tú, porque están en tu cuenta.
+No hace falta token de API, ni conector, ni permisos de red.
 
 ---
 
-## 1. Crear un token de API en Hostinger
+## Lo que ya esta hecho
 
-En hPanel, en la sección de tu perfil / cuenta, busca **API**. Genera un
-token nuevo y cópialo: **solo se enseña una vez**.
+La rama **`deploy-web`** del repositorio `JMPica/TopHouseConsulting`
+contiene la web con los ficheros en la raiz, que es como Hostinger los
+espera. Se regenera con `./publicar.sh` y empujarla es, literalmente,
+publicar.
 
-Un aviso importante y honesto: ese token da acceso a **toda la cuenta**,
-no solo a esta web. Con él se pueden gestionar dominios, correo, VPS y
-facturación. Si Hostinger te deja limitar su alcance al crearlo, límitalo.
-Y si algún día quieres cortar el acceso, se revoca desde ese mismo sitio y
-deja de funcionar al instante.
-
-## 2. Configurar el entorno en claude.ai/code
-
-Pulsa el icono de nube que hay encima del cuadro de mensaje, pasa el ratón
-por encima del entorno y dale al engranaje. Cambia dos cosas:
-
-**Network access → Custom.** En "Allowed domains", una por línea:
-
-```
-*.hostinger.com
-```
-
-Deja marcada la casilla de incluir la lista por defecto, o se romperá lo
-que ya funciona (npm, GitHub).
-
-El comodín cubre los tres hosts que hacen falta: `auth.hostinger.com` para
-identificarse, `developers.hostinger.com` para las llamadas, y el servidor
-de subida de ficheros, que va por su cuenta y cuyo nombre todavía no
-conocemos. Si al desplegar aparece un host bloqueado que no encaje en
-`*.hostinger.com`, se añade y listo.
-
-**Environment variables.** Añade esta línea, con tu token:
-
-```
-HOSTINGER_API_TOKEN=el-token-que-acabas-de-copiar
-```
-
-Tiene que ser una variable de entorno, no una "API credential". Las API
-credentials las añade el proxy de Anthropic al salir la petición, así que
-el conector no llegaría a verlas y se pondría a buscar un navegador para
-hacer login, y aquí no hay navegador. Con la variable de entorno se salta
-el login entero.
-
-Contrapartida: el valor de una variable de entorno es visible para
-cualquiera que use ese entorno. Por eso lo de limitar y poder revocar el
-token del punto 1.
-
-## 3. Abrir una sesión nueva
-
-Los cambios de red se aplican al arrancar el contenedor, así que la sesión
-actual no los ve. Abre una sesión nueva sobre este repositorio y di que
-está listo.
+Esa rama NO se toca a mano. El trabajo va siempre en la rama normal,
+dentro de `tophouse/`.
 
 ---
 
-## Qué pasará entonces, sin que tengas que hacer nada
+## Lo que tienes que hacer tu, una sola vez
 
-1. Listar las webs de la cuenta y localizar tophouserealestate.es.
-2. Crearla en el hosting si aún no existe.
-3. Generar la URL de subida.
-4. Subir el zip de la web por el protocolo TUS.
-5. Descomprimirlo en public_html.
-6. Comprobar la web ya publicada y medir cuánto tarda en cargar.
+Aviso: no puedo abrir hostinger.com desde donde trabajo, asi que los
+nombres exactos de los botones pueden variar un poco segun la version del
+panel. La secuencia es la que cuenta.
 
-A partir de ahí, cada cambio es: se toca el código, se despliega, se
-verifica. Sin panel y sin ficheros a mano.
+### 1. Apuntar Hostinger al repositorio
 
-## Lo que sigue necesitando decisión vuestra
+En hPanel, entra en la web y busca el apartado **GIT** (suele estar en
+Avanzado). Ahi:
 
-Esto no lo desbloquea el conector:
+- **Repositorio**: `git@github.com:JMPica/TopHouseConsulting.git`
+- **Rama**: `deploy-web`
+- **Directorio**: dejalo vacio, para que despliegue en `public_html`
+
+Es un repositorio privado, asi que Hostinger te ensenara una **clave SSH
+publica** y te dira que la autorices.
+
+### 2. Autorizar esa clave en GitHub
+
+En `github.com/JMPica/TopHouseConsulting` → **Settings** → **Deploy keys**
+→ **Add deploy key**. Le pones un nombre (`Hostinger`), pegas la clave que
+te dio Hostinger, y **NO marques** "Allow write access": solo necesita
+leer.
+
+Vuelve a hPanel y crea el despliegue. El primer despliegue puede tardar un
+par de minutos: son 11 MB, casi todos del video.
+
+### 3. Que se publique solo en cada cambio
+
+En el mismo apartado GIT de hPanel hay una **URL de despliegue automatico**
+(auto-deployment webhook). Copiala.
+
+En GitHub → **Settings** → **Webhooks** → **Add webhook**:
+
+- **Payload URL**: la que copiaste
+- **Content type**: `application/json`
+- **Which events**: solo el evento push
+
+A partir de ahi, cada vez que yo empuje `deploy-web`, la web se actualiza
+sola.
+
+### 4. El certificado y el dominio
+
+- En el apartado **SSL** del panel, activa el certificado gratuito. Hasta
+  que este, el navegador avisara de que la web no es segura.
+- El `.htaccess` manda todo a **https con www**. Asegurate de que
+  `www.tophouserealestate.es` resuelve. Si el dominio esta registrado en
+  Hostinger, esto se configura solo.
+
+### 5. Comprobar
+
+Abre `https://www.tophouserealestate.es` en el ordenador y **en el movil**:
+
+- que al bajar con la rueda el video de arriba avanza con el scroll
+- que se ven las seis imagenes de mas abajo
+- que la calculadora da un precio y abre WhatsApp
+- que Comprar y Alquilar se abren
+
+Comprar y Alquilar saldran vacias, con el aviso de llamar por telefono,
+hasta que Mobilia envie los inmuebles. Es lo previsto, no un fallo.
+
+---
+
+## Como se publica un cambio a partir de ahora
+
+Yo toco lo que haga falta en `tophouse/`, hago commit, y ejecuto
+`./publicar.sh`. La web se actualiza sola en un minuto. Tu no tienes que
+entrar en el panel.
+
+---
+
+## Lo que sigue necesitando decision vuestra
+
+Nada de esto lo desbloquea la publicacion:
 
 - La **URL del feed de Mobilia** y una respuesta de ejemplo, para terminar
-  el adaptador de la cartera. Hasta entonces Comprar y Alquilar salen
-  vacías, con el aviso de llamar por teléfono.
+  el adaptador de la cartera.
 - Revisar los **49 coeficientes estimados** de la calculadora y el ajuste
-  de oferta. Están documentados en `tophouse/assets/poblacions.js`.
+  de oferta, documentados en `tophouse/assets/poblacions.js`.
 - El **nombre legal** de la empresa para el pie de la web.
+- Las **redirecciones 301** desde tophouseconsulting.com, para no perder el
+  posicionamiento. El `.htaccess` ya recoge las direcciones viejas
+  conocidas; falta apuntar el dominio antiguo aqui.
+
+---
+
+## Apendice: la otra via, por si algun dia la quieres
+
+Existe un conector de Hostinger que permitiria desplegar por su API en vez
+de por GitHub. Esta ya configurado en `.mcp.json` y se carga solo, pero no
+funciona desde aqui: la red de este entorno bloquea `auth.hostinger.com` y
+`developers.hostinger.com` con un 403.
+
+Para habilitarlo harian falta dos cosas en los ajustes del entorno, en
+claude.ai/code: **Network access → Custom** con `*.hostinger.com`, y una
+variable de entorno `HOSTINGER_API_TOKEN` con un token de la cuenta.
+
+Tiene que ser variable de entorno y no "API credential": las API
+credentials las anade el proxy cuando la peticion ya ha salido, asi que el
+conector no las ve y se pone a buscar un navegador para hacer login.
+
+No hace falta para nada de lo de arriba. La via de GitHub es mas simple y
+no expone un token que da acceso a toda la cuenta de Hostinger.
