@@ -538,7 +538,12 @@
       if (zonas[z][0] === zona) { fZona = zonas[z][2]; nomZona = zonas[z][1]; }
     }
 
-    var eur_m2 = P.base
+    /* El ajuste de oferta baja el precio de portal hacia precio de cierre.
+       Sin el, la calculadora valoraria con lo que se pide y no con lo que
+       se firma, que es inflar expectativas. */
+    var ajuste = typeof window.AJUSTE_OFERTA === 'number' ? window.AJUSTE_OFERTA : 1;
+
+    var eur_m2 = P.base * ajuste
                * (PRECIO.base[tipo] || 1)
                * fZona
                * (PRECIO.estado[estado] || 1);
@@ -557,7 +562,7 @@
     return {
       bajo: total * (1 - PRECIO.horquilla),
       alto: total * (1 + PRECIO.horquilla),
-      eur_m2: eur_m2, generica: !!P.generica,
+      eur_m2: eur_m2, generica: !!P.generica, font: P.font || 'estimado',
       tipo: tipo, poble: P.nom, zona: nomZona, estado: estado, m2: m2, extras: extras,
       hab: String(d.get('hab') || '')
     };
@@ -588,6 +593,15 @@
          con dato propio. */
       var aviso = $('#calc-generica');
       if (aviso) aviso.hidden = !r.generica;
+
+      /* Se dice en voz alta si el precio base de esa poblacion es un dato
+         publicado o una estimacion nuestra. Cambia mucho lo que vale. */
+      var fuente = $('#calc-fuente');
+      if (fuente) {
+        fuente.textContent = (r.font === 'publicado' || r.font === 'rango')
+          ? 'Precio base de ' + r.poble + ' tomado de datos publicados de mercado.'
+          : 'El precio base de ' + r.poble + ' es una estimación nuestra, no un dato publicado. Llámenos y se lo afinamos.';
+      }
 
       calcOut.hidden = false;
       var fz = $('#f-zona');
