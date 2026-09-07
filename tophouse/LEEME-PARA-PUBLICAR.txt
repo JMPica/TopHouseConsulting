@@ -11,10 +11,17 @@ Se sube tal cual y funciona.
 
 Contenido de la carpeta:
 
-  index.html          la pagina
+  index.html          la portada
+  comprar.html        la cartera en venta
+  alquilar.html       la cartera en alquiler
+  robots.txt          permite que Google entre
+  sitemap.xml         la lista de paginas para Google
   assets/site.css     los estilos
-  assets/site.js      el comportamiento
-  assets/*.jpg        seis imagenes
+  assets/site.js      el comportamiento de la portada
+  assets/cartera.js   el comportamiento de las dos carteras
+  assets/poblacions.js la tabla de precios por poblacion
+  assets/inmuebles.js  los inmuebles, si no hay feed de Mobilia
+  assets/*.jpg        las imagenes y el logo
   assets/*.mp4        el video de cabecera (7,8 MB)
 
 Peso total: unos 11 MB.
@@ -34,10 +41,9 @@ LA EMPRESA CAMBIA DE NOMBRE Y DE DOMINIO
 Top House Consulting pasa a llamarse Top House Real Estate, y con el cambio
 viene un dominio nuevo. Eso afecta a la publicacion en tres cosas:
 
-  1. En index.html, comprar.html y alquilar.html hay un bloque marcado "AL
-     PUBLICAR" con tres direcciones. Hoy ponen DOMINIO-NUEVO.com, que es un
-     marcador falso puesto a proposito para que nadie lo publique sin darse
-     cuenta. Hay que cambiarlas por el dominio real.
+  1. El dominio ya esta puesto en las tres paginas:
+     www.tophouserealestate.es. No hay nada que tocar salvo que la web se
+     mueva de sitio dentro del dominio.
 
   2. LAS REDIRECCIONES SON LO MAS IMPORTANTE. Todo lo que apunte al dominio
      viejo (Google, tarjetas, portales, firmas de correo, anuncios) tiene que
