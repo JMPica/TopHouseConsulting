@@ -72,6 +72,23 @@ window.POBLACIONS = {
   'tordera':            { nom:'Tordera',              comarca:'El Maresme', base:1742, costa:false, font:'publicado' },  /* el mas barato del Maresme */
   'palafolls':          { nom:'Palafolls',            comarca:'El Maresme', base:2050, costa:false, font:'estimado' },
 
+  /* Los cinco que faltaban para tener la comarca entera. Top House opera
+     en todo el Maresme, asi que la calculadora no puede dejar fuera cinco
+     de sus treinta municipios: quien busque el suyo y no lo encuentre da
+     por hecho que ahi no trabajais.
+
+     Los cinco son estimaciones, no datos publicados, y salen de comparar
+     con sus vecinos inmediatos. Estan marcados como 'estimado', asi que
+     la web lo dice en voz alta al dar el resultado. Tiana es el caro del
+     grupo (pegado a Alella y a Montgat); los cuatro de interior son
+     pueblos pequenos de la Vallalta y el Corredor, mas baratos que la
+     costa que tienen debajo. Revisadlos con vuestros datos. */
+  'tiana':              { nom:'Tiana',                comarca:'El Maresme', base:3800, costa:false, font:'estimado' },
+  'dosrius':            { nom:'Dosrius',              comarca:'El Maresme', base:1900, costa:false, font:'estimado' },
+  'orrius':             { nom:'Òrrius',               comarca:'El Maresme', base:2000, costa:false, font:'estimado' },
+  'sant-cebria':        { nom:'Sant Cebrià de Vallalta', comarca:'El Maresme', base:1900, costa:false, font:'estimado' },
+  'sant-iscle':         { nom:'Sant Iscle de Vallalta',  comarca:'El Maresme', base:1850, costa:false, font:'estimado' },
+
   /* ---- Barcelonès ---- */
   'barcelona':          { nom:'Barcelona',            comarca:'Barcelonès', base:5400, costa:true, font:'publicado',
       zones:[ ['sarria','Sarrià i Sant Gervasi',1.28], ['eixample','Eixample',1.13],

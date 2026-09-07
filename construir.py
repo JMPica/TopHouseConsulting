@@ -103,29 +103,36 @@ def visibles(html_texto):
 
 
 def castellano_suelto(original, traducido, idioma, pagina):
-    """Busca frases de la FUENTE que sigan tal cual en la salida.
+    """Comprueba que CADA frase visible de la fuente tiene entrada propia.
 
-    La comprobacion anterior preguntaba al reves: miraba si quedaban claves
-    de la tabla sin aplicar. Eso no sirve para el caso que de verdad pasa,
-    que es anadir copy nuevo y olvidarse de traducirlo: si la frase no esta
-    en la tabla, no hay clave que buscar, y se publica en castellano sin
-    que nadie se entere. Ya paso: cuatro bandas nuevas del video salieron
-    en castellano en las paginas catalana e inglesa, y el generador dijo
-    que todo estaba bien.
+    Han hecho falta dos intentos para dar con la comprobacion correcta.
 
-    Ahora se mira la fuente: cada frase visible tiene que haberse
-    traducido, o estar declarada en no-traducir.json.
+    La primera version miraba si quedaban claves de la tabla sin aplicar.
+    No servia: si el copy nuevo no esta en la tabla, no hay clave que
+    buscar, y se publica en castellano. Paso con cuatro bandas enteras.
+
+    La segunda miraba si quedaba castellano literal en la salida. Mejor,
+    pero se le colaba la traduccion A MEDIAS: si la frase nueva contiene
+    una palabra que si esta en la tabla, esa palabra se traduce, la frase
+    completa ya no aparece igual que en la fuente, y la comprobacion da el
+    visto bueno a un "Immobiliaria en el Maresme" mitad y mitad.
+
+    Esta version pregunta lo unico que de verdad garantiza el resultado:
+    toda frase que un visitante vaya a leer tiene que tener su propia
+    entrada en la tabla, o estar declarada en no-traducir.json.
     """
     with open(os.path.join(TABLAS, 'no-traducir.json'), encoding='utf-8') as f:
         exentas = set(json.load(f))
+    with open(os.path.join(TABLAS, idioma + '.json'), encoding='utf-8') as f:
+        tabla = json.load(f)
     fallos = []
     for frase in visibles(original):
         if len(frase) < 8 or frase in exentas:
             continue
-        if not re.search(r'[a-záéíóúñü]', frase, re.I):
+        if not re.search(r'[a-zaeiouñu]', frase, re.I):
             continue
-        if frase in traducido:
-            fallos.append('%s/%s: sin traducir -> "%s"' % (idioma, pagina, frase[:66]))
+        if frase not in tabla:
+            fallos.append('%s/%s: sin entrada -> "%s"' % (idioma, pagina, frase[:66]))
     return fallos
 
 
