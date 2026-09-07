@@ -1202,28 +1202,65 @@ body.paused *,body.paused *::before,body.paused *::after{
 /* =========================================================
    El selector de idioma
    =========================================================
-   Tres codigos de dos letras en la barra de arriba. Van con <abbr> y su
-   nombre completo dentro del title, para que un lector de pantalla diga
-   "Catala" y no deletree "ce a". El idioma activo no es un enlace: no
-   tiene sentido enlazar a la pagina en la que ya se esta. */
+   Va DENTRO del grupo de la derecha, junto al telefono y al boton. Como
+   cuarto hijo suelto de la barra quedaba flotando en medio de la nada.
+
+   Y lleva fondo y borde propios por un motivo concreto: arriba del todo
+   la barra es transparente y debajo pasa el video, que en el plano del
+   cielo es casi blanco. Sin este fondo, las tres letras desaparecen.
+
+   Van con <abbr> y el nombre completo en el title, para que un lector de
+   pantalla diga "Catala" y no deletree "ce a". El idioma activo no es un
+   enlace: no tiene sentido enlazar a la pagina en la que ya se esta. */
 .lang{
-  display:flex;align-items:center;gap:.1rem;
-  margin-left:auto;padding-right:.6rem;
+  display:flex;align-items:center;gap:2px;
+  padding:3px;border-radius:2rem;
+  border:1px solid var(--line-strong);
+  background:rgba(7,14,17,.42);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
 }
 .lang a,.lang__on{
-  font-family:var(--m);font-size:.68rem;letter-spacing:.1em;
-  padding:.35rem .45rem;border-radius:.3rem;
-  text-decoration:none;transition:color .2s,background .2s;
+  font-family:var(--m);font-size:.66rem;letter-spacing:.06em;line-height:1;
+  padding:.42rem .55rem;border-radius:2rem;
+  text-decoration:none;white-space:nowrap;
+  transition:color .25s var(--ease),background .25s var(--ease);
 }
-.lang abbr{text-decoration:none;border:0}
+.lang abbr{text-decoration:none;border:0;cursor:inherit}
 .lang a{color:var(--text-secondary)}
-.lang a:hover,.lang a:focus-visible{color:var(--text-primary);background:rgba(158,178,180,.1)}
-.lang__on{color:var(--accent);cursor:default}
+.lang a:hover,.lang a:focus-visible{color:var(--text-primary);background:rgba(158,178,180,.14)}
+.lang__on{color:#0B1417;background:var(--accent);cursor:default}
+.lang a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
-/* En la barra estrecha los enlaces del menu ya se esconden; el selector
-   se queda, porque cambiar de idioma es lo primero que busca quien no
-   entiende la pagina. */
-@media (max-width:900px){
-  .lang{padding-right:.3rem}
-  .lang a,.lang__on{padding:.35rem .3rem;font-size:.64rem}
+/* Cuando la barra se vuelve solida ya hay fondo detras, y el del selector
+   sobra: se queda solo el borde. */
+.nav.solid .lang{background:transparent}
+
+/* En movil manda el boton de llamada a la accion, asi que el selector se
+   aprieta todo lo que puede sin dejar de ser pulsable. */
+@media (max-width:720px){
+  .lang{padding:2px}
+  .lang a,.lang__on{padding:.38rem .4rem;font-size:.6rem;letter-spacing:.02em}
+}
+
+/* En pantallas muy estrechas (un iPhone SE son 320px) la barra se
+   desbordaba: marca, selector, telefono y boton no caben. Medido, faltan
+   unos 48px. Se recuperan apretando el hueco entre grupos y el boton, que
+   es lo que mas ocupa, sin tocar el area pulsable minima. */
+@media (max-width:380px){
+  .nav{gap:10px;padding-left:14px;padding-right:14px}
+  .nav__actions{gap:6px}
+  .nav .btn--solid{padding:.62rem .85rem;font-size:.78rem}
+  .nav__kicker{display:none}
+}
+
+/* El area para tocar, mas grande que el dibujo.
+   Medido en movil: cada codigo ocupaba 25x22px y la recomendacion son
+   44x44. Agrandar el boton lo volveria un mamotreto en una barra donde no
+   sobra sitio, asi que se agranda solo la zona sensible al dedo, con una
+   capa invisible por encima. El selector se sigue viendo pequeno y
+   discreto, pero se acierta a la primera. */
+.lang a{position:relative}
+.lang a::after{
+  content:"";position:absolute;
+  left:-2px;right:-2px;top:-11px;bottom:-11px;
 }

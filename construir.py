@@ -84,6 +84,51 @@ def traducir(texto, tabla):
     return patron.sub(lambda m: equivale[m.group(0)], texto)
 
 
+def visibles(html_texto):
+    """Las frases que un visitante llega a leer: texto entre etiquetas y los
+    atributos que se ven o se oyen."""
+    x = re.sub(r'<(script|style|svg)\b.*?</\1>', '', html_texto, flags=re.S)
+    x = re.sub(r'<!--.*?-->', '', x, flags=re.S)
+    fuera = set()
+    for m in re.finditer(r'>([^<>]+)<', x):
+        s = html.unescape(m.group(1)).strip()
+        if s:
+            fuera.add(s)
+    for atributo in ('alt', 'title', 'placeholder', 'aria-label', 'content'):
+        for m in re.finditer(atributo + r'="([^"]*)"', x):
+            s = html.unescape(m.group(1)).strip()
+            if s and not s.startswith(('http', '/assets', 'width=')):
+                fuera.add(s)
+    return fuera
+
+
+def castellano_suelto(original, traducido, idioma, pagina):
+    """Busca frases de la FUENTE que sigan tal cual en la salida.
+
+    La comprobacion anterior preguntaba al reves: miraba si quedaban claves
+    de la tabla sin aplicar. Eso no sirve para el caso que de verdad pasa,
+    que es anadir copy nuevo y olvidarse de traducirlo: si la frase no esta
+    en la tabla, no hay clave que buscar, y se publica en castellano sin
+    que nadie se entere. Ya paso: cuatro bandas nuevas del video salieron
+    en castellano en las paginas catalana e inglesa, y el generador dijo
+    que todo estaba bien.
+
+    Ahora se mira la fuente: cada frase visible tiene que haberse
+    traducido, o estar declarada en no-traducir.json.
+    """
+    with open(os.path.join(TABLAS, 'no-traducir.json'), encoding='utf-8') as f:
+        exentas = set(json.load(f))
+    fallos = []
+    for frase in visibles(original):
+        if len(frase) < 8 or frase in exentas:
+            continue
+        if not re.search(r'[a-záéíóúñü]', frase, re.I):
+            continue
+        if frase in traducido:
+            fallos.append('%s/%s: sin traducir -> "%s"' % (idioma, pagina, frase[:66]))
+    return fallos
+
+
 def enlaces(texto, idioma):
     for origen, destino in NOMBRES[idioma].items():
         if origen != destino:
@@ -142,6 +187,7 @@ def construir():
             with open(os.path.join(FUENTE, pagina), encoding='utf-8') as f:
                 t = f.read()
 
+            original = t
             t = traducir(t, tabla)
             t = enlaces(t, idioma)
             t = t.replace('<html lang="es">', '<html lang="%s">' % CODIGO[idioma])
@@ -153,14 +199,14 @@ def construir():
             t = re.sub(r'<meta property="og:url" content="[^"]*">',
                        '<meta property="og:url" content="%s">' % canonica(pagina, idioma), t)
             # el selector va justo antes del telefono de la barra
+            # dentro de nav__actions, no suelto en la barra: como cuarto hijo
+            # de un flex con space-between quedaba flotando en medio, sin
+            # nada que lo anclara y encima del cielo del video, ilegible.
             t = t.replace('<div class="nav__actions">',
-                          selector(pagina, idioma) + '\n  <div class="nav__actions">', 1)
+                          '<div class="nav__actions">\n    ' + selector(pagina, idioma), 1)
 
-            # comprobar que no se ha quedado castellano por traducir
             if idioma != 'es':
-                for es in tabla:
-                    if len(es) > 12 and es in t:
-                        problemas.append('%s/%s: sigue en castellano -> "%s"' % (idioma, pagina, es[:60]))
+                problemas += castellano_suelto(original, t, idioma, pagina)
 
             destino = os.path.join(SALIDA, CARPETA[idioma], NOMBRES[idioma][pagina])
             generado[destino] = t
