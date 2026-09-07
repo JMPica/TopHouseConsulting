@@ -28,7 +28,11 @@
 
   --gut:clamp(20px,5vw,72px);
   --maxw:1240px;
-  --lane:min(38vw,520px);
+  /* El hueco central por el que se ve la puerta del video. Las dos
+     mitades de cada titular se apoyan en sus bordes, asi que este
+     numero ES la distancia entre ellas. A 520px la frase se leia como
+     dos rotulos sueltos en vez de como una frase. */
+  --lane:min(30vw,400px);
 }
 
 *,*::before,*::after{box-sizing:border-box}
@@ -356,7 +360,10 @@ a{color:inherit;text-decoration:none}
   font-family:var(--d);
   font-weight:300;
   font-variation-settings:'SOFT' 24,'WONK' 1;
-  font-size:clamp(1.6rem,3.5vw,3.4rem);
+  /* Bajado de 3.5vw/3.4rem: con el anterior, entre 1200 y 1440 una
+     mitad rompia a dos lineas y la otra se quedaba en una, y el
+     titular se leia descuadrado. */
+  font-size:clamp(1.5rem,3vw,3rem);
   line-height:1.05;
   letter-spacing:-.015em;
 }
@@ -370,10 +377,19 @@ a{color:inherit;text-decoration:none}
   color:var(--text-primary);
   line-height:1.5;
 }
-.sub--l{max-width:34ch;margin-right:auto;padding-right:clamp(8px,1.6vw,24px);
-  width:calc(50% - var(--lane)/2);text-align:right;margin-left:0}
-.sub--r{max-width:34ch;margin-left:auto;padding-left:clamp(8px,1.6vw,24px);
-  width:calc(50% - var(--lane)/2);text-align:left}
+/* Los subtitulos se anclan al borde del carril, igual que la mitad del
+   titular que tienen encima.
+
+   Antes se les daba el ancho de la columna Y un max-width de 34ch. Como
+   34ch es mucho mas estrecho que la columna, la caja encogia y el margen
+   automatico la empujaba al extremo de la pantalla: el subtitulo quedaba
+   descolocado respecto a la linea de arriba. Con el margen fijado al
+   carril, cada subtitulo arranca (o termina) exactamente donde lo hace su
+   mitad. */
+.sub--l{max-width:34ch;margin-left:auto;margin-right:calc(50% + var(--lane)/2);
+  padding-right:clamp(8px,1.6vw,24px);text-align:right}
+.sub--r{max-width:34ch;margin-right:auto;margin-left:calc(50% + var(--lane)/2);
+  padding-left:clamp(8px,1.6vw,24px);text-align:left}
 .sub--c{max-width:46ch;margin-left:auto;margin-right:auto;text-align:center}
 
 .ln--center{display:block;text-align:center}

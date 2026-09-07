@@ -29,7 +29,7 @@ LA COMPROBACION QUE IMPORTA
     escribe nada y dice cuales son. Una web medio traducida da peor
     impresion que una que no lo esta.
 """
-import json, os, re, shutil, sys, html
+import hashlib, json, os, re, shutil, sys, html
 
 RAIZ    = os.path.dirname(os.path.abspath(__file__))
 FUENTE  = os.path.join(RAIZ, 'tophouse')
@@ -136,6 +136,40 @@ def castellano_suelto(original, traducido, idioma, pagina):
     return fallos
 
 
+def huellas():
+    """Calcula una huella corta del contenido de cada recurso.
+
+    Sirve para meterla en la URL: /assets/site.css?v=a1b2c3d4. Si el
+    fichero cambia, cambia la huella, cambia la URL, y el navegador se lo
+    baja de nuevo aunque tuviese el viejo guardado.
+
+    Esto existe porque paso de verdad: el .htaccess guarda el html cero
+    segundos y el css un dia, asi que Top House vio el html nuevo con los
+    estilos del dia anterior. El selector de idioma salio como "CAESEN",
+    sin forma ni separacion, porque su navegador aun no tenia las reglas
+    nuevas. Con la huella en la URL eso no puede volver a pasar, y ademas
+    permite cachear los recursos un ano en vez de un dia.
+    """
+    fuera = {}
+    base = os.path.join(FUENTE, 'assets')
+    for raiz, _, ficheros in os.walk(base):
+        for f in ficheros:
+            ruta = os.path.join(raiz, f)
+            rel = '/assets/' + os.path.relpath(ruta, base).replace(os.sep, '/')
+            with open(ruta, 'rb') as fh:
+                fuera[rel] = hashlib.sha1(fh.read()).hexdigest()[:8]
+    return fuera
+
+
+def sellar(texto, sellos):
+    """Anade la huella a cada referencia a un recurso."""
+    def cambia(m):
+        ruta = m.group(1)
+        h = sellos.get(ruta)
+        return '"%s?v=%s"' % (ruta, h) if h else m.group(0)
+    return re.sub(r'"(/assets/[^"?]+)"', cambia, texto)
+
+
 def enlaces(texto, idioma):
     for origen, destino in NOMBRES[idioma].items():
         if origen != destino:
@@ -187,6 +221,7 @@ def canonica(pagina, idioma):
 def construir():
     problemas = []
     generado = {}
+    sellos = huellas()
 
     for idioma in ('ca', 'es', 'en'):
         tabla = cargar_tabla(idioma)
@@ -205,6 +240,8 @@ def construir():
                                                                  cabecera_idiomas(pagina, idioma)), t)
             t = re.sub(r'<meta property="og:url" content="[^"]*">',
                        '<meta property="og:url" content="%s">' % canonica(pagina, idioma), t)
+            t = sellar(t, sellos)
+
             # el selector va justo antes del telefono de la barra
             # dentro de nav__actions, no suelto en la barra: como cuarto hijo
             # de un flex con space-between quedaba flotando en medio, sin

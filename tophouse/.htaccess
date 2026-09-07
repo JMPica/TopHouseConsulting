@@ -81,11 +81,16 @@ ErrorDocument 404 /index.html
 # El video pesa 7,8 MB. Sin esto se lo baja entero cada vez que alguien
 # vuelve a entrar. Con esto se lo baja una vez y ya.
 #
-# Cuidado: si algun dia cambias una imagen o el video y lo subes con el
-# MISMO nombre, quien ya haya entrado seguira viendo el viejo hasta un
-# ano. La solucion es subirlo con otro nombre (hero-scrub-2.mp4) y
-# cambiar el nombre tambien en el html. El .css y el .js estan puestos a
-# un dia justamente para poder retocarlos sin ese problema.
+# El html, el css, el js y las imagenes que salen en el html llevan la
+# huella del fichero en la URL, asi que se pueden cachear un ano sin
+# miedo: al cambiar el fichero cambia la URL.
+#
+# QUEDAN DOS FUERA de ese mecanismo, porque el javascript los pide por su
+# cuenta y no pasan por el generador: el video de cabecera
+# (hero-scrub.mp4) y las tipografias que fonts.css llama por ruta
+# relativa. Si alguna vez cambias uno de esos DOS y lo subes con el mismo
+# nombre, quien ya haya entrado seguira viendo el viejo hasta un ano. La
+# solucion ahi si es subirlo con otro nombre.
 # ---------------------------------------------------------------------
 <IfModule mod_expires.c>
   ExpiresActive On
@@ -97,9 +102,13 @@ ErrorDocument 404 /index.html
   ExpiresByType image/svg+xml      "access plus 1 year"
   ExpiresByType font/woff2         "access plus 1 year"
 
-  ExpiresByType text/css           "access plus 1 day"
-  ExpiresByType text/javascript    "access plus 1 day"
-  ExpiresByType application/javascript "access plus 1 day"
+  # Un ano, no un dia, porque cada referencia lleva la huella del fichero
+  # en la URL (?v=...). Si el fichero cambia, cambia la URL y el navegador
+  # se lo baja de nuevo. Antes estaban a un dia justo para poder retocar,
+  # y aun asi Top House llego a ver el html nuevo con los estilos viejos.
+  ExpiresByType text/css           "access plus 1 year"
+  ExpiresByType text/javascript    "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
 
   ExpiresByType text/html          "access plus 0 seconds"
 </IfModule>
