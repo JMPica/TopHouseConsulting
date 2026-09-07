@@ -1098,3 +1098,9 @@ section{
 body.paused *,body.paused *::before,body.paused *::after{
   animation-play-state:paused!important;
 }
+
+/* El arco del cargador. Vivia en un style= dentro del SVG; se ha traido
+   aqui para que la politica de seguridad pueda prohibir los estilos en
+   linea sin excepciones. El valor lo sigue moviendo site.js a traves de
+   la variable --ld, que es CSSOM y la politica no lo bloquea. */
+.ring__arc{stroke-dashoffset:var(--ld,126)}

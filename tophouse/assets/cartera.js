@@ -122,33 +122,114 @@
     });
   }
 
-  function ficha(i) {
-    var li = document.createElement('li');
-    li.className = 'inm' + (i.destacado ? ' inm--dest' : '');
-    var precio = i.precio ? eur(i.precio) + ' €' + (OPER === 'alquiler' ? '<span class="inm__mes">/mes</span>' : '') : 'A consultar';
-    var datos = [];
-    if (i.m2)    datos.push(i.m2 + ' m²');
-    if (i.hab)   datos.push(i.hab + (i.hab === 1 ? ' habitación' : ' habitaciones'));
-    if (i.banys) datos.push(i.banys + (i.banys === 1 ? ' baño' : ' baños'));
-    var etiquetas = (i.extras || []).map(function (e) {
-      return '<li>' + e + '</li>';
-    }).join('');
+  /* -------------------------------------------------------------------
+     Construir la ficha con nodos, NUNCA pegando cadenas de HTML.
 
-    li.innerHTML =
-      '<div class="inm__foto' + (i.foto ? '' : ' inm__foto--sin') + '">' +
-        (i.foto ? '<img src="' + i.foto + '" alt="" loading="lazy" decoding="async">'
-                : '<span class="mono">Sin foto todavía</span>') +
-        (i.destacado ? '<span class="inm__flag mono">Destacado</span>' : '') +
-      '</div>' +
-      '<div class="inm__cuerpo">' +
-        '<p class="inm__sitio mono">' + (i.poblacio || '') + (i.zona ? ' · ' + i.zona : '') + '</p>' +
-        '<h3 class="inm__t">' + (i.titulo || NOM_TIPO[i.tipo] || 'Inmueble') + '</h3>' +
-        (datos.length ? '<p class="inm__datos">' + datos.join(' · ') + '</p>' : '') +
-        (etiquetas ? '<ul class="inm__tags">' + etiquetas + '</ul>' : '') +
-        '<p class="inm__precio">' + precio + '</p>' +
-        '<a class="btn btn--ghost inm__cta" href="index.html#contacto">Quiero verlo' +
-          (i.ref ? '<span class="sr-only"> (referencia ' + i.ref + ')</span>' : '') + '</a>' +
-      '</div>';
+     Esto no es purismo. Los titulos, poblaciones y etiquetas de cada
+     inmueble los escriben personas a mano en Mobilia. Pegando texto en
+     HTML, un titulo con un simbolo < parte la pagina, y uno escrito con
+     mala idea, o un feed que alguien intercepte, puede meter codigo que
+     se ejecuta en vuestro dominio: cambiar los telefonos de contacto,
+     colocar un formulario falso de reserva con senal por adelantado, o
+     mandar a los visitantes a otra web. En una inmobiliaria eso es una
+     estafa montada sobre vuestra marca.
+
+     Con textContent el navegador trata todo como texto y ese ataque no
+     existe. Si alguien anade campos aqui en el futuro: mismo camino, y
+     no volver a innerHTML.
+     ------------------------------------------------------------------- */
+
+  function nodo(etiqueta, clase, texto) {
+    var n = document.createElement(etiqueta);
+    if (clase) n.className = clase;
+    if (texto !== undefined && texto !== null && texto !== '') n.textContent = texto;
+    return n;
+  }
+
+  /* Una foto solo puede ser http, https o una direccion del propio sitio.
+     Sin esto, un campo con javascript: se convierte en codigo al pinchar,
+     y uno con data: permite incrustar cualquier cosa. */
+  function fotoSegura(valor) {
+    if (!valor) return '';
+    try {
+      var u = new URL(String(valor), document.baseURI);
+      return (u.protocol === 'http:' || u.protocol === 'https:') ? u.href : '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  /* Los numeros del feed llegan como vengan: texto, vacios, o algo raro. */
+  function numero(valor) {
+    var n = Number(valor);
+    return isFinite(n) && n > 0 ? n : 0;
+  }
+
+  function ficha(i) {
+    var li = nodo('li', 'inm' + (i.destacado ? ' inm--dest' : ''));
+
+    /* --- la foto --- */
+    var foto = fotoSegura(i.foto);
+    var caja = nodo('div', 'inm__foto' + (foto ? '' : ' inm__foto--sin'));
+    if (foto) {
+      var img = document.createElement('img');
+      img.src = foto;
+      img.alt = '';
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      /* Una foto caida en Mobilia dejaria el icono de imagen rota en la
+         ficha. Mejor caer al mismo hueco de "sin foto" que ya existe. */
+      img.addEventListener('error', function () {
+        caja.className = 'inm__foto inm__foto--sin';
+        caja.textContent = '';
+        caja.appendChild(nodo('span', 'mono', 'Sin foto todavía'));
+        if (i.destacado) caja.appendChild(nodo('span', 'inm__flag mono', 'Destacado'));
+      });
+      caja.appendChild(img);
+    } else {
+      caja.appendChild(nodo('span', 'mono', 'Sin foto todavía'));
+    }
+    if (i.destacado) caja.appendChild(nodo('span', 'inm__flag mono', 'Destacado'));
+    li.appendChild(caja);
+
+    /* --- el cuerpo --- */
+    var cuerpo = nodo('div', 'inm__cuerpo');
+
+    var sitio = String(i.poblacio || '') + (i.zona ? ' · ' + i.zona : '');
+    cuerpo.appendChild(nodo('p', 'inm__sitio mono', sitio));
+
+    cuerpo.appendChild(nodo('h3', 'inm__t', i.titulo || NOM_TIPO[i.tipo] || 'Inmueble'));
+
+    var datos = [];
+    var m2 = numero(i.m2), hab = numero(i.hab), banys = numero(i.banys);
+    if (m2)    datos.push(m2 + ' m²');
+    if (hab)   datos.push(hab + (hab === 1 ? ' habitación' : ' habitaciones'));
+    if (banys) datos.push(banys + (banys === 1 ? ' baño' : ' baños'));
+    if (datos.length) cuerpo.appendChild(nodo('p', 'inm__datos', datos.join(' · ')));
+
+    var extras = (i.extras || []).filter(Boolean);
+    if (extras.length) {
+      var ul = nodo('ul', 'inm__tags');
+      extras.forEach(function (e) { ul.appendChild(nodo('li', '', String(e))); });
+      cuerpo.appendChild(ul);
+    }
+
+    var pPrecio = nodo('p', 'inm__precio');
+    var precio = numero(i.precio);
+    if (precio) {
+      pPrecio.appendChild(document.createTextNode(eur(precio) + ' €'));
+      if (OPER === 'alquiler') pPrecio.appendChild(nodo('span', 'inm__mes', '/mes'));
+    } else {
+      pPrecio.textContent = 'A consultar';
+    }
+    cuerpo.appendChild(pPrecio);
+
+    var cta = nodo('a', 'btn btn--ghost inm__cta', 'Quiero verlo');
+    cta.href = 'index.html#contacto';
+    if (i.ref) cta.appendChild(nodo('span', 'sr-only', ' (referencia ' + i.ref + ')'));
+    cuerpo.appendChild(cta);
+
+    li.appendChild(cuerpo);
     return li;
   }
 

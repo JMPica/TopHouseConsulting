@@ -140,13 +140,47 @@ ErrorDocument 404 /index.html
 # ---------------------------------------------------------------------
 <IfModule mod_headers.c>
   # no dejar que otras webs metan la nuestra dentro de un marco
-  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set X-Frame-Options "DENY"
 
   # no adivinar el tipo de fichero por el contenido
   Header always set X-Content-Type-Options "nosniff"
 
   # no enviar la direccion completa al salir hacia otra web
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+  # -------------------------------------------------------------------
+  # De donde puede cargar cosas esta web
+  #
+  # Esta es la defensa de fondo. Aunque algun dia se colase texto con
+  # codigo dentro (por ejemplo desde una ficha de Mobilia), el navegador
+  # se negaria a ejecutarlo, porque aqui se dice que los scripts solo
+  # pueden venir de este mismo dominio y nunca escritos dentro del html.
+  #
+  # Linea por linea, y por que:
+  #
+  #   default-src 'self'   por defecto, solo lo nuestro
+  #   script-src  'self'   ningun script escrito dentro del html
+  #   style-src   'self'   ningun estilo escrito dentro del html
+  #   img-src     ademas https: y data:, porque las fotos de los
+  #               inmuebles vendran de Mobilia, que es otro servidor
+  #   media-src   ademas blob:, porque el video de cabecera se descarga
+  #               entero y se le pasa al reproductor como blob. Sin esto
+  #               el video de la portada no se ve
+  #   connect-src ademas https:, porque hay que poder leer el feed
+  #   form-action 'self'   un formulario no puede enviar a otro sitio
+  #   frame-ancestors      nadie puede meter esta web dentro de la suya
+  #   base-uri             nadie puede cambiar la base de las direcciones
+  #   object-src 'none'    ni flash ni objetos incrustados
+  #
+  # SI ALGUN DIA SE ANADE algo de fuera (Google Analytics, un chat, un
+  # mapa, una fuente): hay que anadirlo aqui o NO CARGARA, sin aviso
+  # visible. Se ve en la consola del navegador.
+  # -------------------------------------------------------------------
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https: data:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https:; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"
+
+  # Esta web no usa camara, ni microfono, ni sabe donde esta el visitante.
+  # Decirlo explicitamente evita que se lo pida nada que se cuele.
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
 </IfModule>
 
 # no ensenar la lista de ficheros si alguien entra en /assets/
