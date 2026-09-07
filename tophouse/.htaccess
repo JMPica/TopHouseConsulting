@@ -19,6 +19,20 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
+  # -------------------------------------------------------------------
+  # Lo primero de todo: tapar la carpeta .git
+  #
+  # Hostinger publica esta web clonando el repositorio, asi que dentro de
+  # public_html queda una carpeta .git. Si se puede leer desde fuera,
+  # cualquiera se descarga el repositorio entero con todo su historial
+  # entrando en /.git/. No es teorico: hay robots que rastrean justo eso.
+  #
+  # Va antes que cualquier otra regla para que no haya forma de colarse
+  # por una redireccion. Y de paso quedan tapados los demas ficheros que
+  # empiezan por punto, que nunca son contenido de la web.
+  # -------------------------------------------------------------------
+  RewriteRule (^|/)\.(?!well-known/) - [F,L]
+
   # sin https -> con https
   RewriteCond %{HTTPS} !=on
   RewriteCond %{HTTP:X-Forwarded-Proto} !https
