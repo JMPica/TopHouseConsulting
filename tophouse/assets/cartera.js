@@ -26,22 +26,9 @@
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
 
-  /* El CSS arranca con body{opacity:0} y solo se revela con la clase 'lit',
-     que en la home la pone site.js. Estas paginas no cargan site.js, asi que
-     sin esto se quedan en blanco del todo. */
-  requestAnimationFrame(function () { document.body.classList.add('lit'); });
+  /* Revelar la pagina y la barra de arriba los lleva base.js, que cargan
+     todas las paginas que no son la portada. Aqui solo va la cartera. */
 
-  /* La barra se vuelve solida al bajar, igual que en la home. */
-  var navEl = $('#nav');
-  if (navEl) {
-    var solida = false;
-    var mirarNav = function () {
-      var quiere = window.scrollY > 40;
-      if (quiere !== solida) { solida = quiere; navEl.classList.toggle('solid', quiere); }
-    };
-    mirarNav();
-    window.addEventListener('scroll', mirarNav, { passive: true });
-  }
   /* Se monta por ambito y no con un global: asi pueden convivir la cartera
      de venta y la de alquiler en un mismo documento, que es lo que necesita
      la vista previa de las tres paginas juntas. */

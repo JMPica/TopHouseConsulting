@@ -651,6 +651,16 @@
         (nombre ? $('#f-tel') : $('#f-nombre')).focus();
         return;
       }
+      /* El consentimiento no es un tramite: sin el no hay base legal para
+         tratar sus datos, y ademas sus datos van a salir por WhatsApp, que
+         es de un tercero. Tiene que haberlo leido antes, no despues. */
+      var ok = $('#f-ok');
+      if (ok && !ok.checked) {
+        formErr.textContent = 'Necesitamos que acepte la política de privacidad antes de enviarnos sus datos.';
+        formErr.hidden = false;
+        ok.focus();
+        return;
+      }
       formErr.hidden = true;
 
       var lines = [
