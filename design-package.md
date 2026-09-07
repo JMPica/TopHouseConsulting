@@ -1,4 +1,4 @@
-# Paquete de diseño — Top House Consulting
+# Paquete de diseño — Top House Real Estate
 
 Tier 1. Un solo plano de 6 segundos, recorrido por scroll. Este documento es la entrada de la fase de construcción. Todo el texto de aquí se copia literal a la web.
 
@@ -150,7 +150,7 @@ Estado de éxito: "Recibido. Se abre WhatsApp con tu mensaje ya escrito. Si pref
 Manejo del formulario en una web estática: el envío construye el mensaje completo y abre WhatsApp al 605 27 31 50. No hay servidor, no hay cuenta que crear, y el mensaje llega al teléfono al instante. Al lado, un enlace de correo para quien lo prefiera. Se le dice al visitante exactamente dónde acaba su mensaje.
 
 ### 6.8 El pie
-Top House Consulting · Riera del Bisbe Pol, 56 · 08350 Arenys de Mar (Barcelona) · 605 27 31 50 · WhatsApp · català, castellano, English. Marca real, así que no hay nota de marca ficticia. Las imágenes son de ambiente y ninguna se presenta como un inmueble en cartera.
+Top House Real Estate · Riera del Bisbe Pol, 56 · 08350 Arenys de Mar (Barcelona) · 605 27 31 50 · WhatsApp · català, castellano, English. Marca real, así que no hay nota de marca ficticia. Las imágenes son de ambiente y ninguna se presenta como un inmueble en cartera.
 
 ---
 

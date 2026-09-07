@@ -1,5 +1,5 @@
 =======================================================================
-TOP HOUSE CONSULTING - PAGINA DE VALORACION
+TOP HOUSE REAL ESTATE - PAGINA DE VALORACION
 Instrucciones para publicar
 =======================================================================
 
@@ -22,25 +22,38 @@ Peso total: unos 11 MB.
 
 ORDEN PREVISTO
 --------------
-1. Primero la pagina se publica en una direccion PROVISIONAL, para verla
+1. La pagina se publica primero en una direccion PROVISIONAL, para verla
    funcionando de verdad en movil y en ordenador y dar el visto bueno.
-2. Solo despues, y ya con el visto bueno dado, se decide donde queda
-   definitivamente y se apunta la direccion buena.
+2. Despues se pasa al DOMINIO NUEVO.
 
 Este documento sirve para el paso 2.
 
 
-AVISO IMPORTANTE
-----------------
-La web actual de Top House Consulting (www.tophouseconsulting.com) SIGUE
-FUNCIONANDO y no hay que tocarla. Esta pagina es nueva y va aparte.
+LA EMPRESA CAMBIA DE NOMBRE Y DE DOMINIO
+----------------------------------------
+Top House Consulting pasa a llamarse Top House Real Estate, y con el cambio
+viene un dominio nuevo. Eso afecta a la publicacion en tres cosas:
 
-Decidid antes de subir nada donde tiene que quedar:
+  1. En index.html, comprar.html y alquilar.html hay un bloque marcado "AL
+     PUBLICAR" con tres direcciones. Hoy ponen DOMINIO-NUEVO.com, que es un
+     marcador falso puesto a proposito para que nadie lo publique sin darse
+     cuenta. Hay que cambiarlas por el dominio real.
 
-  a) En un subdominio          valoracion.tophouseconsulting.com
-  b) En una carpeta            www.tophouseconsulting.com/valoracion/
-  c) Sustituyendo la home      (esto SI se come la web actual: no hacerlo
-                                sin haberlo hablado y sin copia de seguridad)
+  2. LAS REDIRECCIONES SON LO MAS IMPORTANTE. Todo lo que apunte al dominio
+     viejo (Google, tarjetas, portales, firmas de correo, anuncios) tiene que
+     llevar al nuevo con una redireccion permanente, la llamada 301. Sin eso
+     se pierde de golpe el posicionamiento que ya teniais, y recuperarlo
+     cuesta meses. Que lo configure quien lleve el hosting, dominio viejo
+     entero hacia el nuevo.
+
+  3. El dominio viejo NO se da de baja. Se mantiene pagado y redirigiendo,
+     al menos un par de anos. Es barato y es la red de seguridad.
+
+Y ojo con una cosa que no es de la web pero se olvida siempre: el nombre
+comercial cambia, pero la razon social y los datos fiscales de la empresa
+pueden seguir siendo los de antes. En el pie de la web debe figurar el
+nombre legal correcto, no solo el comercial. Preguntadlo a vuestra gestoria
+antes de publicar.
 
 
 COMO SE PUBLICA
