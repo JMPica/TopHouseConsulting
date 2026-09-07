@@ -32,9 +32,11 @@
 
 <link rel="icon" type="image/png" href="assets/favicon.png">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500&family=IBM+Plex+Mono:wght@400;500&family=Lato:wght@400;700&family=Manrope:wght@400;500;700&display=swap">
+<!-- Las tipografias se sirven desde este mismo dominio, no desde Google.
+     El motivo esta explicado arriba del todo de assets/fonts.css. -->
+<link rel="preload" href="assets/fonts/fraunces-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/manrope-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/fonts.css">
 <link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
@@ -62,11 +64,11 @@
     <a href="alquilar.html">Alquilar</a>
     <a href="#valorar">Valoración</a>
     <a href="#servicios">Servicios</a>
-    <a href="#valoracion">Contacto</a>
+    <a href="#contacto">Contacto</a>
   </div>
   <div class="nav__actions">
     <a class="btn btn--ghost nav__tel" href="tel:+34605273150">605 27 31 50</a>
-    <a class="btn btn--solid" href="#valoracion">Pedir mi valoración</a>
+    <a class="btn btn--solid" href="#contacto">Pedir mi valoración</a>
   </div>
 </nav>
 
@@ -122,7 +124,7 @@
         </p>
         <p class="sub sub--c" aria-hidden="true">Valoración gratuita en su casa. Sin compromiso y sin ataduras.</p>
         <div class="band__cta" aria-hidden="true">
-          <a class="btn btn--solid btn--lg" href="#valoracion" tabindex="-1">Pedir mi valoración</a>
+          <a class="btn btn--solid btn--lg" href="#contacto" tabindex="-1">Pedir mi valoración</a>
           <a class="btn btn--ghost btn--lg" href="#comprar" tabindex="-1">Ver qué hay en venta</a>
         </div>
       </div>
@@ -143,7 +145,7 @@
     <h2 class="d1">El Maresme, de memoria.</h2>
     <p class="lede">Vendemos en Arenys de Mar casa por casa desde hace más de diez años. Primero sabemos lo que vale su casa. Después le ponemos precio.</p>
     <div class="row">
-      <a class="btn btn--solid btn--lg" href="#valoracion">Pedir mi valoración</a>
+      <a class="btn btn--solid btn--lg" href="#contacto">Pedir mi valoración</a>
       <a class="btn btn--ghost btn--lg" href="#comprar">Ver qué hay en venta</a>
     </div>
   </div>
@@ -164,7 +166,7 @@
         <li>Precio con lo que se ha firmado en su tramo</li>
         <li>Sin coste y sin compromiso</li>
       </ul>
-      <a class="btn btn--solid" href="#valoracion">Pedir mi valoración</a>
+      <a class="btn btn--solid" href="#contacto">Pedir mi valoración</a>
     </article>
 
     <article class="door door--small part" id="comprar">
@@ -341,7 +343,7 @@
       <p class="calc__warn calc__warn--gen" id="calc-generica" hidden>Ha elegido una población sin dato propio en nuestra tabla, así que este número es todavía más grueso: sale de la media de Catalunya. Si nos dice cuál es, se lo afinamos por teléfono.</p>
       <p class="calc__fuente mono" id="calc-fuente"></p>
       <p class="calc__warn">Esto es un cálculo automático a partir de precios de mercado en Arenys. No ve su calle exacta, ni la altura, ni la luz, ni el estado real, y esas cuatro cosas mueven el precio miles de euros. Para saber lo que vale de verdad hay que ir.</p>
-      <a class="btn btn--solid btn--lg calc__cta" id="calc-cta" href="#valoracion">Quiero el precio real, con visita</a>
+      <a class="btn btn--solid btn--lg calc__cta" id="calc-cta" href="#contacto">Quiero el precio real, con visita</a>
     </div>
   </div>
 </section>
@@ -440,7 +442,7 @@
 </section>
 
 <!-- ============ EL CIERRE ============ -->
-<section class="close reveal" id="valoracion" aria-labelledby="close-h">
+<section class="close reveal" id="contacto" aria-labelledby="close-h">
   <div class="close__body">
     <p class="kicker">Valoración gratuita</p>
     <h2 class="d1" id="close-h">Empecemos por saber qué vale.</h2>

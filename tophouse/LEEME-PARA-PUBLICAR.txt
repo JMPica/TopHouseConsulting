@@ -1,5 +1,5 @@
 =======================================================================
-TOP HOUSE REAL ESTATE - PAGINA DE VALORACION
+TOP HOUSE REAL ESTATE - www.tophouserealestate.es
 Instrucciones para publicar
 =======================================================================
 
@@ -16,7 +16,10 @@ Contenido de la carpeta:
   alquilar.html       la cartera en alquiler
   robots.txt          permite que Google entre
   sitemap.xml         la lista de paginas para Google
+  .htaccess           ajustes del servidor (redirecciones, velocidad)
   assets/site.css     los estilos
+  assets/fonts.css    las tipografias
+  assets/fonts/       los ficheros de las tipografias (12)
   assets/site.js      el comportamiento de la portada
   assets/cartera.js   el comportamiento de las dos carteras
   assets/poblacions.js la tabla de precios por poblacion
@@ -26,14 +29,24 @@ Contenido de la carpeta:
 
 Peso total: unos 11 MB.
 
+La web no llama a ningun servidor que no sea el vuestro. Ni Google, ni
+mapas, ni contadores de visitas. Eso importa por tres motivos: si el otro
+servidor se cae la web sigue funcionando, va mas rapida, y no se envian
+datos de los visitantes a terceros, que es lo que complica los avisos de
+cookies y la proteccion de datos. Si algun dia se anade Google Analytics
+o un chat, eso deja de ser cierto y hara falta el aviso de cookies.
+
 
 ORDEN PREVISTO
 --------------
-1. La pagina se publica primero en una direccion PROVISIONAL, para verla
-   funcionando de verdad en movil y en ordenador y dar el visto bueno.
-2. Despues se pasa al DOMINIO NUEVO.
+Se publica directamente en tophouserealestate.es. Ya no hay direccion
+provisional: la web esta terminada y revisada, y el dominio ya viene
+escrito en todos los ficheros.
 
-Este documento sirve para el paso 2.
+Lo unico que quedara pendiente despues de publicar es enchufar Mobilia
+para que las dos carteras se llenen solas. Hasta entonces Comprar y
+Alquilar se veran vacias, con un mensaje explicandolo. Eso esta contado
+en el otro documento, CARTERA-Y-MOBILIA.txt.
 
 
 LA EMPRESA CAMBIA DE NOMBRE Y DE DOMINIO
@@ -55,6 +68,13 @@ viene un dominio nuevo. Eso afecta a la publicacion en tres cosas:
   3. El dominio viejo NO se da de baja. Se mantiene pagado y redirigiendo,
      al menos un par de anos. Es barato y es la red de seguridad.
 
+  4. El .com de Top House Real Estate ya lo tiene otra persona, asi que
+     nos quedamos con el .es. Para una inmobiliaria de Arenys es lo
+     natural: el cliente llega por Google, no tecleando el dominio. Vale
+     la pena registrar tambien el .cat, que casi seguro esta libre, sale
+     barato y para una empresa catalana refuerza. Se aparca redirigiendo
+     al .es y no se toca mas.
+
 Y ojo con una cosa que no es de la web pero se olvida siempre: el nombre
 comercial cambia, pero la razon social y los datos fiscales de la empresa
 pueden seguir siendo los de antes. En el pie de la web debe figurar el
@@ -62,26 +82,72 @@ nombre legal correcto, no solo el comercial. Preguntadlo a vuestra gestoria
 antes de publicar.
 
 
-COMO SE PUBLICA
----------------
-1. Abrir index.html con un editor de texto.
+COMO SE PUBLICA EN HOSTINGER
+----------------------------
+El dominio ya esta escrito en las tres paginas, en robots.txt, en
+sitemap.xml y en .htaccess: www.tophouserealestate.es. Si la web va a la
+raiz del dominio, que es lo previsto, NO hay que tocar ni una linea. Se
+sube y funciona.
 
-2. Buscar arriba del todo el bloque que empieza por "AL PUBLICAR".
-   Cambiar las TRES direcciones que hay justo debajo por la direccion
-   real donde vaya a quedar la pagina. Son las unicas lineas que hay
-   que tocar en todo el proyecto.
+  1. En Hostinger, panel de la web -> Gestor de archivos.
 
-   Si la pagina no va en la home y se deja ahi la direccion de la home,
-   Google entiende que la pagina buena es la otra y esta no sale en las
-   busquedas. Es el unico fallo grave que se puede cometer aqui.
+  2. Entrar en la carpeta public_html. Es la carpeta que el navegador
+     ensena cuando alguien escribe el dominio. Si dentro hay una pagina
+     de bienvenida de Hostinger (suele llamarse index.html o default.php),
+     se borra.
 
-3. Subir por FTP, o por el gestor de ficheros del panel, el CONTENIDO de
-   la carpeta (index.html y la carpeta assets) al directorio que toque.
-   No subir la carpeta que los envuelve, sino lo que hay dentro.
+  3. Subir el fichero tophouserealestate.zip a public_html.
 
-4. Abrir la direccion en el navegador y comprobar dos cosas:
-   - que al bajar con la rueda el video de arriba avanza con el scroll
-   - que se ven las seis imagenes de mas abajo
+  4. Boton derecho encima del zip -> Extraer / Descomprimir.
+
+  5. Borrar el zip, que ya no hace falta.
+
+     Al terminar, dentro de public_html tiene que haber esto y nada mas:
+
+       index.html
+       comprar.html
+       alquilar.html
+       robots.txt
+       sitemap.xml
+       .htaccess
+       assets/          <- una carpeta, con otra dentro llamada fonts
+
+     El fallo tipico es que al descomprimir quede una carpeta dentro de
+     otra: public_html/tophouse/index.html. Asi la web no sale. Los
+     ficheros tienen que estar sueltos dentro de public_html.
+
+  6. El .htaccess empieza por un punto y el gestor de ficheros lo esconde
+     por defecto. Si no aparece en la lista, buscar arriba la opcion de
+     mostrar ficheros ocultos y comprobar que esta. Sin el, la web
+     funciona igual, pero mas lenta y sin las redirecciones.
+
+  7. En el panel, seccion SSL: activar el certificado gratuito. Tarda
+     unos minutos. Hasta que no este, el navegador dira que la web no es
+     segura, y ademas el .htaccess estara mandando a https todo el rato.
+     Es normal durante ese rato.
+
+  8. Abrir https://www.tophouserealestate.es en el movil y en el
+     ordenador y comprobar cuatro cosas:
+       - que al bajar con la rueda el video de arriba avanza con el scroll
+       - que se ven las seis imagenes de mas abajo
+       - que la calculadora de valoracion da un precio y abre WhatsApp
+       - que Comprar y Alquilar se abren (saldran vacias hasta que
+         Mobilia envie los inmuebles: eso esta explicado en el otro
+         documento, CARTERA-Y-MOBILIA.txt)
+
+
+SI LA WEB NO VA EN LA RAIZ DEL DOMINIO
+--------------------------------------
+Solo en ese caso hay que tocar direcciones. Son cuatro sitios:
+
+  index.html    el bloque de arriba que empieza por "Dominio definitivo"
+  robots.txt    la linea Sitemap:
+  sitemap.xml   las tres direcciones
+  .htaccess     el apartado 1
+
+Si se deja ahi la direccion de la home y la pagina esta en otro sitio,
+Google entiende que la pagina buena es la otra y esta no sale en las
+busquedas. Es el unico fallo grave que se puede cometer aqui.
 
 
 COSAS A TENER EN CUENTA
@@ -106,6 +172,13 @@ COSAS A TENER EN CUENTA
   correo ni certificado de nada.
 
 - Se puede servir por HTTPS sin mas. No hay contenido mixto.
+
+- Las letras de la web van dentro de assets/fonts. Si el hosting ofrece
+  "optimizar tipografias" o algo parecido, se deja apagado: ya estan
+  optimizadas y solo se descarga lo que hace falta.
+
+- El video esta en H.264, que es el formato que reproducen todos los
+  navegadores. No hace falta ninguna version alternativa.
 
 
 SI ALGO NO SE VE

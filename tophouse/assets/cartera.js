@@ -146,7 +146,7 @@
         (datos.length ? '<p class="inm__datos">' + datos.join(' · ') + '</p>' : '') +
         (etiquetas ? '<ul class="inm__tags">' + etiquetas + '</ul>' : '') +
         '<p class="inm__precio">' + precio + '</p>' +
-        '<a class="btn btn--ghost inm__cta" href="index.html#valoracion">Quiero verlo' +
+        '<a class="btn btn--ghost inm__cta" href="index.html#contacto">Quiero verlo' +
           (i.ref ? '<span class="sr-only"> (referencia ' + i.ref + ')</span>' : '') + '</a>' +
       '</div>';
     return li;
