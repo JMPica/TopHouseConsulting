@@ -33,9 +33,9 @@
   var navEl    = $('#nav');
   var statichero = $('#statichero');
 
-  var VIDEO_URL   = 'assets/hero-scrub.mp4';
-  var POSTER_URL  = 'assets/hero-poster.jpg';
-  var ENDING_URL  = 'assets/hero-ending.jpg';
+  var VIDEO_URL   = '/assets/hero-scrub.mp4';
+  var POSTER_URL  = '/assets/hero-poster.jpg';
+  var ENDING_URL  = '/assets/hero-ending.jpg';
   var VIDEO_BYTES = 8155401;   /* tamaño real, respaldo cuando falta Content-Length */
 
   /* La variable se consume desde assets/site.css, y ahi una ruta relativa se
@@ -458,7 +458,7 @@
     fecha: 'julio de 2026'
   };
 
-  var NOMBRE_TIPO   = { piso:'Piso', atico:'Ático', bajo:'Planta baja', casa:'Casa o torre' };
+  var NOMBRE_TIPO   = { piso:T('Piso'), atico:T('Ático'), bajo:T('Planta baja'), casa:T('Casa o torre') };
   var NOMBRE_ESTADO = { reformar:'para reformar', bien:'en buen estado', reformado:'reformado' };
   var NOMBRE_EXTRA  = { ascensor:'ascensor', exterior:'terraza o patio', parking:'parking', mar:'vistas al mar' };
 
@@ -584,9 +584,9 @@
 
       $('#calc-range').textContent = eur(r.bajo) + ' a ' + eur(r.alto) + ' €';
       $('#calc-unit').textContent  =
-        'Unos ' + new Intl.NumberFormat('es-ES').format(Math.round(r.eur_m2)) +
+        T('Unos ') + new Intl.NumberFormat('es-ES').format(Math.round(r.eur_m2)) +
         ' €/m² · ' + r.m2 + ' m² · ' + r.poble + (r.zona ? ', ' + r.zona : '') +
-        ' · precios de ' + PRECIO.fecha;
+        T(' · precios de ') + PRECIO.fecha;
 
       /* Si han elegido el comodin, el numero es mucho mas grueso y hay que
          decirlo, no dejar que parezca igual de fino que el de una poblacion
@@ -599,8 +599,8 @@
       var fuente = $('#calc-fuente');
       if (fuente) {
         fuente.textContent = (r.font === 'publicado' || r.font === 'rango')
-          ? 'Precio base de ' + r.poble + ' tomado de datos publicados de mercado.'
-          : 'El precio base de ' + r.poble + ' es una estimación nuestra, no un dato publicado. Llámenos y se lo afinamos.';
+          ? T('Precio base de ') + r.poble + T(' tomado de datos publicados de mercado.')
+          : T('El precio base de ') + r.poble + T(' es una estimación nuestra, no un dato publicado. Llámenos y se lo afinamos.');
       }
 
       calcOut.hidden = false;
@@ -646,7 +646,7 @@
       var tel    = String(d.get('telefono') || '').trim();
 
       if (!nombre || !tel) {
-        formErr.textContent = 'Nos faltan su nombre y un teléfono para poder llamarle.';
+        formErr.textContent = T('Nos faltan su nombre y un teléfono para poder llamarle.');
         formErr.hidden = false;
         (nombre ? $('#f-tel') : $('#f-nombre')).focus();
         return;
@@ -656,7 +656,7 @@
          es de un tercero. Tiene que haberlo leido antes, no despues. */
       var ok = $('#f-ok');
       if (ok && !ok.checked) {
-        formErr.textContent = 'Necesitamos que acepte la política de privacidad antes de enviarnos sus datos.';
+        formErr.textContent = T('Necesitamos que acepte la política de privacidad antes de enviarnos sus datos.');
         formErr.hidden = false;
         ok.focus();
         return;
@@ -664,19 +664,19 @@
       formErr.hidden = true;
 
       var lines = [
-        'Hola, soy ' + nombre + '.',
-        'Teléfono: ' + tel,
-        'Qué necesito: ' + (d.get('necesita') || 'Vender')
+        T('Hola, soy ') + nombre + '.',
+        T('Teléfono: ') + tel,
+        T('Qué necesito: ') + (d.get('necesita') || 'Vender')
       ];
       var zona = String(d.get('zona') || '').trim();
-      if (zona) lines.push('Tramo: ' + zona);
+      if (zona) lines.push(T('Tramo: ') + zona);
 
       /* Si viene de la calculadora, el mensaje lleva ya el inmueble entero,
          para que quien reciba el WhatsApp no tenga que preguntarlo todo. */
       var res = resumenInmueble();
       if (res) {
-        lines.push('Inmueble: ' + res.linea);
-        lines.push('Horquilla que me ha salido en la web: ' + res.horquilla);
+        lines.push(T('Inmueble: ') + res.linea);
+        lines.push(T('Horquilla que me ha salido en la web: ') + res.horquilla);
       }
 
       var msg = String(d.get('mensaje') || '').trim();

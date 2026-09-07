@@ -3,73 +3,71 @@
 # Publicar la web
 # =====================================================================
 #
-# Regenera la rama 'deploy-web' a partir de tophouse/ y la empuja.
-# Hostinger esta escuchando esa rama, asi que empujarla ES publicar.
-#
-# Se usa asi, desde la raiz del repositorio:
-#
 #     ./publicar.sh
 #
-# Antes de tocar esto conviene saber por que existe: Hostinger despliega
-# el contenido de una rama en public_html tal cual, sin subcarpetas. Como
-# la web vive en tophouse/, hace falta una rama donde esos ficheros esten
-# en la raiz. Eso es lo unico que hace este script.
+# Genera los tres idiomas y publica. Hostinger escucha la rama
+# 'deploy-web', asi que empujarla ES publicar.
 #
-# La rama se REESCRIBE entera en cada publicacion. Es deliberado: es una
-# rama generada, no un sitio donde trabajar. Nunca hagas commits a mano
-# en deploy-web, se perderian en la siguiente publicacion. Todo el
-# trabajo va en la rama normal, dentro de tophouse/.
+# COMO ESTA MONTADO
+#   tophouse/   la fuente, en castellano. Aqui se trabaja.
+#   idiomas/    las tablas de traduccion a catalan e ingles.
+#   web/        lo que se publica. LO GENERA EL SCRIPT: no se toca a
+#               mano, porque en la siguiente publicacion se sobrescribe.
+#
+# El script SIEMPRE regenera antes de publicar. Asi no puede ocurrir que
+# se publique un web/ viejo mientras la fuente ya decia otra cosa.
+#
+# La rama deploy-web se reescribe entera en cada publicacion. Es una rama
+# generada, no un sitio donde trabajar: nunca hagas commits en ella.
 # =====================================================================
 set -euo pipefail
 
-ORIGEN=tophouse
+ORIGEN=web
 RAMA=deploy-web
 
 cd "$(dirname "$0")"
 
-# Trabajar con cambios sin guardar publicaria una version que no existe
-# en ninguna parte, imposible de reproducir despues.
-if [ -n "$(git status --porcelain -- "$ORIGEN")" ]; then
-  echo "ERROR: hay cambios sin guardar en $ORIGEN/."
+# Publicar con cambios sin guardar pondria en el dominio una version que
+# no existe en ningun commit y que no habria forma de reproducir despues.
+if [ -n "$(git status --porcelain -- tophouse idiomas construir.py)" ]; then
+  echo "ERROR: hay cambios sin guardar en la fuente."
   echo "Haz commit antes de publicar, o no habra forma de saber que se publico."
-  git status --short -- "$ORIGEN"
+  git status --short -- tophouse idiomas construir.py
   exit 1
 fi
 
-# Ningun fichero a medias sale al dominio. Los huecos que faltan por
-# rellenar se marcan en el html con data-falta, y esta comprobacion existe
-# porque ya publique una vez, sin querer, un aviso legal con nueve huecos
-# en rojo a la vista de cualquiera: el script corta tophouse/ ENTERA, asi
-# que basta con dejarse un fichero dentro para publicarlo.
-# Solo en los .html: en el .css vive el selector que pinta esos huecos
-# de rojo, y ese si tiene que publicarse.
+echo "==> Generando los tres idiomas"
+python3 construir.py
+
+# Ningun fichero a medias sale al dominio. Los huecos pendientes se marcan
+# con data-falta. Esta comprobacion existe porque ya publique una vez, sin
+# querer, un aviso legal con nueve huecos en rojo a la vista de cualquiera.
 PENDIENTES=$(grep -rl --include="*.html" "data-falta" "$ORIGEN" 2>/dev/null || true)
 if [ -n "$PENDIENTES" ]; then
-  echo "ERROR: hay ficheros con huecos sin rellenar dentro de $ORIGEN/."
-  echo "Publicarlos los pondria en el dominio tal cual. Ficheros:"
+  echo "ERROR: hay ficheros con huecos sin rellenar:"
   echo "$PENDIENTES" | sed 's/^/    /'
-  echo
-  echo "Rellena los huecos marcados con data-falta, o saca el fichero de $ORIGEN/."
   exit 1
 fi
 
-echo "==> Cortando $ORIGEN/ a la raiz"
-git branch -D "$RAMA" 2>/dev/null || true
-git subtree split --prefix="$ORIGEN" -b "$RAMA" >/dev/null
-
-echo "==> Comprobando que el corte tiene sentido"
-FICHEROS=$(git ls-tree --name-only "$RAMA")
-for necesario in index.html assets .htaccess; do
-  echo "$FICHEROS" | grep -qx "$necesario" || { echo "ERROR: falta $necesario en la raiz de $RAMA"; exit 1; }
+echo "==> Comprobando que estan las tres portadas y los recursos"
+for necesario in index.html es/index.html en/index.html assets/site.css assets/hero-scrub.mp4 .htaccess; do
+  [ -e "$ORIGEN/$necesario" ] || { echo "ERROR: falta $necesario en $ORIGEN/"; exit 1; }
 done
-echo "$FICHEROS" | sed 's/^/    /'
 
 echo "==> Empujando (esto publica)"
+# web/ esta en .gitignore, asi que no puede ir en un commit normal. En vez
+# de cambiar de rama y arriesgarse a dejar el arbol de trabajo a medias,
+# se construye el commit directamente a partir del contenido de web/ y se
+# empuja. La rama de trabajo no se toca en ningun momento.
+git add -f "$ORIGEN" >/dev/null
+ARBOL=$(git rev-parse "$(git write-tree)":"$ORIGEN")
+git reset -q                                   # dejar el indice como estaba
+COMMIT=$(git commit-tree "$ARBOL" -m "Publicacion $(date -u '+%Y-%m-%d %H:%M') UTC")
+
 for intento in 1 2 3 4; do
-  if git push --force origin "$RAMA:$RAMA"; then break; fi
+  if git push --force origin "$COMMIT:refs/heads/$RAMA"; then break; fi
   espera=$((2 ** intento)); echo "    fallo de red, reintento en ${espera}s"; sleep "$espera"
 done
 
 echo
-echo "Publicado. Si Hostinger tiene el despliegue automatico activado, la web"
-echo "se actualiza sola en un minuto. Si no, hay que darle a Deploy en hPanel."
+echo "Publicado. La web se actualiza sola en un minuto."

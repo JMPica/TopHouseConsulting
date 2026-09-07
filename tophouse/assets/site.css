@@ -1198,3 +1198,32 @@ body.paused *,body.paused *::before,body.paused *::after{
   border-bottom:1px solid var(--line);transition:color .2s,border-color .2s}
 .foot__legal a:hover,.foot__legal a:focus-visible{
   color:var(--text-primary);border-color:var(--line-strong)}
+
+/* =========================================================
+   El selector de idioma
+   =========================================================
+   Tres codigos de dos letras en la barra de arriba. Van con <abbr> y su
+   nombre completo dentro del title, para que un lector de pantalla diga
+   "Catala" y no deletree "ce a". El idioma activo no es un enlace: no
+   tiene sentido enlazar a la pagina en la que ya se esta. */
+.lang{
+  display:flex;align-items:center;gap:.1rem;
+  margin-left:auto;padding-right:.6rem;
+}
+.lang a,.lang__on{
+  font-family:var(--m);font-size:.68rem;letter-spacing:.1em;
+  padding:.35rem .45rem;border-radius:.3rem;
+  text-decoration:none;transition:color .2s,background .2s;
+}
+.lang abbr{text-decoration:none;border:0}
+.lang a{color:var(--text-secondary)}
+.lang a:hover,.lang a:focus-visible{color:var(--text-primary);background:rgba(158,178,180,.1)}
+.lang__on{color:var(--accent);cursor:default}
+
+/* En la barra estrecha los enlaces del menu ya se esconden; el selector
+   se queda, porque cambiar de idioma es lo primero que busca quien no
+   entiende la pagina. */
+@media (max-width:900px){
+  .lang{padding-right:.3rem}
+  .lang a,.lang__on{padding:.35rem .3rem;font-size:.64rem}
+}

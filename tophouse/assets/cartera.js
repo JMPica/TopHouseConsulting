@@ -35,8 +35,8 @@
   var raices = document.querySelectorAll('[data-cartera]');
   if (!raices.length) return;
 
-  var NOM_TIPO = { piso:'Piso', atico:'Ático', casa:'Casa', bajo:'Planta baja',
-                   local:'Local', terreno:'Terreno' };
+  var NOM_TIPO = { piso:T('Piso'), atico:T('Ático'), casa:T('Casa'), bajo:T('Planta baja'),
+                   local:T('Local'), terreno:T('Terreno') };
 
   /* Trae los inmuebles del feed si lo hay, y si no del fichero local. */
   function traerInmuebles() {
@@ -104,7 +104,7 @@
       if (v > tope) return;
       var o = document.createElement('option');
       o.value = String(v);
-      o.textContent = 'Hasta ' + eur(v) + ' €' + (OPER === 'alquiler' ? ' al mes' : '');
+      o.textContent = T('Hasta ') + eur(v) + ' €' + (OPER === 'alquiler' ? T(' al mes') : '');
       fMax.appendChild(o);
     });
   }
@@ -169,14 +169,14 @@
       img.addEventListener('error', function () {
         caja.className = 'inm__foto inm__foto--sin';
         caja.textContent = '';
-        caja.appendChild(nodo('span', 'mono', 'Sin foto todavía'));
-        if (i.destacado) caja.appendChild(nodo('span', 'inm__flag mono', 'Destacado'));
+        caja.appendChild(nodo('span', 'mono', T('Sin foto todavía')));
+        if (i.destacado) caja.appendChild(nodo('span', 'inm__flag mono', T('Destacado')));
       });
       caja.appendChild(img);
     } else {
-      caja.appendChild(nodo('span', 'mono', 'Sin foto todavía'));
+      caja.appendChild(nodo('span', 'mono', T('Sin foto todavía')));
     }
-    if (i.destacado) caja.appendChild(nodo('span', 'inm__flag mono', 'Destacado'));
+    if (i.destacado) caja.appendChild(nodo('span', 'inm__flag mono', T('Destacado')));
     li.appendChild(caja);
 
     /* --- el cuerpo --- */
@@ -185,13 +185,13 @@
     var sitio = String(i.poblacio || '') + (i.zona ? ' · ' + i.zona : '');
     cuerpo.appendChild(nodo('p', 'inm__sitio mono', sitio));
 
-    cuerpo.appendChild(nodo('h3', 'inm__t', i.titulo || NOM_TIPO[i.tipo] || 'Inmueble'));
+    cuerpo.appendChild(nodo('h3', 'inm__t', i.titulo || NOM_TIPO[i.tipo] || T('Inmueble')));
 
     var datos = [];
     var m2 = numero(i.m2), hab = numero(i.hab), banys = numero(i.banys);
     if (m2)    datos.push(m2 + ' m²');
-    if (hab)   datos.push(hab + (hab === 1 ? ' habitación' : ' habitaciones'));
-    if (banys) datos.push(banys + (banys === 1 ? ' baño' : ' baños'));
+    if (hab)   datos.push(hab + (hab === 1 ? T(' habitación') : T(' habitaciones')));
+    if (banys) datos.push(banys + (banys === 1 ? T(' baño') : T(' baños')));
     if (datos.length) cuerpo.appendChild(nodo('p', 'inm__datos', datos.join(' · ')));
 
     var extras = (i.extras || []).filter(Boolean);
@@ -205,15 +205,15 @@
     var precio = numero(i.precio);
     if (precio) {
       pPrecio.appendChild(document.createTextNode(eur(precio) + ' €'));
-      if (OPER === 'alquiler') pPrecio.appendChild(nodo('span', 'inm__mes', '/mes'));
+      if (OPER === 'alquiler') pPrecio.appendChild(nodo('span', 'inm__mes', T('/mes')));
     } else {
-      pPrecio.textContent = 'A consultar';
+      pPrecio.textContent = T('A consultar');
     }
     cuerpo.appendChild(pPrecio);
 
-    var cta = nodo('a', 'btn btn--ghost inm__cta', 'Quiero verlo');
+    var cta = nodo('a', 'btn btn--ghost inm__cta', T('Quiero verlo'));
     cta.href = 'index.html#contacto';
-    if (i.ref) cta.appendChild(nodo('span', 'sr-only', ' (referencia ' + i.ref + ')'));
+    if (i.ref) cta.appendChild(nodo('span', 'sr-only', T(' (referencia ') + i.ref + ')'));
     cuerpo.appendChild(cta);
 
     li.appendChild(cuerpo);
@@ -240,7 +240,7 @@
     grid.hidden = !hayAlguno;
     vacio.hidden = hayAlguno;
     cuenta.textContent = TODOS.length
-      ? lista.length + (lista.length === 1 ? ' inmueble' : ' inmuebles')
+      ? lista.length + (lista.length === 1 ? T(' inmueble') : T(' inmuebles'))
       : '';
     /* Con la cartera entera vacia no tiene sentido enseñar filtros que no
        filtran nada, asi que se esconden y manda el aviso honesto. */
