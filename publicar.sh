@@ -36,6 +36,23 @@ if [ -n "$(git status --porcelain -- "$ORIGEN")" ]; then
   exit 1
 fi
 
+# Ningun fichero a medias sale al dominio. Los huecos que faltan por
+# rellenar se marcan en el html con data-falta, y esta comprobacion existe
+# porque ya publique una vez, sin querer, un aviso legal con nueve huecos
+# en rojo a la vista de cualquiera: el script corta tophouse/ ENTERA, asi
+# que basta con dejarse un fichero dentro para publicarlo.
+# Solo en los .html: en el .css vive el selector que pinta esos huecos
+# de rojo, y ese si tiene que publicarse.
+PENDIENTES=$(grep -rl --include="*.html" "data-falta" "$ORIGEN" 2>/dev/null || true)
+if [ -n "$PENDIENTES" ]; then
+  echo "ERROR: hay ficheros con huecos sin rellenar dentro de $ORIGEN/."
+  echo "Publicarlos los pondria en el dominio tal cual. Ficheros:"
+  echo "$PENDIENTES" | sed 's/^/    /'
+  echo
+  echo "Rellena los huecos marcados con data-falta, o saca el fichero de $ORIGEN/."
+  exit 1
+fi
+
 echo "==> Cortando $ORIGEN/ a la raiz"
 git branch -D "$RAMA" 2>/dev/null || true
 git subtree split --prefix="$ORIGEN" -b "$RAMA" >/dev/null
