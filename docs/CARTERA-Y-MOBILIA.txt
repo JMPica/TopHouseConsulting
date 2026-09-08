@@ -68,3 +68,34 @@ una cartera vieja a una pagina rota. Con la cartera vacia se muestra un
 aviso honesto que empuja al telefono.
 
 =======================================================================
+
+=======================================================================
+PENDIENTE: EL PORCENTAJE DE VENTAS QUE NO LLEGAN A PUBLICARSE
+=======================================================================
+
+La portada dice hoy "la mayoria de las casas que vendemos no llegan a
+publicarse". Eso esta confirmado por Top House y se puede sostener.
+
+Lo que NO se ha publicado es un porcentaje. Se hablo de un 80%, pero esa
+cifra sale de la regla de Pareto, no de vuestros datos. Un porcentaje
+concreto en la web de una inmobiliaria es una afirmacion comercial: si
+alguien la discute hay que poder ensenar de donde sale, y "lo estimamos
+con Pareto" no sirve.
+
+LA BUENA NOTICIA ES QUE EL DATO EXISTE Y ESTA EN MOBILIA. Cada ficha
+sabe cuando se creo, si llego a publicarse y cuando se cerro. El calculo
+es:
+
+    ventas cerradas SIN haber estado publicadas
+    -------------------------------------------  x 100
+    ventas cerradas totales
+
+Conviene acotar el periodo (los ultimos doce meses, por ejemplo) y
+dejarlo escrito junto a la cifra.
+
+Si el numero sale alto y se puede documentar, sustituye a "la mayoria" y
+la seccion gana mucho: un dato concreto convence mas que un adjetivo. Si
+sale mas bajo de lo esperado, se queda "la mayoria", que ya es cierto.
+
+Cuando se conecte el feed, este es el primer numero que vale la pena
+sacar.
