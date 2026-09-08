@@ -190,6 +190,26 @@ ErrorDocument 404 /index.html
   # Esta web no usa camara, ni microfono, ni sabe donde esta el visitante.
   # Decirlo explicitamente evita que se lo pida nada que se cuele.
   Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+
+  # -------------------------------------------------------------------
+  # El html no se guarda en ninguna cache. Nunca.
+  #
+  # Ya habia una regla de Expires a cero segundos, pero no bastaba: este
+  # alojamiento tiene el CDN activado, y muchos CDN se rigen por
+  # Cache-Control y no por Expires. Resultado real: Top House vio la
+  # portada antigua durante horas despues de publicar, con el dibujo que
+  # ya habiamos quitado y los botones sin alinear.
+  #
+  # Los recursos si se guardan un ano, porque llevan la huella del
+  # fichero en la URL. El html es el unico que no puede guardarse: es el
+  # que dice que huella toca.
+  # -------------------------------------------------------------------
+  <FilesMatch "\.html$">
+    Header always set Cache-Control "no-cache, no-store, must-revalidate, max-age=0"
+    Header always set Pragma "no-cache"
+    Header always unset Expires
+    Header always set Expires "0"
+  </FilesMatch>
 </IfModule>
 
 # no ensenar la lista de ficheros si alguien entra en /assets/
