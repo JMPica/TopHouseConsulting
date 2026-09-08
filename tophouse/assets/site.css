@@ -300,6 +300,15 @@ a{color:inherit;text-decoration:none}
   opacity:0;
   text-shadow:var(--tshadow);
 }
+/* Las bandas partidas van sin margen lateral, y no es un descuido.
+
+   La puerta del video esta centrada en la PANTALLA. Si la banda lleva
+   margen lateral, el texto se centra dentro de la caja con margen y no
+   dentro de la pantalla, asi que queda desplazado hacia la puerta: 36px
+   en una pantalla de 1920, medido. Las mitades ya llevan su propio
+   respiro interior, asi que el texto nunca toca el borde. */
+.band--split{padding-inline:0}
+
 .band .btn{text-shadow:none}
 .band__cta{pointer-events:auto}
 
@@ -367,8 +376,17 @@ a{color:inherit;text-decoration:none}
   line-height:1.05;
   letter-spacing:-.015em;
 }
-.half--l{grid-column:1;justify-self:end;text-align:right;padding-right:clamp(8px,1.6vw,24px)}
-.half--r{grid-column:3;justify-self:start;text-align:left;padding-left:clamp(8px,1.6vw,24px)}
+/* Centradas en su lateral, no pegadas al vano.
+
+   Antes iban con justify-self end/start, es decir apoyadas contra el
+   hueco central. En el video ese hueco es la puerta abierta, la zona mas
+   luminosa del plano: el texto quedaba abrazandola y el subtitulo llegaba
+   a meterse dentro, que es justo donde peor se lee.
+
+   Con center, cada mitad se coloca en el medio de su pared, que es la
+   parte oscura del plano. Se lee mejor y respira. */
+.half--l{grid-column:1;justify-self:center;text-align:center;padding-inline:clamp(8px,1.6vw,24px)}
+.half--r{grid-column:3;justify-self:center;text-align:center;padding-inline:clamp(8px,1.6vw,24px)}
 
 .sub{
   position:relative;z-index:1;
@@ -386,10 +404,15 @@ a{color:inherit;text-decoration:none}
    descolocado respecto a la linea de arriba. Con el margen fijado al
    carril, cada subtitulo arranca (o termina) exactamente donde lo hace su
    mitad. */
-.sub--l{max-width:34ch;margin-left:auto;margin-right:calc(50% + var(--lane)/2);
-  padding-right:clamp(8px,1.6vw,24px);text-align:right}
-.sub--r{max-width:34ch;margin-right:auto;margin-left:calc(50% + var(--lane)/2);
-  padding-left:clamp(8px,1.6vw,24px);text-align:left}
+/* Los subtitulos, centrados bajo su mitad.
+
+   El margen se calcula hasta el centro exacto de la pared: la pared mide
+   50% - carril/2, asi que su centro cae en 25% - carril/4 (el de la
+   derecha, en 75% + carril/4). Restando la mitad del ancho maximo del
+   texto, el bloque queda centrado con la linea de arriba. */
+.sub--l,.sub--r{max-width:34ch;text-align:center}
+.sub--l{margin-left:calc(25% - var(--lane)/4 - 17ch);margin-right:auto}
+.sub--r{margin-left:calc(75% + var(--lane)/4 - 17ch);margin-right:auto}
 .sub--c{max-width:46ch;margin-left:auto;margin-right:auto;text-align:center}
 
 .ln--center{display:block;text-align:center}
