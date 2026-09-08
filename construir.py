@@ -136,22 +136,14 @@ def castellano_suelto(original, traducido, idioma, pagina):
     return fallos
 
 
-def huellas():
-    """Calcula una huella corta del contenido de cada recurso.
+def huellas(base):
+    """Huella corta del contenido de cada recurso, para meterla en la URL.
 
-    Sirve para meterla en la URL: /assets/site.css?v=a1b2c3d4. Si el
-    fichero cambia, cambia la huella, cambia la URL, y el navegador se lo
-    baja de nuevo aunque tuviese el viejo guardado.
-
-    Esto existe porque paso de verdad: el .htaccess guarda el html cero
-    segundos y el css un dia, asi que Top House vio el html nuevo con los
-    estilos del dia anterior. El selector de idioma salio como "CAESEN",
-    sin forma ni separacion, porque su navegador aun no tenia las reglas
-    nuevas. Con la huella en la URL eso no puede volver a pasar, y ademas
-    permite cachear los recursos un ano en vez de un dia.
+    Si el fichero cambia, cambia la huella, cambia la URL, y el navegador
+    se lo baja de nuevo aunque tuviese el viejo guardado. Sin esto, Top
+    House llego a ver el html nuevo con los estilos del dia anterior.
     """
     fuera = {}
-    base = os.path.join(FUENTE, 'assets')
     for raiz, _, ficheros in os.walk(base):
         for f in ficheros:
             ruta = os.path.join(raiz, f)
@@ -159,6 +151,47 @@ def huellas():
             with open(ruta, 'rb') as fh:
                 fuera[rel] = hashlib.sha1(fh.read()).hexdigest()[:8]
     return fuera
+
+
+def sellar_recursos(destino):
+    """Sella tambien las direcciones que viven DENTRO del css y del js.
+
+    El html es facil: sus recursos van en atributos y se sellan al
+    generar. Pero el video de cabecera lo pide site.js desde una cadena, y
+    las tipografias las pide fonts.css por ruta relativa. Esos dos se
+    quedaban fuera, y son justo los ficheros pesados: cambiar el video con
+    el mismo nombre habria dejado con el viejo, durante un ano, a quien ya
+    hubiese entrado.
+
+    El orden importa: primero se sellan los .js y .css (lo que cambia su
+    propio contenido), y DESPUES se calculan sus huellas. Al reves, el
+    html apuntaria a una huella que ya no corresponde al fichero.
+    """
+    hojas = huellas(destino)
+
+    for raiz, _, ficheros in os.walk(destino):
+        for f in ficheros:
+            if not f.endswith(('.js', '.css')):
+                continue
+            ruta = os.path.join(raiz, f)
+            with open(ruta, encoding='utf-8') as fh:
+                texto = fh.read()
+
+            def absoluta(m):
+                h = hojas.get(m.group(2))
+                return m.group(0) if not h else "%s%s?v=%s%s" % (m.group(1), m.group(2), h, m.group(3))
+            nuevo = re.sub(r"(['\"])(/assets/[^'\"?]+)(['\"])", absoluta, texto)
+
+            def relativa(m):
+                h = hojas.get('/assets/' + m.group(2))
+                return m.group(0) if not h else "%s%s?v=%s" % (m.group(1), m.group(2), h)
+            nuevo = re.sub(r"(url\(')(fonts/[^')?]+)", relativa, nuevo)
+
+            if nuevo != texto:
+                with open(ruta, 'w', encoding='utf-8') as fh:
+                    fh.write(nuevo)
+
+    return huellas(destino)
 
 
 def sellar(texto, sellos):
@@ -221,7 +254,6 @@ def canonica(pagina, idioma):
 def construir():
     problemas = []
     generado = {}
-    sellos = huellas()
 
     for idioma in ('ca', 'es', 'en'):
         tabla = cargar_tabla(idioma)
@@ -240,8 +272,6 @@ def construir():
                                                                  cabecera_idiomas(pagina, idioma)), t)
             t = re.sub(r'<meta property="og:url" content="[^"]*">',
                        '<meta property="og:url" content="%s">' % canonica(pagina, idioma), t)
-            t = sellar(t, sellos)
-
             # el selector va justo antes del telefono de la barra
             # dentro de nav__actions, no suelto en la barra: como cuarto hijo
             # de un flex con space-between quedaba flotando en medio, sin
@@ -265,13 +295,16 @@ def construir():
 
     if os.path.isdir(SALIDA):
         shutil.rmtree(SALIDA)
+
+    # los recursos van PRIMERO: sellarlos cambia su contenido y por tanto
+    # su huella, y el html tiene que apuntar a la huella definitiva.
+    shutil.copytree(os.path.join(FUENTE, 'assets'), os.path.join(SALIDA, 'assets'))
+    sellos = sellar_recursos(os.path.join(SALIDA, 'assets'))
+
     for destino, contenido in generado.items():
         os.makedirs(os.path.dirname(destino), exist_ok=True)
         with open(destino, 'w', encoding='utf-8') as f:
-            f.write(contenido)
-
-    # los recursos son los mismos para los tres idiomas
-    shutil.copytree(os.path.join(FUENTE, 'assets'), os.path.join(SALIDA, 'assets'))
+            f.write(sellar(contenido, sellos))
     for suelto in ('.htaccess', 'robots.txt'):
         origen = os.path.join(FUENTE, suelto)
         if os.path.exists(origen):
