@@ -153,6 +153,12 @@ window.POBLACIONS = {
 /* La primera linea va a 1,22 y no mas arriba a proposito. Toda la pagina
    defiende que un precio alto se paga en meses, asi que la calculadora no
    puede ser la que infle expectativas: ante la duda, tira a la baja. */
+/* DE AQUI SALE EL "CERCA DE UN 40%" DE LA PORTADA.
+   En un pueblo de costa, del mejor tramo al peor: 1.22 / 0.86 = 1.42, o
+   sea un 42% mas caro arriba que abajo. En Arenys, con base 2871 y el
+   ajuste de oferta, son unos 3293 EUR/m2 en primera linea contra 2321 en
+   las afueras: en 90 metros, unos 87.000 EUR de diferencia.
+   Si estos coeficientes se revisan, hay que revisar tambien esa cifra. */
 window.ZONES_GENERIQUES = {
   costa: [ ['primera-linia','Primera línea de mar',1.22], ['centre','Centro',1.02],
            ['eixample','Ensanche y estación',1.00], ['alta','Zona alta',0.93],
