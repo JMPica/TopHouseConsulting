@@ -589,6 +589,10 @@ section{
 }
 .door{
   position:relative;
+  /* Columna flexible para que el boton pueda irse al fondo. Sin esto el
+     boton va detras del texto, y como cada caja tiene un texto de largo
+     distinto, los tres quedaban a alturas diferentes. */
+  display:flex;flex-direction:column;
   border:1px solid var(--line);
   border-radius:22px;
   padding:clamp(26px,3.4vw,44px);
@@ -613,19 +617,10 @@ section{
 .door--big{display:flex;flex-direction:column;align-items:flex-start}
 .door--small{display:flex;flex-direction:column;align-items:flex-start}
 .door--small p{margin-bottom:1rem}
-.door__gate{
-  width:100%;max-width:230px;height:auto;display:block;
-  margin:.4rem auto 1.6rem;opacity:.5;
-  align-self:center;
-}
-.door__gate path{
-  fill:none;stroke:var(--accent);stroke-width:1;
-  opacity:.55;
-}
-.door__gate path:nth-child(2){opacity:.38}
-.door__gate path:nth-child(3){opacity:.24}
-.door--small:hover .door__gate{opacity:.85}
-.door__gate{transition:opacity .6s var(--ease)}
+/* El boton se pega al fondo de su caja, y como la rejilla estira las tres
+   a la misma altura, los tres botones quedan alineados pase lo que pase
+   con el largo del texto de encima. */
+.door > .btn{margin-top:auto;align-self:start}
 
 .ticks{list-style:none;padding:0;margin:0 0 1.9rem;display:grid;gap:.62rem}
 .ticks li{
