@@ -340,7 +340,12 @@
     Array.prototype.forEach.call(limpiar, function (b) { b.hidden = !filtrando; });
 
     /* Con la cartera entera vacia no tiene sentido enseñar un buscador que
-       no busca nada, asi que se esconde y manda el aviso honesto. */
+       no busca nada, asi que se esconde y manda el aviso honesto.
+
+       El buscador nace escondido en el html y lo destapa esta linea. Al
+       reves parpadeaba: salia con la pagina, y cuando el javascript veia
+       que no habia nada lo volvia a tapar. Un trozo de pagina que aparece
+       y desaparece solo parece averiado aunque no lo este. */
     var cajaFiltros = $('.cart__filtros', raiz);
     if (cajaFiltros) cajaFiltros.hidden = !TODOS.length;
   }
