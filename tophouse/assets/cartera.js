@@ -83,10 +83,19 @@
   var grid   = $('.cart__grid', raiz);
   var vacio  = $('.cart__vacio', raiz);
   var cuenta = $('.cart__cuenta', raiz);
+  var sinres = $('.cart__sinres', raiz);
+  var fRef   = $('.f-ref', raiz);
   var fTipo  = $('.f-tipo', raiz);
   var fPob   = $('.f-pob', raiz);
+  var fHab   = $('.f-hab', raiz);
+  var fMin   = $('.f-min', raiz);
   var fMax   = $('.f-max', raiz);
+  var limpiar = raiz.querySelectorAll('.f-limpiar');
   if (!grid) return;
+
+  /* Los seis mandos, en una lista: casi todo lo que se hace con ellos se
+     hace con los seis a la vez. */
+  var MANDOS = [fRef, fTipo, fPob, fHab, fMin, fMax].filter(Boolean);
 
   var eur = function (n) { return new Intl.NumberFormat('es-ES').format(n); };
 
@@ -110,15 +119,49 @@
       o.value = p; o.textContent = p; fPob.appendChild(o);
     });
     if (!TODOS.length) return;
+
+    /* Habitaciones: se ofrece "2 o mas" y no "exactamente 2", que es como
+       busca la gente de verdad. Solo salen los numeros que existen en la
+       cartera, asi que ninguna opcion devuelve cero. */
+    if (fHab) {
+      var haysHab = {};
+      TODOS.forEach(function (i) { if (i.hab > 0) haysHab[i.hab] = true; });
+      Object.keys(haysHab).map(Number).sort(function (a, b) { return a - b; })
+        .forEach(function (n) {
+          /* El maximo de la cartera como "o mas" solo se cumpliria a si
+             mismo, asi que no aporta nada como minimo: se deja igual
+             porque delimita, y quien pide 5+ quiere ver los de 5. */
+          var o = document.createElement('option');
+          o.value = String(n);
+          o.textContent = n + T(' o más');
+          fHab.appendChild(o);
+        });
+    }
+
+    /* Precio: los escalones se sacan del rango real de la cartera. Uno por
+       encima del inmueble mas caro no lo veria nadie, y uno por debajo del
+       mas barato dejaria fuera la cartera entera. */
     var precios = TODOS.map(function (i) { return i.precio; }).filter(Boolean).sort(function (a, b) { return a - b; });
+    if (!precios.length) return;
+    var suelo = precios[0];
     var tope = precios[precios.length - 1];
-    var pasos = OPER === 'alquiler' ? [800, 1200, 1600, 2200, 3000] : [200000, 300000, 400000, 600000, 900000];
+    var pasos = OPER === 'alquiler' ? [600, 800, 1000, 1200, 1600, 2200, 3000]
+                                    : [150000, 200000, 300000, 400000, 600000, 900000, 1500000];
+    var conMes = function (v) { return eur(v) + ' €' + (OPER === 'alquiler' ? T(' al mes') : ''); };
+
     pasos.forEach(function (v) {
-      if (v > tope) return;
-      var o = document.createElement('option');
-      o.value = String(v);
-      o.textContent = T('Hasta ') + eur(v) + ' €' + (OPER === 'alquiler' ? T(' al mes') : '');
-      fMax.appendChild(o);
+      if (fMin && v > suelo && v < tope) {
+        var a = document.createElement('option');
+        a.value = String(v);
+        a.textContent = T('Desde ') + conMes(v);
+        fMin.appendChild(a);
+      }
+      if (fMax && v >= suelo && v < tope) {
+        var b = document.createElement('option');
+        b.value = String(v);
+        b.textContent = T('Hasta ') + conMes(v);
+        fMax.appendChild(b);
+      }
     });
   }
 
@@ -233,12 +276,41 @@
     return li;
   }
 
+  /* La referencia se compara sin acentos, sin mayusculas y sin guiones ni
+     espacios, y basta con que sea un trozo: quien la apunta a mano casi
+     siempre se queda con el numero, y "101" tiene que encontrar "THR-101".
+     No se intenta adivinar mas alla de eso. Una busqueda lista de mas que
+     empareja referencias parecidas ensena el piso equivocado, y aqui eso
+     acaba en una visita a la direccion que no era. */
+  function llana(v) {
+    var t = String(v == null ? '' : v).toLowerCase();
+    if (t.normalize) t = t.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return t.replace(/[^a-z0-9]/g, '');
+  }
+
+  function valor(mando) { return mando ? mando.value : ''; }
+
+  function hayFiltro() {
+    return MANDOS.some(function (m) { return m.value !== ''; });
+  }
+
   function pintar() {
-    var t = fTipo.value, p = fPob.value, m = parseInt(fMax.value, 10);
+    var r = llana(valor(fRef));
+    var t = valor(fTipo), p = valor(fPob);
+    var h = parseInt(valor(fHab), 10);
+    var min = parseInt(valor(fMin), 10);
+    var max = parseInt(valor(fMax), 10);
+
     var lista = TODOS.filter(function (i) {
+      /* La referencia manda sobre el resto: quien la escribe sabe lo que
+         busca, y seria absurdo esconderle su inmueble porque arrastraba
+         puesto un filtro de poblacion de antes. */
+      if (r) return llana(i.ref).indexOf(r) !== -1;
       if (t && i.tipo !== t) return false;
       if (p && i.poblacio !== p) return false;
-      if (m && i.precio && i.precio > m) return false;
+      if (h && !(i.hab >= h)) return false;
+      if (min && i.precio && i.precio < min) return false;
+      if (max && i.precio && i.precio > max) return false;
       return true;
     });
     lista.sort(function (a, b) {
@@ -250,19 +322,43 @@
     lista.forEach(function (i) { grid.appendChild(ficha(i)); });
 
     var hayAlguno = lista.length > 0;
+    var filtrando = hayFiltro();
     grid.hidden = !hayAlguno;
-    vacio.hidden = hayAlguno;
+
+    /* Tres estados, y no dos. Antes, quedarse sin resultados por culpa de
+       un filtro sacaba el aviso de "aqui no hay nada publicado", que era
+       mentira: haberlo lo habia, pero no de eso. Decirle a alguien que no
+       tienes nada cuando si tienes es la forma mas tonta de perder una
+       llamada. */
+    vacio.hidden  = !(!hayAlguno && !filtrando);
+    if (sinres) sinres.hidden = !(!hayAlguno && filtrando);
+
     cuenta.textContent = TODOS.length
       ? lista.length + (lista.length === 1 ? T(' inmueble') : T(' inmuebles'))
       : '';
-    /* Con la cartera entera vacia no tiene sentido enseñar filtros que no
-       filtran nada, asi que se esconden y manda el aviso honesto. */
+
+    Array.prototype.forEach.call(limpiar, function (b) { b.hidden = !filtrando; });
+
+    /* Con la cartera entera vacia no tiene sentido enseñar un buscador que
+       no busca nada, asi que se esconde y manda el aviso honesto. */
     var cajaFiltros = $('.cart__filtros', raiz);
     if (cajaFiltros) cajaFiltros.hidden = !TODOS.length;
   }
 
   montarFiltros();
-  [fTipo, fPob, fMax].forEach(function (s) { s.addEventListener('change', pintar); });
+  MANDOS.forEach(function (m) {
+    /* En la referencia se filtra mientras se escribe; en los desplegables,
+       al elegir. 'input' vale para los dos, pero 'change' no cubre teclear. */
+    m.addEventListener('input', pintar);
+    m.addEventListener('change', pintar);
+  });
+  Array.prototype.forEach.call(limpiar, function (b) {
+    b.addEventListener('click', function () {
+      MANDOS.forEach(function (m) { m.value = ''; });
+      pintar();
+      if (fRef) fRef.focus();
+    });
+  });
   pintar();
   });
   });

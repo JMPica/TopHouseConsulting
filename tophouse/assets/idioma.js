@@ -51,7 +51,7 @@ window.T = (function () {
       'Horquilla que me ha salido en la web: ':'Forquilla que m’ha sortit al web: ',
 
       /* la cartera */
-      'Hasta ':'Fins a ',
+      'Hasta ':'Fins a ', 'Desde ':'Des de ', ' o más':' o més',
       ' al mes':' al mes',
       'Sin foto todavía':'Encara sense foto',
       'Destacado':'Destacat',
@@ -88,7 +88,7 @@ window.T = (function () {
       'Inmueble: ':'Property: ',
       'Horquilla que me ha salido en la web: ':'Range the website gave me: ',
 
-      'Hasta ':'Up to ',
+      'Hasta ':'Up to ', 'Desde ':'From ', ' o más':' or more',
       ' al mes':' per month',
       'Sin foto todavía':'No photo yet',
       'Destacado':'Featured',

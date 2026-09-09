@@ -75,26 +75,55 @@
 <section class="cart" data-cartera="alquiler" aria-labelledby="cart-h">
   <h2 class="sr-only" id="cart-h">Inmuebles en alquiler</h2>
 
-  <div class="cart__filtros" role="group" aria-label="Filtrar los inmuebles">
-    <div class="cfield">
-      <label><span class="cfield__t">Tipo</span>
-        <select class="f-tipo"><option value="">Todos</option></select>
-      </label>
+  <div class="cart__filtros" role="search" aria-label="Buscar entre los inmuebles">
+    <div class="cart__campos">
+      <div class="cfield">
+        <label><span class="cfield__t">Referencia</span>
+          <input class="f-ref" type="search" autocomplete="off" placeholder="Ref.">
+        </label>
+      </div>
+      <div class="cfield">
+        <label><span class="cfield__t">Tipo</span>
+          <select class="f-tipo"><option value="">Todos</option></select>
+        </label>
+      </div>
+      <div class="cfield">
+        <label><span class="cfield__t">Población</span>
+          <select class="f-pob"><option value="">Todas</option></select>
+        </label>
+      </div>
+      <div class="cfield">
+        <label><span class="cfield__t">Habitaciones</span>
+          <select class="f-hab"><option value="">Las que sean</option></select>
+        </label>
+      </div>
+      <div class="cfield">
+        <label><span class="cfield__t">Precio mínimo</span>
+          <select class="f-min"><option value="">Sin mínimo</option></select>
+        </label>
+      </div>
+      <div class="cfield">
+        <label><span class="cfield__t">Precio máximo</span>
+          <select class="f-max"><option value="">Sin límite</option></select>
+        </label>
+      </div>
     </div>
-    <div class="cfield">
-      <label><span class="cfield__t">Población</span>
-        <select class="f-pob"><option value="">Todas</option></select>
-      </label>
+    <div class="cart__acciones">
+      <p class="cart__cuenta mono" role="status" aria-live="polite"></p>
+      <button type="button" class="f-limpiar" hidden>Quitar los filtros</button>
     </div>
-    <div class="cfield">
-      <label><span class="cfield__t">Precio máximo</span>
-        <select class="f-max"><option value="">Sin límite</option></select>
-      </label>
-    </div>
-    <p class="cart__cuenta mono"  role="status" aria-live="polite"></p>
   </div>
 
   <ul class="cart__grid"></ul>
+
+  <div class="cart__sinres" hidden>
+    <p class="cart__vacio-t">Con estos filtros no queda nada.</p>
+    <p>Ensanche la búsqueda, o díganos directamente qué busca: buena parte de nuestra cartera se cierra antes de llegar a publicarse, y eso no sale en ningún listado.</p>
+    <div class="cart__vacio-btns">
+      <button type="button" class="btn btn--ghost btn--lg f-limpiar">Quitar los filtros</button>
+      <a class="btn btn--solid btn--lg" href="tel:+34605273150">Llamar al 605 27 31 50</a>
+    </div>
+  </div>
 
   <div class="cart__vacio"  hidden>
     <p class="cart__vacio-t">Ahora mismo no hay nada publicado aquí.</p>

@@ -993,10 +993,40 @@ section{
 .cart{padding:0 var(--gut) clamp(60px,9vh,110px)}
 .cart__filtros{
   max-width:var(--maxw);margin:0 auto clamp(22px,3.4vh,38px);
-  display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;
-  gap:clamp(12px,1.8vw,20px);align-items:end;
   padding-bottom:clamp(18px,2.6vh,28px);border-bottom:1px solid var(--line);
 }
+/* Seis campos en fila, como el buscador de toda la vida de una
+   inmobiliaria: la referencia primero, porque quien la trae la trae de
+   otro sitio y quiere ir directo. */
+.cart__campos{
+  display:grid;grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:clamp(12px,1.3vw,18px);align-items:end;
+}
+.cart__acciones{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:1rem;flex-wrap:wrap;margin-top:clamp(14px,2vh,20px);
+}
+.cart__filtros input[type=search]{
+  width:100%;padding:.78rem .9rem;
+  background:var(--panel);color:var(--text-primary);
+  border:1px solid var(--line);border-radius:10px;
+  font-family:var(--m);font-size:1rem;letter-spacing:.04em;
+}
+.cart__filtros input[type=search]::placeholder{color:var(--text-secondary);opacity:.7}
+/* La cruz que pinta el navegador dentro de un campo de busqueda es gris
+   claro y sobre fondo oscuro casi no se ve: se esconde y manda el boton
+   de quitar filtros, que ademas limpia los seis a la vez. */
+.cart__filtros input[type=search]::-webkit-search-cancel-button{display:none}
+/* Solo el de la barra: el que va dentro del aviso lleva .btn--ghost y tiene
+   que seguir pareciendo un boton, al lado del de llamar. */
+.cart__acciones .f-limpiar{
+  background:none;border:0;cursor:pointer;padding:.2rem 0;
+  font-family:var(--m);font-size:.72rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--text-secondary);
+  border-bottom:1px solid var(--line);
+}
+.cart__acciones .f-limpiar:hover,
+.cart__acciones .f-limpiar:focus-visible{color:var(--accent);border-bottom-color:var(--accent)}
 /* La etiqueta envuelve al campo, que los asocia sin necesidad de id y deja
    que varias carteras conviviesen en un mismo documento. */
 .cart__filtros label{display:flex;flex-direction:column;gap:.45rem}
@@ -1005,7 +1035,7 @@ section{
   text-transform:uppercase;color:var(--text-secondary);
 }
 .cart__cuenta{color:var(--text-secondary);font-size:.72rem;letter-spacing:.14em;
-  text-transform:uppercase;margin:0 0 .7rem;justify-self:end}
+  text-transform:uppercase;margin:0}
 
 .cart__grid{
   list-style:none;margin:0 auto;padding:0;max-width:var(--maxw);
@@ -1047,7 +1077,7 @@ section{
 .inm__mes{font-family:var(--b);font-size:.8rem;color:var(--text-secondary)}
 .inm__cta{margin-top:auto;align-self:flex-start}
 
-.cart__vacio{
+.cart__vacio,.cart__sinres{
   max-width:640px;margin:clamp(30px,6vh,70px) auto;text-align:center;
   border:1px solid var(--line);border-radius:20px;
   padding:clamp(28px,4vw,52px);
@@ -1055,7 +1085,7 @@ section{
 }
 .cart__vacio-t{font-family:var(--d);font-size:clamp(1.2rem,2.2vw,1.6rem);
   color:var(--text-primary);margin:0 0 .7rem}
-.cart__vacio p{color:var(--text-secondary);line-height:1.6;margin:0}
+.cart__vacio p,.cart__sinres p{color:var(--text-secondary);line-height:1.6;margin:0}
 .cart__vacio-btns,.cart__cierre-btns{
   display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:1.8rem;
 }
@@ -1064,12 +1094,15 @@ section{
 .cart__cierre-in{max-width:640px;margin:0 auto;text-align:center}
 .cart__cierre-in .lede{margin-top:.8rem}
 
-@media (max-width:900px){
-  .cart__filtros{grid-template-columns:1fr 1fr}
-  .cart__cuenta{grid-column:1 / -1;justify-self:start;margin:0}
+@media (max-width:1180px){
+  .cart__campos{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
-@media (max-width:520px){
-  .cart__filtros{grid-template-columns:1fr}
+@media (max-width:760px){
+  .cart__campos{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:440px){
+  .cart__campos{grid-template-columns:1fr}
+  .cart__acciones{justify-content:flex-start}
 }
 
 /* ---------- Pie ---------- */
