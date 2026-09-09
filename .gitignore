@@ -2,3 +2,4 @@ review/
 *.zip
 node_modules/
 web/
+mobilia-config.php

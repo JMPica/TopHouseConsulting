@@ -11,6 +11,11 @@
    Este fichero se usa mientras no haya feed, y como red de seguridad si el
    feed falla algun dia.
 
+   EL FEED YA ESTA CONECTADO: la linea de abajo apunta a /api/cartera.php,
+   que es el puente que habla con Mobilia desde el servidor. Mientras no
+   exista mobilia-config.php (fuera de public_html) ese puente contesta que
+   no hay datos y la web sigue con lo que haya aqui, sin romperse.
+
    PARA ANADIR UN INMUEBLE, copiad un bloque y cambiad los datos. Los campos:
 
      ref ......... vuestra referencia de Mobilia, la que sale en la ficha
@@ -32,6 +37,8 @@
    cartera se esta cargando y empuja al telefono. Es a proposito: es preferible
    eso a inventar pisos que no existen.
    ========================================================= */
+
+window.CARTERA_FEED = '/api/cartera.php';
 
 window.INMUEBLES = [
 

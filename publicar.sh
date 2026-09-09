@@ -50,7 +50,7 @@ if [ -n "$PENDIENTES" ]; then
 fi
 
 echo "==> Comprobando que estan las tres portadas y los recursos"
-for necesario in index.html es/index.html en/index.html assets/site.css assets/hero-scrub.mp4 .htaccess; do
+for necesario in index.html es/index.html en/index.html assets/site.css assets/hero-scrub.mp4 api/cartera.php .htaccess; do
   [ -e "$ORIGEN/$necesario" ] || { echo "ERROR: falta $necesario en $ORIGEN/"; exit 1; }
 done
 

@@ -305,6 +305,12 @@ def construir():
         os.makedirs(os.path.dirname(destino), exist_ok=True)
         with open(destino, 'w', encoding='utf-8') as f:
             f.write(sellar(contenido, sellos))
+    # el puente con Mobilia: php, no se sella ni se toca, va tal cual y
+    # compartido por los tres idiomas (los datos son los mismos)
+    api = os.path.join(FUENTE, 'api')
+    if os.path.isdir(api):
+        shutil.copytree(api, os.path.join(SALIDA, 'api'))
+
     for suelto in ('.htaccess', 'robots.txt'):
         origen = os.path.join(FUENTE, suelto)
         if os.path.exists(origen):

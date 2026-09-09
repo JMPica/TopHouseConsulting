@@ -10,13 +10,13 @@
 
    Por eso hay dos caminos, y el codigo aguanta los dos:
 
-   1. CON FEED (lo que hay que conseguir). Si existe window.CARTERA_FEED con
-      la direccion del feed de Mobilia, se pide de ahi y siempre esta al dia.
-      Como cada CRM entrega los campos con nombres distintos, la traduccion
-      vive en una sola funcion, CARTERA_ADAPTADOR, abajo del todo de este
-      fichero. Hay que verla contra un feed de verdad antes de darla por buena.
+   1. CON FEED. window.CARTERA_FEED apunta a /api/cartera.php, el puente
+      que habla con Mobilia desde el servidor y devuelve los inmuebles ya
+      traducidos. Mientras ese puente tenga su configuracion, la cartera
+      esta siempre al dia sin tocar nada a mano.
 
-   2. SIN FEED (lo que hay hoy). Se usa lo que haya en inmuebles.js.
+   2. SIN FEED. Si el puente no esta configurado o Mobilia no responde, se
+      usa lo que haya en inmuebles.js.
 
    Si el feed falla, se cae al fichero local sin romper la pagina: mas vale
    una cartera vieja que una pagina rota.
@@ -43,8 +43,20 @@
     var local = window.INMUEBLES || [];
     if (!window.CARTERA_FEED || !window.fetch) return Promise.resolve(local);
 
-    return fetch(window.CARTERA_FEED, { headers: { 'Accept': 'application/json' } })
+    /* Tope de espera. La cartera no se pinta hasta que contesta el feed, asi
+       que un servidor lento dejaria la rejilla en blanco un rato largo. A los
+       4 segundos se corta y se pinta con lo local, que siempre esta a mano. */
+    var corte = null, aborto = null;
+    var opciones = { headers: { 'Accept': 'application/json' } };
+    if (window.AbortController) {
+      aborto = new AbortController();
+      opciones.signal = aborto.signal;
+      corte = setTimeout(function () { aborto.abort(); }, 4000);
+    }
+
+    return fetch(window.CARTERA_FEED, opciones)
       .then(function (res) {
+        if (corte) { clearTimeout(corte); corte = null; }
         if (!res.ok) throw new Error('el feed responde ' + res.status);
         return res.json();
       })
@@ -55,6 +67,7 @@
         return lista;
       })
       .catch(function (e) {
+        if (corte) { clearTimeout(corte); corte = null; }
         /* Nunca se rompe la pagina por esto: se avisa en consola para quien
            lo mantenga y se sigue con lo que haya en local. */
         if (window.console) console.warn('Cartera: no se ha podido leer el feed (' + e.message + '). Se usa inmuebles.js.');
@@ -256,38 +269,13 @@
 })();
 
 /* =========================================================
-   EL TRADUCTOR DEL FEED DE MOBILIA
+   EL TRADUCTOR DEL FEED
 
-   ATENCION: esto NO esta terminado, y a proposito. Cada CRM nombra sus
-   campos a su manera, y escribir esta traduccion adivinando el formato es
-   la forma segura de que salgan precios y metros equivocados.
+   Ya no hace falta aqui. Lo hace /api/cartera.php en el servidor, que es
+   donde tiene que estar por tres razones: el navegador no puede leer el
+   feed de Mobilia (lo impide CORS), las credenciales no deben viajar al
+   visitante, y asi mil visitas no son mil llamadas a Mobilia.
 
-   PARA TERMINARLO hace falta ver UNA respuesta de verdad del feed. Con eso
-   se rellenan las cuatro lineas de abajo y queda hecho.
-
-   Lo que esta web necesita de cada inmueble:
-     ref, operacion ('venta' u 'alquiler'), tipo, titulo, poblacio, zona,
-     precio (numero), m2, hab, banys, extras (lista), foto (direccion)
-
-   Ejemplo de como quedaria si el feed devolviese {propiedades:[...]} con
-   campos en ingles. Cambiad los nombres por los que traiga Mobilia:
-
-     window.CARTERA_ADAPTADOR = function (datos) {
-       return (datos.propiedades || []).map(function (p) {
-         return {
-           ref:       p.reference,
-           operacion: p.operation === 'rent' ? 'alquiler' : 'venta',
-           tipo:      p.type,
-           titulo:    p.title,
-           poblacio:  p.town,
-           zona:      p.area,
-           precio:    Number(p.price) || 0,
-           m2:        Number(p.built_area) || 0,
-           hab:       Number(p.bedrooms) || 0,
-           banys:     Number(p.bathrooms) || 0,
-           extras:    p.features || [],
-           foto:      (p.images && p.images[0]) || ''
-         };
-       });
-     };
+   Esta linea sigue existiendo por si algun dia hace falta retocar los
+   datos ya traducidos antes de pintarlos. Si no se define, no se toca nada.
    ========================================================= */

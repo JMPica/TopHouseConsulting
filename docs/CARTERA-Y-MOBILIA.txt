@@ -1,71 +1,123 @@
 =======================================================================
 DE DONDE SACA LA WEB LOS INMUEBLES
-Que hay que preguntarle a Mobilia
+Lo que falta para que la cartera se llene sola
 =======================================================================
 
-EL PUNTO DE PARTIDA
+COMO ESTA HOY
 
-Mobilia ya empuja cada ficha nueva a la web actual. Lo sensato es que la web
-nueva beba de esa misma fuente. Teclear los inmuebles otra vez a mano seria
-hacer el trabajo dos veces y garantizar que la web nueva se quede vieja.
+El puente con Mobilia YA ESTA HECHO Y PROBADO. Es el fichero api/cartera.php
+de la web. Corre en vuestro alojamiento, le pide los inmuebles a Mobilia, los
+traduce al formato de la web y se los sirve a la pagina.
 
-La web ya esta preparada para ello. Solo falta un dato.
+Que resuelve, para que se entienda por que no se hizo de la forma corta:
+
+  - El navegador de un visitante no puede leer datos de otro dominio salvo
+    que ese dominio de permiso (CORS), y los feeds de los CRM no lo dan
+    porque estan pensados para portales, no para navegadores. El puente
+    esquiva eso porque no es un navegador: es vuestro propio servidor.
+  - Si la llamada a Mobilia lleva usuario, clave o token, se queda en el
+    servidor. No viaja al visitante.
+  - Guarda el resultado un rato, asi que mil visitas no son mil llamadas.
+  - Si Mobilia falla o tarda, sirve la ultima copia buena. Y si no la hay,
+    la web se cae al fichero local sin romperse.
+
+Falta una sola cosa: la direccion del feed.
 
 
-LO QUE HAY QUE PREGUNTAR
+LO QUE HAY QUE PEDIRLE A MOBILIA
 
 A quien lleve Mobilia, o a su soporte, literalmente esto:
 
-  "¿Nos podeis dar la direccion del feed de nuestros inmuebles, y en que
-   formato lo servis, XML o JSON?"
+  "Necesitamos la direccion (URL) del feed de nuestros inmuebles para
+   nuestra propia web. El mismo que usais para publicar en Idealista,
+   Fotocasa o Habitaclia nos vale. Si lleva usuario y clave o un token,
+   pasadnoslo tambien."
 
-Casi con seguridad existe, porque es como Mobilia publica en Idealista,
-Fotocasa o Habitaclia. Suele llamarse feed, export, XML de portales o
-sindicacion, y es una direccion de internet que devuelve todos los
-inmuebles.
+Casi con seguridad existe: es como Mobilia publica en los portales. Suele
+llamarse feed, export, XML de portales o sindicacion.
 
-Preguntad tambien:
-
-  "¿Ese feed se puede leer desde un navegador en otro dominio?"
-   (en terminos tecnicos: si permite CORS)
-
-Esa segunda respuesta decide cual de los tres caminos de abajo se usa.
+YA NO HACE FALTA preguntar por CORS ni por el formato. El puente aguanta
+JSON y XML, y el permiso de dominio deja de importar.
 
 
-LOS TRES CAMINOS
+COMO SE INSTALA, UNA VEZ TENGAIS LA DIRECCION
 
-  A. EL FEED SE PUEDE LEER DESDE EL NAVEGADOR
-     El mejor caso. Se pone la direccion en una linea y la web queda siempre
-     al dia sola. Cuando creeis una ficha en Mobilia, aparece.
+Se crea UN fichero en el alojamiento, FUERA de public_html. Va fuera a
+proposito: asi ninguna publicacion lo pisa y no acaba nunca en el
+repositorio, que es donde las claves no deben estar.
 
-  B. EL FEED EXISTE PERO NO DEJA LEERLO DESDE OTRO DOMINIO
-     Es lo mas habitual, porque esos feeds estan pensados para portales, no
-     para navegadores. Se resuelve con un fichero pequeño en vuestro propio
-     alojamiento que hace de puente. Son unas pocas lineas y lo puede dejar
-     puesto quien lleve el hosting.
+  Ruta:  /home/<vuestro usuario>/mobilia-config.php
 
-  C. NO HAY FEED
-     Entonces se rellena a mano en assets/inmuebles.js, que ya lleva las
-     instrucciones dentro. Es el unico caso en el que hay trabajo repetido.
+  Contenido:
+
+      <?php
+      return array(
+        'url'       => 'https://...',   // la direccion que os den
+        'cabeceras' => array(),         // si hay token:
+                                        // array('Authorization: Bearer xxx')
+        'minutos'   => 15,              // cada cuanto se refresca
+        'operacion' => '',              // 'venta' o 'alquiler' SOLO si el
+                                        // feed es de un tipo y no lo dice
+        'campos'    => array(),         // normalmente vacio
+        'clave'     => '...',           // secreto del diagnostico, 16 caracteres
+                                        // o mas (si es mas corta, se apaga)
+      );
+
+Con eso puesto, la cartera se llena sola y se mantiene al dia sin tocar nada.
 
 
-CUANDO TENGAIS LA RESPUESTA
+SI LA CARTERA SIGUE VACIA
 
-Hace falta ver UNA respuesta de verdad del feed, aunque sea de un solo
-inmueble, para saber como llama Mobilia a cada campo. Sin eso, la traduccion
-de campos se escribiria adivinando, y eso acaba en precios y metros
-equivocados en la web.
+No hay que adivinar: la web lo dice. Se abre en el navegador
 
-Con esa muestra delante se rellena la funcion CARTERA_ADAPTADOR, que esta al
-final de assets/cartera.js y ya lleva un ejemplo comentado.
+    https://www.tophouserealestate.es/api/cartera.php?diagnostico=CLAVE
+
+(la CLAVE es la que hayais puesto en el fichero de arriba) y devuelve, en
+claro: cuantos inmuebles ha traido Mobilia, cuantos se han publicado,
+cuales se han descartado y por que, con que campo se ha emparejado cada
+dato, y que campos han llegado sin usar.
+
+Esa respuesta, pegada tal cual, es todo lo que hace falta para cerrarlo.
+
+Los datos personales van tapados en esa respuesta: si Mobilia manda el
+telefono, el correo, el NIF o la direccion exacta del propietario, sale el
+nombre del campo pero no su contenido. Para emparejar campos no hace falta
+saber de quien es el piso, y esa informacion no tiene por que salir de
+Mobilia. La clave tiene que tener 16 caracteres o mas; con una mas corta el
+diagnostico se apaga solo.
+
+
+POR QUE DESCARTA INMUEBLES EN VEZ DE PUBLICARLOS A MEDIAS
+
+El traductor empareja los campos POR NOMBRE contra una lista de nombres
+conocidos (precio, price, preu, pvp, importe, precio_alquiler...). Si un
+campo no lo reconoce, NO se lo inventa ni tira del que tenga al lado. Un
+inmueble sin precio reconocible, o sin saber si es venta o alquiler, no
+sale y se cuenta en el diagnostico.
+
+Es deliberado. Una ficha que falta se nota y se arregla. Una ficha con el
+precio de venta puesto como alquiler mensual no se nota, la ve un cliente y
+es un problema de verdad.
+
+Por lo mismo, en alquiler se busca primero el campo de precio de alquiler y
+solo despues el generico: publicar un alquiler a 420.000 al mes seria el
+peor error posible de esta web.
+
+
+UNA COMPROBACION PARA EL HOSTING
+
+api/cartera.php es PHP. El plan de Hostinger lo ejecuta, pero conviene
+confirmarlo la primera vez: si al abrir la direccion de arriba el navegador
+DESCARGA un fichero en vez de mostrar texto, es que el PHP no se esta
+ejecutando y hay que activarlo en el panel.
 
 
 QUE PASA MIENTRAS TANTO
 
-La web funciona igual. Si no hay feed configurado usa el fichero local, y si
-el feed falla algun dia se cae al fichero local sin romperse: es preferible
-una cartera vieja a una pagina rota. Con la cartera vacia se muestra un
-aviso honesto que empuja al telefono.
+La web funciona igual. Sin configuracion, el puente contesta que no hay
+datos y la cartera usa assets/inmuebles.js, que lleva las instrucciones
+dentro para meter fichas a mano. Con la cartera vacia sale un aviso honesto
+que empuja al telefono.
 
 =======================================================================
 
