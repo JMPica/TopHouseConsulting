@@ -365,11 +365,24 @@
      ========================================================= */
 
   var navSolid = false;
+  var navFosc = null;
+  var heroEl = $('.hero');
   function navCheck() {
     var want = window.scrollY > (window.innerHeight * 0.6);
     if (want !== navSolid) {
       navSolid = want;
       navEl.classList.toggle('solid', want);
+    }
+    /* La barra va en claro mientras el video la tape y en tinta en cuanto
+       sale al marfil. Se mira contra el borde de abajo del heroe y no
+       contra una altura fija: el heroe mide 760vh y esa cuenta cambia con
+       cada pantalla. */
+    if (heroEl) {
+      var oscura = heroEl.getBoundingClientRect().bottom > navEl.offsetHeight;
+      if (oscura !== navFosc) {
+        navFosc = oscura;
+        navEl.classList.toggle('nav--fosc', oscura);
+      }
     }
   }
   navCheck();
