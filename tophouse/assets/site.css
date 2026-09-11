@@ -368,12 +368,12 @@ a{color:inherit;text-decoration:none}
   background:
     /* los dos lados, que es donde se apoya el texto */
     linear-gradient(90deg,
-      rgba(245,240,230,.46) 0%,
-      rgba(245,240,230,.30) 22%,
+      rgba(245,240,230,.56) 0%,
+      rgba(245,240,230,.44) 24%,
       rgba(245,240,230,0)   40%,
       rgba(245,240,230,0)   60%,
-      rgba(245,240,230,.30) 78%,
-      rgba(245,240,230,.46) 100%),
+      rgba(245,240,230,.44) 76%,
+      rgba(245,240,230,.56) 100%),
     /* y un roce arriba y abajo, para que el plano no corte a hueso */
     linear-gradient(180deg,
       rgba(245,240,230,.55) 0%,
@@ -439,59 +439,22 @@ a{color:inherit;text-decoration:none}
    el velo derecho caia sobre las propias letras y las apagaba, mientras el
    izquierdo (::before) si quedaba detras. De ahi que la mitad derecha se
    viera mucho mas floja que la izquierda. */
-.band--split::before,.band--split::after{
-  content:"";position:absolute;top:-6%;bottom:-6%;pointer-events:none;z-index:0;
-  opacity:calc(.84 + .16*var(--k,1));
-}
-/* Velos asimetricos, y ahora de MARFIL, no de sombra.
+/* Sin bolsas detras del texto.
 
-   Antes eran dos bolsas de negro: oscurecian la pared para que el texto
-   blanco se leyera. Funcionaba, pero eran justo las dos manchas oscuras
-   que hacian que el plano pareciera una isla nocturna dentro de una web
-   de dia. Medido: las paredes del video estan en medio tono (luminancia
-   0.13 a 0.43), y ahi NO se lee ni el blanco (2.20 en la pared mas clara)
-   ni la tinta (2.52 en la mas oscura). Habia que mover la pared a un lado
-   u otro; se mueve hacia la luz, que es la que va con el resto.
+   Cuando el plano paso de noche a dia convirti estos velos uno a uno: de
+   sombra a marfil, misma fuerza. Fue un error de metodo. Con texto de
+   tinta hacen falta muchisimos menos, y no volvi a echar la cuenta.
 
-   Siguen siendo asimetricos porque la pared derecha del plano es mas
-   clara que la izquierda, y cada lado necesita distinto empujon para que
-   las dos mitades de la frase pesen igual. Cada uno se apaga en su borde
-   interior, de modo que el carril del arco queda intacto. */
-.band--split::before{
-  left:-8%;right:calc(50% + var(--lane)/2 - 6%);
-  background:radial-gradient(ellipse 48% 62% at 56% 50%,
-    rgba(248,244,236,.78) 0%,rgba(248,244,236,.60) 50%,rgba(248,244,236,0) 96%);
-}
-.band--split::after{
-  right:-8%;left:calc(50% + var(--lane)/2 - 6%);
-  background:radial-gradient(ellipse 46% 82% at 44% 50%,
-    rgba(248,244,236,.80) 0%,rgba(248,244,236,.72) 34%,
-    rgba(248,244,236,.56) 58%,rgba(248,244,236,.28) 80%,rgba(248,244,236,0) 100%);
-}
+   La cuenta, ahora: las paredes del plano van de 0.133 a 0.427 de
+   luminancia. El titular es tinta y necesita que su fondo llegue a 0.163
+   para el minimo de 3:1; el subtitulo, mas pequeno, a 0.269 para el de
+   4.5:1. Desde 0.133 eso es un velo de 0.27, no de 0.93. Lo que habia
+   era tres veces y media lo necesario, y por eso se veia el velo en vez
+   de verse la pared.
 
-/* La banda 3 cruza el plano del cristal, donde la luz revienta. Ahi el
-   marfil casi no cambia nada, porque la pared ya esta casi en marfil: es
-   justo el sitio donde este planteamiento trabaja menos y mejor. */
-.band--bloom::before{
-  background:radial-gradient(ellipse 48% 60% at 56% 50%,
-    rgba(248,244,236,.88) 0%,rgba(248,244,236,.70) 48%,
-    rgba(248,244,236,.40) 74%,rgba(248,244,236,0) 96%);
-}
-.band--bloom::after{
-  background:radial-gradient(ellipse 44% 78% at 44% 50%,
-    rgba(248,244,236,.92) 0%,rgba(248,244,236,.86) 34%,
-    rgba(248,244,236,.68) 60%,rgba(248,244,236,.34) 82%,rgba(248,244,236,0) 100%);
-}
-
-/* velo único superior para el posado */
-.band--center::before{
-  content:"";position:absolute;inset:-4%;pointer-events:none;z-index:0;
-  opacity:calc(.86 + .14*var(--k,1));
-  background:radial-gradient(ellipse 86% 72% at 50% 46%,
-    rgba(248,244,236,.74) 0%,rgba(248,244,236,.60) 44%,
-    rgba(248,244,236,.34) 68%,rgba(248,244,236,0) 92%);
-}
-
+   Asi que las bolsas desaparecen y queda un solo lavado parejo en los
+   laterales, dentro del velo general. Un lavado parejo no se lee como un
+   velo: se lee como que la pared es clara. */
 .ln{
   position:relative;z-index:1;
   display:grid;
@@ -569,6 +532,15 @@ a{color:inherit;text-decoration:none}
 .cline--2{color:var(--accent-ink)}
 
 .band--center{justify-items:center;text-align:center}
+/* La tercera banda es la unica que conserva velo propio: cae sobre el
+   vano, que es lo unico del plano que el lavado lateral no toca, y ahi
+   el fondo pasa de sol a mar en muy poco espacio. */
+.band--center::before{
+  content:"";position:absolute;inset:-4%;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 90% 60% at 50% 48%,
+    rgba(248,244,236,.72) 0%,rgba(248,244,236,.66) 62%,
+    rgba(248,244,236,.30) 86%,rgba(248,244,236,0) 100%);
+}
 .band__cta{position:relative;z-index:1;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:2rem}
 
 /* ---------- Partido en palabras y letras ---------- */
@@ -683,9 +655,7 @@ a{color:inherit;text-decoration:none}
      escritorio, una por pared. Aqui no hay paredes y se solapan las dos
      encima del texto, que es de donde salia buena parte del velo. Se
      bajan y manda el velo general de arriba. */
-  .band--split::before,.band--split::after,
-  .band--bloom::before,.band--bloom::after{opacity:calc(.40 + .10*var(--k,1))}
-  .band--center::before{opacity:calc(.46 + .10*var(--k,1))}
+  .band--center::before{opacity:.55}
   .ln{
     grid-template-columns:1fr;
     justify-items:center;text-align:center;
