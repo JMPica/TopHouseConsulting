@@ -54,14 +54,22 @@
   # Si aparecen mas direcciones viejas en Google Search Console, se
   # anaden aqui con el mismo formato.
   # -------------------------------------------------------------------
-  RewriteRule ^es/venta/?$        /comprar.html   [R=301,L]
-  RewriteRule ^es/alquiler/?$     /alquilar.html  [R=301,L]
-  RewriteRule ^es/alquileres/?$   /alquilar.html  [R=301,L]
-  RewriteRule ^es/servicios/?$    /#servicios     [R=301,NE,L]
-  RewriteRule ^es/contacto/?$     /#contacto      [R=301,NE,L]
-  RewriteRule ^es/?$              /               [R=301,L]
-  RewriteRule ^ca/?$              /               [R=301,L]
-  RewriteRule ^en/?$              /               [R=301,L]
+  # CUIDADO AL TOCAR ESTO. /es/ y /en/ NO son direcciones viejas: son las
+  # versiones castellana e inglesa de esta web. Habia aqui tres reglas
+  # que las mandaban a la portada, heredadas de cuando la web era solo
+  # castellana y vivia entera en la raiz. Resultado: el selector de
+  # idioma llevaba a /es/, /es/ redirigia a /, y el visitante volvia al
+  # catalan. El selector estaba bien; lo roto era esto.
+  #
+  # Las direcciones viejas que si hay que recoger eran todas en
+  # castellano, asi que van a la version castellana, no a la portada.
+  RewriteRule ^es/venta/?$        /es/comprar.html   [R=301,L]
+  RewriteRule ^es/alquiler/?$     /es/alquilar.html  [R=301,L]
+  RewriteRule ^es/alquileres/?$   /es/alquilar.html  [R=301,L]
+  RewriteRule ^es/servicios/?$    /es/#servicios     [R=301,NE,L]
+  RewriteRule ^es/contacto/?$     /es/#contacto      [R=301,NE,L]
+  # /ca/ si es una direccion vieja: el catalan vive en la raiz.
+  RewriteRule ^ca/?$              /                  [R=301,L]
 </IfModule>
 
 
