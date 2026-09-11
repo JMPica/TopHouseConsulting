@@ -429,7 +429,7 @@ a{color:inherit;text-decoration:none}
    dentro de la pantalla, asi que queda desplazado hacia la puerta: 36px
    en una pantalla de 1920, medido. Las mitades ya llevan su propio
    respiro interior, asi que el texto nunca toca el borde. */
-.band--split{padding-inline:0}
+.band--split{padding-inline:var(--gut)}
 
 .band .btn{text-shadow:none}
 .band__cta{pointer-events:auto}
@@ -517,8 +517,22 @@ a{color:inherit;text-decoration:none}
 
    Con center, cada mitad se coloca en el medio de su pared, que es la
    parte oscura del plano. Se lee mejor y respira. */
-.half--l{grid-column:1;justify-self:center;text-align:center;padding-inline:clamp(8px,1.6vw,24px)}
-.half--r{grid-column:3;justify-self:center;text-align:center;padding-inline:clamp(8px,1.6vw,24px)}
+/* Ancladas al mismo margen que todo lo demas, y en espejo.
+
+   Antes iban centradas en su pared. Cada mitad tiene un ancho distinto,
+   asi que centrada cada una caia donde caia: la de la izquierda
+   empezaba en 65px y el logo de la barra en 72, y ninguno de los cuatro
+   bordes coincidia con nada. El ojo no sabe leer eso como una decision,
+   y lo lee como ruido: fue lo que hizo notar que la ultima letra
+   quedaba justo encima de un montante de la pared.
+
+   Ahora la mitad izquierda empieza EXACTAMENTE donde empieza el logo, y
+   la derecha acaba donde acaba el boton de valoracion. Cualquier
+   coincidencia con una linea del plano se lee entonces como parte de la
+   composicion y no como un descuadre, porque el texto esta claramente
+   sujeto al marco de la pagina. */
+.half--l{grid-column:1;justify-self:start;text-align:left;padding-inline:0}
+.half--r{grid-column:3;justify-self:end;text-align:right;padding-inline:0}
 
 .sub{
   position:relative;z-index:1;
@@ -542,9 +556,12 @@ a{color:inherit;text-decoration:none}
    50% - carril/2, asi que su centro cae en 25% - carril/4 (el de la
    derecha, en 75% + carril/4). Restando la mitad del ancho maximo del
    texto, el bloque queda centrado con la linea de arriba. */
-.sub--l,.sub--r{max-width:34ch;text-align:center}
-.sub--l{margin-left:calc(25% - var(--lane)/4 - 17ch);margin-right:auto}
-.sub--r{margin-left:calc(75% + var(--lane)/4 - 17ch);margin-right:auto}
+/* Los subtitulos cuelgan del mismo borde que su titular, no del centro
+   de la pared: asi cada lado es un bloque con un solo borde de
+   referencia en vez de dos piezas centradas por separado. */
+.sub--l,.sub--r{max-width:34ch}
+.sub--l{margin-left:0;margin-right:auto;text-align:left}
+.sub--r{margin-left:auto;margin-right:0;text-align:right}
 .sub--c{max-width:46ch;margin-left:auto;margin-right:auto;text-align:center}
 
 .ln--center{display:block;text-align:center}
@@ -675,7 +692,8 @@ a{color:inherit;text-decoration:none}
     font-size:clamp(1.6rem,7.4vw,2.4rem);
     gap:.1em;
   }
-  .half--l,.half--r{grid-column:1;justify-self:center;padding-inline:0}
+  .half--l,.half--r{grid-column:1;justify-self:center;padding-inline:0;text-align:center}
+  .band--split{padding-inline:var(--gut)}
   /* Los subtitulos iban anclados al centro de una pared que aqui no
      existe; ese margen calculado los sacaba de la pantalla. */
   .sub--l,.sub--r,.sub--c{
