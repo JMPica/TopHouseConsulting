@@ -1,0 +1,1617 @@
+/* =========================================================
+   Top House Real Estate
+   Paleta muestreada del plano: sombra de cal, piedra caliente,
+   agua profunda y el primer sol, que es el oro de la marca.
+   ========================================================= */
+
+:root{
+  /* Marfil de dia. El fondo oscuro se quedo donde tiene sentido: dentro
+     del video, que es una casa a contraluz y no se puede aclarar. Del
+     video hacia abajo manda la luz, que es donde se leen los textos
+     largos y donde van a ir las fotos de los pisos. */
+  --canvas:#F5F0E6;
+  --canvas-deep:#EDE6D9;
+  --panel:#FFFDF8;
+  --panel-2:#F0E9DC;
+  --accent:#D4A94B;
+  --accent-hover:#C08F2A;
+  --accent-muted:rgba(212,169,75,.22);
+  --text-secondary:#566A6C;
+  --text-primary:#1B2A2E;
+  --line:rgba(27,42,46,.14);
+  --line-strong:rgba(27,42,46,.30);
+
+  /* El oro de la marca sobre marfil da 1.93 de contraste: como texto no
+     se lee. Como RELLENO de boton, con tinta encima, da 7.65 y es de lo
+     mejor que tiene la web. Asi que el oro se queda para rellenos y los
+     rotulillos dorados usan esta version tostada.
+
+     Es #805D14 y no un tueste mas suave porque el minimo hay que pasarlo
+     sobre la superficie MAS OSCURA en la que cae, que es la banda del
+     pie: ahi da 4.84, y sobre el marfil normal 5.29. Con el tueste
+     anterior el pie se quedaba en 4.28 y no llegaba. */
+  --accent-ink:#805D14;
+  /* Lo que va ENCIMA del oro: siempre tinta, nunca blanco (2.19). */
+  --on-accent:#12201F;
+
+  /* Las cajas con degradado. Antes iban con el color escrito a pelo en
+     nueve sitios; ahora salen de aqui, y por eso el video puede tener
+     las suyas oscuras sin duplicar una sola regla. */
+  --card-a:rgba(255,255,255,.92);
+  --card-b:rgba(237,230,217,.55);
+  /* El cristal esmerilado del boton fantasma y de las pastillas de la
+     barra. Era un cristal oscuro; sobre marfil dejaba manchas grises. */
+  --glass:rgba(255,255,255,.62);
+  --glass-2:rgba(255,255,255,.5);
+  /* Sobre marfil una caja blanca casi no se despega del fondo. La sombra
+     hace el trabajo que antes hacia el contraste de color. */
+  --lift:0 1px 2px rgba(27,42,46,.04),0 14px 34px rgba(27,42,46,.07);
+
+  --d:'Fraunces',Georgia,'Times New Roman',serif;
+  --b:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  --m:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --ease-soft:cubic-bezier(.4,0,.2,1);
+
+  --tshadow:0 1px 2px rgba(5,5,10,.95),0 3px 12px rgba(5,5,10,.78),0 10px 44px rgba(5,5,10,.8);
+
+  --gut:clamp(20px,5vw,72px);
+  --maxw:1240px;
+  /* El hueco central por el que se ve la puerta del video. Las dos
+     mitades de cada titular se apoyan en sus bordes, asi que este
+     numero ES la distancia entre ellas. A 520px la frase se leia como
+     dos rotulos sueltos en vez de como una frase. */
+  --lane:min(30vw,400px);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+
+/* el atributo hidden tiene que ganar siempre a las clases de abajo */
+[hidden]{display:none!important}
+
+html,body{overflow-x:hidden;overflow-x:clip}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+
+body{
+  margin:0;
+  background:var(--canvas);
+  color:var(--text-primary);
+  font-family:var(--b);
+  font-size:clamp(16px,1.02vw,18px);
+  line-height:1.62;
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  opacity:0;
+  transition:opacity .9s var(--ease-soft);
+}
+body.lit{opacity:1}
+
+img{max-width:100%;display:block}
+
+.sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
+}
+
+.skip{
+  position:fixed;left:12px;top:-100px;z-index:200;
+  background:var(--accent);color:var(--on-accent);
+  padding:12px 18px;border-radius:10px;font-weight:700;
+  transition:top .3s var(--ease);
+}
+.skip:focus{top:12px}
+
+:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:3px;
+  border-radius:4px;
+}
+
+a{color:inherit;text-decoration:none}
+
+/* ---------- Tipografía ---------- */
+
+.d1,.d2,.d3{
+  font-family:var(--d);
+  font-weight:300;
+  font-variation-settings:'SOFT' 22,'WONK' 1;
+  line-height:1.06;
+  letter-spacing:-.015em;
+  margin:0;
+  text-wrap:balance;
+}
+.d1{font-size:clamp(2.1rem,4.6vw,4.1rem)}
+.d2{font-size:clamp(1.75rem,3.2vw,2.9rem)}
+.d3{font-size:clamp(1.25rem,1.9vw,1.65rem);line-height:1.15}
+
+.kicker{
+  font-family:var(--m);
+  font-size:.72rem;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--accent-ink);
+  margin:0 0 1.1rem;
+  font-weight:500;
+}
+
+.lede{
+  font-size:clamp(1.02rem,1.25vw,1.2rem);
+  color:var(--text-secondary);
+  max-width:52ch;
+  margin:1.2rem 0 0;
+}
+
+.mono{font-family:var(--m);font-size:.74rem;letter-spacing:.14em;text-transform:uppercase}
+
+/* ---------- Botones ---------- */
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:.5em;
+  font-family:var(--b);font-weight:700;
+  font-size:.92rem;letter-spacing:.005em;
+  padding:.82em 1.5em;
+  border-radius:999px;
+  border:1px solid transparent;
+  cursor:pointer;
+  text-shadow:none;
+  transition:background-color .35s var(--ease),color .35s var(--ease),
+             border-color .35s var(--ease),transform .35s var(--ease),
+             box-shadow .35s var(--ease);
+}
+.btn--solid{
+  background:var(--accent);
+  color:var(--on-accent);
+  box-shadow:0 8px 30px rgba(212,169,75,.14);
+}
+.btn--solid:hover{background:var(--accent-hover);transform:translateY(-2px);box-shadow:0 12px 38px rgba(212,169,75,.24)}
+.btn--ghost{
+  border-color:var(--line-strong);
+  color:var(--text-primary);
+  background:var(--glass);
+  backdrop-filter:blur(8px);
+}
+.btn--ghost:hover{border-color:var(--accent-ink);color:var(--accent-ink);transform:translateY(-2px)}
+.btn--lg{padding:1em 1.9em;font-size:.98rem}
+.btn:disabled{opacity:.42;cursor:not-allowed;transform:none!important}
+
+@media (pointer:coarse){
+  .btn{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+}
+
+/* ---------- La isla oscura: el video ----------
+
+   El video es una casa a contraluz. No se puede aclarar sin destruirlo, y
+   tampoco hay que hacerlo: un video oscuro que se abre a una web con luz
+   es la forma normal de esto, y hace que el video parezca una decision y
+   no un descuido.
+
+   Aqui no se repinta nada regla por regla. Se vuelven a declarar los
+   tokens dentro del ambito del video, y todo lo que hay debajo los hereda:
+   los titulares de las bandas, los rotulillos, las lineas y las cajas
+   cambian de lado solos. Cualquier regla nueva que use tokens funcionara
+   en los dos sitios sin tocarla. */
+/* El heroe ya no es una isla oscura.
+
+   MEDIDO ANTES DE TOCAR NADA. Las paredes del plano estan en medio tono:
+   su luminancia va de 0.13 a 0.43 a lo largo de los ocho segundos. Ese
+   es el peor sitio posible para poner texto. Sobre la pared mas clara,
+   el blanco se queda en 2.20 de contraste; sobre la mas oscura, la
+   tinta en 2.52. Hacen falta 3 para un titular. Es decir: SOBRE EL
+   PLANO CRUDO NO SE LEE NINGUN COLOR DE TEXTO, ni claro ni oscuro.
+
+   Por eso habia sombras: empujaban las paredes hacia abajo hasta donde
+   el blanco si se lee. Funcionaba, pero dejaba una isla nocturna en
+   medio de una web de marfil.
+
+   Ahora el velo va al reves: en vez de oscurecer los laterales, los
+   ACLARA. Las paredes suben hasta donde la tinta se lee con holgura, el
+   vano del fondo se queda como esta porque ya es lo mas luminoso del
+   plano, y el heroe pasa a ser de dia como el resto de la pagina. El
+   texto va en tinta, igual que abajo. */
+.hero,.statichero{
+  --tshadow:0 1px 0 rgba(255,255,255,.55),0 2px 14px rgba(255,255,255,.7),0 8px 40px rgba(255,253,248,.6);
+}
+/* El heroe quieto (el que ve quien ha pedido menos animacion, y el
+   telefono tumbado) sigue al de movimiento: tambien es de dia. */
+.statichero{background:var(--canvas)}
+
+/* ---------- Capa de entorno fija ---------- */
+
+.env{position:fixed;inset:0;z-index:0;pointer-events:none}
+.env__glow{
+  position:absolute;inset:-20%;
+  background:
+    radial-gradient(58% 44% at 22% 14%,rgba(255,255,255,.75),transparent 62%),
+    radial-gradient(46% 40% at 82% 78%,rgba(212,169,75,.10),transparent 66%),
+    radial-gradient(70% 60% at 50% 110%,rgba(224,213,193,.55),transparent 70%);
+  animation:drift 96s var(--ease-soft) -22s infinite alternate;
+}
+@keyframes drift{
+  0%{transform:translate3d(-2.5%,-1.5%,0) scale(1.03)}
+  100%{transform:translate3d(2.5%,2%,0) scale(1.09)}
+}
+.env__grain{
+  position:absolute;inset:0;opacity:.025;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- Navegación ---------- */
+
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:24px;
+  padding:16px var(--gut);
+  transition:background-color .5s var(--ease),backdrop-filter .5s var(--ease),
+             border-color .5s var(--ease),padding .5s var(--ease);
+  border-bottom:1px solid transparent;
+}
+.nav.solid{
+  background:rgba(245,240,230,.88);
+  backdrop-filter:blur(16px);
+  border-bottom-color:var(--line);
+  padding-top:11px;padding-bottom:11px;
+}
+
+/* La barra ya no cambia de color. Cuando el heroe era oscuro hacia falta
+   una version clara para el rato en que pasaba por encima del video; con
+   el plano en marfil, la barra es la misma de arriba abajo. */
+
+.nav__brand{display:flex;align-items:center;gap:12px}
+/* El emblema real de la marca, tal cual lo entrego el cliente. Se sirve a
+   256px y se muestra a 38 para que quede nitido en pantallas de retina. */
+.mark{width:38px;height:38px;flex:none;display:block}
+.nav__word{display:flex;flex-direction:column;line-height:1.12}
+/* El rotulo va en Lato, que es la tipografia del logo del cliente, para que
+   emblema y texto lean como una sola marca y no como dos piezas pegadas. */
+.nav__name{
+  font-family:'Lato',var(--b);font-weight:700;
+  font-size:.9rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-primary);
+}
+.nav__kicker{
+  font-family:'Lato',var(--b);font-weight:400;font-size:.58rem;
+  letter-spacing:.34em;text-transform:uppercase;color:var(--accent-ink);
+}
+
+.nav__links{display:flex;gap:26px;font-size:.9rem;font-weight:500}
+.nav__links a{color:var(--text-secondary);position:relative;padding:4px 0;transition:color .3s var(--ease)}
+.nav__links a::after{
+  content:"";position:absolute;left:0;right:100%;bottom:0;height:1px;
+  background:var(--accent);transition:right .4s var(--ease);
+}
+.nav__links a:hover{color:var(--text-primary)}
+.nav__links a:hover::after{right:0}
+
+.nav__actions{display:flex;gap:10px;align-items:center}
+.nav__tel{font-family:var(--m);font-size:.78rem;letter-spacing:.08em}
+
+@media (max-width:1080px){.nav__links{display:none}}
+/* En movil la barra cambia de boton, y no por falta de sitio.
+
+   En un telefono, el boton que mas convierte en una inmobiliaria de
+   pueblo es el que llama. Estaba escondido (display:none) para dejar
+   hueco a "Pedir mi valoracion", que son 25 letras: no cabia en una
+   linea, se partia en tres, y la barra crecia hasta 220px tapando el
+   contenido de debajo. Se cambian los papeles: en movil manda el
+   telefono y el boton largo se retira. La valoracion se sigue pidiendo
+   desde el heroe, desde las tres cajas y desde el pie, asi que no se
+   pierde ninguna puerta.
+
+   Y la marca va en una sola linea: al apretarse la barra, "Top House
+   Real Estate" se partia en cuatro renglones. */
+@media (max-width:720px){
+  .nav{padding:12px var(--gut)}
+  .nav__actions .btn--solid{display:none}
+  .nav__tel{
+    display:inline-flex;flex:none;white-space:nowrap;
+    background:var(--accent);border-color:var(--accent);color:var(--on-accent);
+    font-size:.74rem;letter-spacing:.04em;padding:.58rem .78rem;
+  }
+  .nav__brand{gap:9px}
+  .mark{width:32px;height:32px}
+  .nav__name{font-size:.7rem;white-space:nowrap}
+  .nav__kicker{font-size:.5rem;letter-spacing:.2em;white-space:nowrap}
+}
+
+/* =========================================================
+   HÉROE
+   ========================================================= */
+
+.hero{position:relative;height:760vh;z-index:1}
+
+.stage{
+  position:sticky;top:0;
+  height:100vh;height:100svh;
+  overflow:hidden;
+  background:var(--canvas);
+}
+
+.poster{
+  position:absolute;inset:0;
+  /* mismo encuadre que el video: manda el ancho */
+  background-size:100% auto;background-position:center;
+  background-repeat:no-repeat;
+  background-color:var(--canvas);
+}
+
+/* El plano ensena SIEMPRE todo su ancho.
+
+   Antes llenaba la pantalla con object-fit:cover, que en una ventana mas
+   alta que 16:9 escala por la altura y recorta por los lados. Ese
+   recorte arrastraba las esquinas de las paredes hacia dentro, justo
+   encima del texto: medido, a 1440x900 el titular habria tenido que
+   moverse 199px hacia fuera y solo tiene 72 hasta el borde. No era un
+   problema de margenes, era de encuadre.
+
+   Ahora el ancho manda y la altura cae donde cae: si sobra, se recorta
+   arriba y abajo como antes; si falta, quedan dos franjas de marfil que
+   se funden con el velo, que en esos bordes ya iba a marfil. Asi la
+   geometria es la misma en todas las ventanas, y en todas se comporta
+   como a 1920, donde ya estaba limpio. */
+.hero__video{
+  position:absolute;left:0;right:0;top:50%;
+  transform:translate3d(0,-50%,0);
+  width:100%;height:auto;
+  opacity:0;
+  transition:opacity .9s var(--ease-soft);
+  will-change:transform;
+}
+.stage.video-ready .hero__video{opacity:1}
+.stage.video-failed .hero__video{display:none}
+
+/* El lienzo del movil, en el mismo sitio y con el mismo aparecer que el
+   video. Solo existe cuando el heroe se pinta con fotogramas, y entonces
+   el video no se pide siquiera. */
+.hero__lienzo{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  display:none;opacity:0;
+  transition:opacity .9s var(--ease-soft);
+}
+.stage--seq .hero__lienzo{display:block}
+.stage--seq .hero__video{display:none}
+.stage--seq.video-ready .hero__lienzo{opacity:1}
+.stage--seq.video-failed .hero__lienzo{display:none}
+
+/* La vineta, del reves: marfil en los laterales, limpio en el centro.
+   El vano del fondo no se toca, que es adonde mira el plano. */
+.scrim{
+  position:absolute;inset:0;pointer-events:none;
+  background:
+    /* los dos lados, que es donde se apoya el texto */
+    linear-gradient(90deg,
+      rgba(245,240,230,.56) 0%,
+      rgba(245,240,230,.44) 24%,
+      rgba(245,240,230,0)   40%,
+      rgba(245,240,230,0)   60%,
+      rgba(245,240,230,.44) 76%,
+      rgba(245,240,230,.56) 100%),
+    /* y un roce arriba y abajo, para que el plano no corte a hueso */
+    linear-gradient(180deg,
+      rgba(245,240,230,.55) 0%,
+      rgba(245,240,230,0) 22%,
+      rgba(245,240,230,0) 78%,
+      rgba(245,240,230,.45) 100%);
+}
+
+/* anillo de carga */
+.loader{
+  position:absolute;left:50%;bottom:46px;transform:translateX(-50%);
+  color:var(--accent-ink);opacity:.85;
+  transition:opacity .5s var(--ease);
+}
+.stage.video-ready .loader,.stage.video-failed .loader{opacity:0}
+.ring{width:34px;height:34px;transform:rotate(-90deg)}
+.ring circle{transition:stroke-dashoffset .16s linear}
+
+/* pista de scroll */
+.cue{
+  position:absolute;left:50%;bottom:34px;transform:translateX(-50%);
+  width:1px;height:56px;background:linear-gradient(var(--line-strong),transparent);
+  opacity:0;transition:opacity .6s var(--ease);
+}
+.stage.video-ready .cue,.stage.video-failed .cue{opacity:1}
+.cue span{
+  position:absolute;left:-1px;top:0;width:3px;height:16px;
+  background:var(--accent);border-radius:2px;
+  animation:cueRun 2.8s var(--ease-soft) -.6s infinite;
+}
+@keyframes cueRun{
+  0%{transform:translateY(0);opacity:0}
+  22%{opacity:1}
+  78%{opacity:1}
+  100%{transform:translateY(40px);opacity:0}
+}
+
+/* ---------- Bandas ---------- */
+
+.bands{position:absolute;inset:0;pointer-events:none}
+
+.band{
+  position:absolute;inset:0;
+  display:grid;align-content:center;
+  padding:0 var(--gut);
+  opacity:0;
+  text-shadow:var(--tshadow);
+}
+/* Las bandas partidas van sin margen lateral, y no es un descuido.
+
+   La puerta del video esta centrada en la PANTALLA. Si la banda lleva
+   margen lateral, el texto se centra dentro de la caja con margen y no
+   dentro de la pantalla, asi que queda desplazado hacia la puerta: 36px
+   en una pantalla de 1920, medido. Las mitades ya llevan su propio
+   respiro interior, asi que el texto nunca toca el borde. */
+.band--split{padding-inline:var(--gut)}
+
+.band .btn{text-shadow:none}
+.band__cta{pointer-events:auto}
+
+/* Velo doble para las bandas partidas: el carril del arco queda intacto.
+   z-index explicito porque ::after se pinta POR ENCIMA del contenido: sin el,
+   el velo derecho caia sobre las propias letras y las apagaba, mientras el
+   izquierdo (::before) si quedaba detras. De ahi que la mitad derecha se
+   viera mucho mas floja que la izquierda. */
+/* Sin bolsas detras del texto.
+
+   Cuando el plano paso de noche a dia convirti estos velos uno a uno: de
+   sombra a marfil, misma fuerza. Fue un error de metodo. Con texto de
+   tinta hacen falta muchisimos menos, y no volvi a echar la cuenta.
+
+   La cuenta, ahora: las paredes del plano van de 0.133 a 0.427 de
+   luminancia. El titular es tinta y necesita que su fondo llegue a 0.163
+   para el minimo de 3:1; el subtitulo, mas pequeno, a 0.269 para el de
+   4.5:1. Desde 0.133 eso es un velo de 0.27, no de 0.93. Lo que habia
+   era tres veces y media lo necesario, y por eso se veia el velo en vez
+   de verse la pared.
+
+   Asi que las bolsas desaparecen y queda un solo lavado parejo en los
+   laterales, dentro del velo general. Un lavado parejo no se lee como un
+   velo: se lee como que la pared es clara. */
+.ln{
+  position:relative;z-index:1;
+  display:grid;
+  grid-template-columns:1fr var(--lane) 1fr;
+  align-items:baseline;
+  margin:0;
+  font-family:var(--d);
+  font-weight:300;
+  font-variation-settings:'SOFT' 24,'WONK' 1;
+  /* PROPORCIONAL AL PLANO, no a la pantalla.
+
+     Con el encuadre nuevo el video ensena siempre el mismo trozo, asi
+     que las esquinas de las paredes caen siempre en el mismo porcentaje
+     del ancho. Para que el titular quede limpio en todas las ventanas
+     basta con que ocupe siempre el mismo porcentaje tambien.
+
+     No lo hacia: a 1920 el cuerpo se quedaba en el tope de 3rem y el
+     titular ocupaba el 25.7% del ancho, mientras que a 1440, donde 3vw
+     todavia no llegaba al tope, ocupaba el 31.6%. Esa diferencia de seis
+     puntos era justo la que lo metia encima de la esquina en los
+     portatiles. Con 2.5vw el porcentaje es el mismo en todas partes: a
+     1920 mide igual que antes, y en ventanas menores encoge con ellas. */
+  font-size:clamp(1.35rem,2.5vw,3.4rem);
+  line-height:1.05;
+  letter-spacing:-.015em;
+}
+/* Centradas en su lateral, no pegadas al vano.
+
+   Antes iban con justify-self end/start, es decir apoyadas contra el
+   hueco central. En el video ese hueco es la puerta abierta, la zona mas
+   luminosa del plano: el texto quedaba abrazandola y el subtitulo llegaba
+   a meterse dentro, que es justo donde peor se lee.
+
+   Con center, cada mitad se coloca en el medio de su pared, que es la
+   parte oscura del plano. Se lee mejor y respira. */
+/* Ancladas al mismo margen que todo lo demas, y en espejo.
+
+   Antes iban centradas en su pared. Cada mitad tiene un ancho distinto,
+   asi que centrada cada una caia donde caia: la de la izquierda
+   empezaba en 65px y el logo de la barra en 72, y ninguno de los cuatro
+   bordes coincidia con nada. El ojo no sabe leer eso como una decision,
+   y lo lee como ruido: fue lo que hizo notar que la ultima letra
+   quedaba justo encima de un montante de la pared.
+
+   Ahora la mitad izquierda empieza EXACTAMENTE donde empieza el logo, y
+   la derecha acaba donde acaba el boton de valoracion. Cualquier
+   coincidencia con una linea del plano se lee entonces como parte de la
+   composicion y no como un descuadre, porque el texto esta claramente
+   sujeto al marco de la pagina. */
+.half--l{grid-column:1;justify-self:start;text-align:left;padding-inline:0}
+/* La primera mitad de la primera banda, en dos renglones.
+
+   Es la unica que no cabe. Medido sobre el fotograma en que aparece: la
+   esquina donde se juntan las dos paredes cae en el 22% del ancho, y esa
+   mitad, en una linea, llega al 26%. La arista entra por medio de
+   "immobiliaria", que es exactamente lo que veia Top House.
+
+   Se puede arreglar de dos maneras: bajando el cuerpo un 23%, o
+   partiendo la frase. Se parte, porque el titular es lo primero que se
+   lee de la casa y no conviene encogerlo. Partida, la linea mas larga
+   llega al 17% y sobran cinco puntos hasta la esquina.
+
+   Solo esta. Las otras tres mitades caben de sobra en una linea y no se
+   tocan; el limite se aplica por banda a proposito. */
+.band[data-a="0"] .half--l{max-width:15vw}
+.half--r{grid-column:3;justify-self:end;text-align:right;padding-inline:0}
+
+.sub{
+  position:relative;z-index:1;
+  margin:1.15rem 0 0;
+  font-size:clamp(.92rem,1.05vw,1.05rem);
+  color:var(--text-primary);
+  line-height:1.5;
+}
+/* Los subtitulos se anclan al borde del carril, igual que la mitad del
+   titular que tienen encima.
+
+   Antes se les daba el ancho de la columna Y un max-width de 34ch. Como
+   34ch es mucho mas estrecho que la columna, la caja encogia y el margen
+   automatico la empujaba al extremo de la pantalla: el subtitulo quedaba
+   descolocado respecto a la linea de arriba. Con el margen fijado al
+   carril, cada subtitulo arranca (o termina) exactamente donde lo hace su
+   mitad. */
+/* Los subtitulos, centrados bajo su mitad.
+
+   El margen se calcula hasta el centro exacto de la pared: la pared mide
+   50% - carril/2, asi que su centro cae en 25% - carril/4 (el de la
+   derecha, en 75% + carril/4). Restando la mitad del ancho maximo del
+   texto, el bloque queda centrado con la linea de arriba. */
+/* Los subtitulos cuelgan del mismo borde que su titular, no del centro
+   de la pared: asi cada lado es un bloque con un solo borde de
+   referencia en vez de dos piezas centradas por separado. */
+.sub--l,.sub--r{max-width:min(34ch,19vw)}
+.sub--l{margin-left:0;margin-right:auto;text-align:left}
+.sub--r{margin-left:auto;margin-right:0;text-align:right}
+/* El de la tercera banda cae sobre el vano y cruza los montantes del
+   cristal; se estrecha para caber entre ellos. */
+.sub--c{max-width:min(46ch,17vw);margin-left:auto;margin-right:auto;text-align:center}
+
+.ln--center{display:block;text-align:center}
+.cline{display:block}
+.cline--2{color:var(--accent-ink)}
+
+.band--center{justify-items:center;text-align:center}
+/* La tercera banda es la unica que conserva velo propio: cae sobre el
+   vano, que es lo unico del plano que el lavado lateral no toca, y ahi
+   el fondo pasa de sol a mar en muy poco espacio. */
+.band--center::before{
+  content:"";position:absolute;inset:-4%;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 90% 60% at 50% 48%,
+    rgba(248,244,236,.88) 0%,rgba(248,244,236,.82) 62%,
+    rgba(248,244,236,.30) 86%,rgba(248,244,236,0) 100%);
+}
+.band__cta{position:relative;z-index:1;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:2rem}
+
+/* ---------- Partido en palabras y letras ---------- */
+
+.w{display:inline-block;white-space:pre;will-change:transform,opacity}
+.c{display:inline-block;will-change:transform,opacity}
+
+/* (a) mitades que se separan */
+[data-entrance="part"] .half--l .w{
+  --kc:clamp(0,(var(--k,0) - var(--th,0))*2.6,1);
+  opacity:var(--kc);
+  transform:translateX(calc((1 - var(--kc))*44px));
+}
+[data-entrance="part"] .half--r .w{
+  --kc:clamp(0,(var(--k,0) - var(--th,0))*2.6,1);
+  opacity:var(--kc);
+  transform:translateX(calc((1 - var(--kc))*-44px));
+}
+
+/* (b) aproximación desde la profundidad */
+[data-entrance="depth"] .w{
+  --kc:clamp(0,(var(--k,0) - var(--th,0))*2.8,1);
+  opacity:var(--kc);
+  transform:scale(calc(.8 + .2*var(--kc))) translateY(calc((1 - var(--kc))*10px));
+}
+
+/* (c) de desenfoque a nitidez */
+[data-entrance="blur"] .ln{position:relative}
+[data-entrance="blur"] .half{position:relative;display:inline-block}
+[data-entrance="blur"] .half .soft{
+  position:absolute;inset:0;filter:blur(11px);
+  opacity:calc(1 - var(--k,0));
+  pointer-events:none;
+}
+[data-entrance="blur"] .half .sharp{opacity:var(--k,0)}
+
+/* (d) subida palabra a palabra hacia el posado */
+[data-entrance="rise"] .w{
+  --kc:clamp(0,(var(--k,0) - var(--th,0))*2.4,1);
+  opacity:var(--kc);
+  transform:translateY(calc((1 - var(--kc))*26px));
+}
+[data-entrance="rise"] .cline--2{
+  --ks:clamp(0,(var(--k,0) - .42)*2.6,1);
+  opacity:var(--ks);
+}
+[data-entrance="rise"] .sub--c{
+  --ks:clamp(0,(var(--k,0) - .62)*3.4,1);
+  opacity:var(--ks);
+  transform:translateY(calc((1 - var(--ks))*14px));
+}
+[data-entrance="rise"] .band__cta{
+  --kb:clamp(0,(var(--k,0) - .76)*4.2,1);
+  opacity:var(--kb);
+  transform:translateY(calc((1 - var(--kb))*16px));
+}
+
+@media (max-width:1024px){
+  :root{--lane:min(46vw,420px)}
+}
+
+/* =========================================================
+   EL HÉROE EN VERTICAL
+   =========================================================
+
+   En el ordenador la frase se parte en dos y cada mitad se apoya en una
+   pared, dejando la puerta libre en medio. En un telefono de 390px no
+   hay paredes: el plano recortado en vertical es la puerta y poco mas.
+   Asi que la frase se junta, centrada, y las dos mitades se leen como
+   dos renglones de la misma linea, que es lo que son.
+
+   Y el heroe se acorta: 760vh son casi ocho pantallas de dedo. Con 440
+   cada banda sigue teniendo tiempo de leerse, el pulgar no se cansa, y
+   ademas los 97 fotogramas caen mas juntos: uno cada 28px de scroll.
+   ========================================================= */
+@media (max-width:820px){
+  .hero{height:440vh}
+
+  /* El velo del ordenador es un ovalo que oscurece las ESQUINAS y deja
+     limpio el centro, porque alli el texto va sobre las paredes, que ya
+     son oscuras. En vertical el recorte deja fuera las paredes y el
+     texto cae justo encima de la puerta, que es lo mas luminoso del
+     plano. Medido sobre los fotogramas de verdad, en 17 puntos del
+     scroll: el titular se quedaba en 1.22 de contraste, cuando hacen
+     falta 3. Era ilegible.
+
+     Asi que aqui el velo se da la vuelta: una bolsa de sombra en el
+     centro, justo donde se apoya el texto, que se deshace antes de
+     llegar a los bordes. Una barra recta seria mas facil y parece una
+     pantalla de cine mal recortada; el ovalo no se ve. */
+  /* Los velos, mucho mas flojos que en pantalla grande.
+
+     No es una concesion, es que aqui sobra margen. Medido contra los
+     fotogramas de verdad en 17 puntos del recorrido: el peor texto del
+     movil estaba en 10.52 de contraste cuando hacen falta 4.5. Es decir,
+     el velo tapaba el plano el doble de lo necesario. Se afloja hasta
+     dejar el peor caso por encima de 5.5, que sigue siendo holgado, y el
+     video se ve mucho mas.
+
+     En el ordenador NO se toca: alli el peor caso es 3.72 sobre un
+     minimo de 3 y no hay de donde recortar. */
+  .scrim{
+    background:
+      radial-gradient(ellipse 150% 50% at 50% 49%,
+        rgba(248,244,236,.62) 0%, rgba(248,244,236,.45) 52%, rgba(248,244,236,0) 82%),
+      linear-gradient(180deg,
+        rgba(245,240,230,.46) 0%, rgba(245,240,230,.05) 26%,
+        rgba(245,240,230,.04) 74%, rgba(245,240,230,.46) 100%);
+  }
+
+  /* Las bolsas de las bandas estan colocadas para la maqueta de
+     escritorio, una por pared. Aqui no hay paredes y se solapan las dos
+     encima del texto, que es de donde salia buena parte del velo. Se
+     bajan y manda el velo general de arriba. */
+  .band--center::before{opacity:.55}
+  .ln{
+    grid-template-columns:1fr;
+    justify-items:center;text-align:center;
+    font-size:clamp(1.6rem,7.4vw,2.4rem);
+    gap:.1em;
+  }
+  .half--l,.half--r{grid-column:1;justify-self:center;padding-inline:0;text-align:center}
+  .band--split{padding-inline:var(--gut)}
+  /* Los subtitulos iban anclados al centro de una pared que aqui no
+     existe; ese margen calculado los sacaba de la pantalla. */
+  .sub--l,.sub--r,.sub--c{
+    margin-left:auto;margin-right:auto;text-align:center;max-width:30ch;
+  }
+  .band__cta{justify-content:center}
+}
+@media (max-height:560px){
+  .cue,.loader{display:none}
+}
+
+/* =========================================================
+   HÉROE ESTÁTICO
+   ========================================================= */
+
+.statichero{
+  position:relative;z-index:1;
+  min-height:92vh;min-height:92svh;
+  display:grid;align-content:end;
+  padding:120px var(--gut) clamp(56px,10vh,110px);
+  overflow:hidden;
+}
+.statichero__art{
+  position:absolute;inset:0;
+  background-color:#0d1b1f;
+  /* El velo se oscurece a partir de la mitad porque ahi es donde cae el
+     texto. Medido: con el degradado anterior el cuerpo se quedaba en 4,13
+     de contraste sobre el mar, por debajo del 4,5 que necesita el texto
+     pequeno para leerse bien. Si algun dia se cambia la imagen de fondo,
+     hay que volver a medirlo: el mar claro es el caso peor. */
+  background-image:linear-gradient(180deg,rgba(245,240,230,.30) 0%,rgba(245,240,230,.70) 42%,rgba(245,240,230,.88) 66%,rgba(245,240,230,.97) 100%),
+                   var(--hero-still,linear-gradient(160deg,#f1e9da,#e6dcc9 70%));
+  background-size:cover;background-position:center;
+}
+/* En movil el velo tiene que ser mucho mas espeso, y no es capricho.
+
+   El degradado de arriba esta calibrado para pantalla grande, donde el
+   texto cae en el tercio de abajo, que ya va oscuro. En un telefono el
+   bloque es mucho mas alto que ancho, el texto sube hasta la mitad de la
+   imagen y ahi cae justo sobre el mar iluminado.
+
+   Medido sobre los pixeles de verdad, con la tinta y su sombra apagadas
+   para no medir la sombra en vez del texto: el rotulillo dorado se
+   quedaba en 1.86 de contraste y el cuerpo en 2.64, cuando hacen falta
+   4.5. Es decir, no se leian.
+
+   El velo no es plano, y por eso esta partido en cinco paradas: el
+   rotulillo empieza al 18,5% de la altura del bloque, asi que hasta el
+   17% el velo es ligero y se ve la foto, y justo antes de esa linea se
+   cierra. En vertical no hay mas margen que ese: el texto ocupa desde
+   ahi hasta abajo. */
+@media (max-width:720px){
+  .statichero__art{
+    background-image:linear-gradient(180deg,rgba(245,240,230,.20) 0%,rgba(245,240,230,.40) 9%,rgba(245,240,230,.93) 17%,rgba(245,240,230,.94) 62%,rgba(245,240,230,.98) 100%),
+                     var(--hero-still,linear-gradient(160deg,#f1e9da,#e6dcc9 70%));
+  }
+}
+
+.statichero__body{position:relative;max-width:640px}
+.statichero .lede{margin-bottom:2rem}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+
+/* =========================================================
+   SECCIONES
+   ========================================================= */
+
+main{position:relative;z-index:1}
+
+section{
+  padding:clamp(84px,13vh,160px) var(--gut);
+  max-width:calc(var(--maxw) + 2*var(--gut));
+  margin-inline:auto;
+}
+
+/* entradas */
+.reveal .part{
+  opacity:0;transform:translateY(26px);
+  transition:opacity .85s var(--ease),transform .85s var(--ease);
+}
+.reveal.in .part{opacity:1;transform:none}
+.reveal.in .part:nth-child(1){transition-delay:.02s}
+.reveal.in .part:nth-child(2){transition-delay:.12s}
+.reveal.in .part:nth-child(3){transition-delay:.22s}
+.reveal.in .part:nth-child(4){transition-delay:.32s}
+.reveal.in .part:nth-child(5){transition-delay:.42s}
+.reveal.in .part:nth-child(6){transition-delay:.52s}
+.reveal.done .part:nth-child(1),
+.reveal.done .part:nth-child(2),
+.reveal.done .part:nth-child(3),
+.reveal.done .part:nth-child(4),
+.reveal.done .part:nth-child(5),
+.reveal.done .part:nth-child(6){transition-delay:0s!important}
+
+/* ---------- La vista real del pueblo ---------- */
+/* Foto propia del cliente, no generada. Va antes del mapa: primero el pueblo
+   de verdad con sus tramos a la vista, y justo debajo el visitante elige el
+   suyo. Alineada al mismo ancho y radio que el panel del mapa. */
+.vista{max-width:var(--maxw);margin:0 0 clamp(22px,3.4vh,40px)}
+.vista__frame{
+  position:relative;overflow:hidden;
+  border:1px solid var(--line);border-radius:24px;
+  background:var(--panel);
+  box-shadow:0 26px 70px rgba(3,8,10,.5);
+}
+.vista__frame img{
+  display:block;width:100%;height:auto;
+  transform:scale(1.05);
+  transition:transform 1.6s var(--ease);
+}
+.zones.in .vista__frame img{transform:scale(1)}
+/* el borde inferior se funde con el lienzo, como en el umbral */
+.vista__frame::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(7,14,17,.16) 0%,rgba(7,14,17,0) 38%,rgba(7,14,17,.46) 100%);
+}
+.vista__cap{
+  margin:.85rem 0 0;color:var(--text-secondary);
+  font-family:var(--m);font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;
+}
+
+/* ---------- La bifurcación ---------- */
+
+/* Tres puertas: la del propietario pesa mas porque es a donde empuja la
+   pagina; comprar y alquilar comparten el mismo peso entre ellas. */
+.fork__grid{
+  display:grid;
+  grid-template-columns:1.5fr 1fr 1fr;
+  gap:clamp(16px,2.2vw,28px);
+  align-items:stretch;
+}
+@media (max-width:1080px){
+  .fork__grid{grid-template-columns:1fr 1fr}
+  .door--big{grid-column:1 / -1}
+}
+@media (max-width:680px){
+  .fork__grid{grid-template-columns:1fr}
+  .door--big{grid-column:auto}
+}
+.door{
+  position:relative;
+  /* Columna flexible para que el boton pueda irse al fondo. Sin esto el
+     boton va detras del texto, y como cada caja tiene un texto de largo
+     distinto, los tres quedaban a alturas diferentes. */
+  display:flex;flex-direction:column;
+  border:1px solid var(--line);
+  border-radius:22px;
+  padding:clamp(26px,3.4vw,44px);
+  background:linear-gradient(168deg,var(--card-a),var(--card-b));
+  box-shadow:var(--lift);
+  overflow:hidden;
+  transition:border-color .5s var(--ease),transform .5s var(--ease);
+}
+.door::after{
+  content:"";position:absolute;left:0;right:0;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--accent-muted) 30%,var(--accent) 50%,var(--accent-muted) 70%,transparent);
+  opacity:.5;transition:opacity .5s var(--ease);
+}
+.door:hover{border-color:var(--line-strong);transform:translateY(-3px)}
+.door:hover::after{opacity:1}
+.door__num{
+  font-family:var(--m);font-size:.7rem;letter-spacing:.24em;
+  color:var(--accent-ink);margin-bottom:1.4rem;
+}
+.door h3{margin:0 0 .9rem}
+.door p{color:var(--text-secondary);margin:0 0 1.6rem;max-width:44ch}
+.door .btn{margin-top:.4rem;align-self:flex-start}
+.door--big{display:flex;flex-direction:column;align-items:flex-start}
+.door--small{display:flex;flex-direction:column;align-items:flex-start}
+.door--small p{margin-bottom:1rem}
+/* El boton se pega al fondo de su caja, y como la rejilla estira las tres
+   a la misma altura, los tres botones quedan alineados pase lo que pase
+   con el largo del texto de encima. */
+.door > .btn{margin-top:auto;align-self:start}
+
+.ticks{list-style:none;padding:0;margin:0 0 1.9rem;display:grid;gap:.62rem}
+.ticks li{
+  position:relative;padding-left:26px;
+  color:var(--text-primary);font-size:.96rem;
+}
+.ticks li::before{
+  content:"";position:absolute;left:2px;top:.62em;
+  width:9px;height:9px;border-radius:50%;
+  border:1px solid var(--accent);
+}
+
+@media (max-width:860px){
+  .fork__grid{grid-template-columns:1fr}
+}
+
+/* ---------- El arco (firma) ---------- */
+
+.premise{
+  display:grid;
+  grid-template-columns:minmax(260px,.85fr) 1.15fr;
+  gap:clamp(28px,5vw,80px);
+  align-items:end;
+}
+.premise__art{position:relative}
+.gate{width:100%;height:auto;display:block;overflow:visible}
+.gate__img{opacity:.92}
+.gate__bed{fill:#132327}
+.gate__wash{fill:rgba(11,20,23,.34)}
+.gate__line{
+  fill:none;stroke:var(--accent);stroke-width:1.4;
+  stroke-dasharray:1400;stroke-dashoffset:1400;
+  transition:stroke-dashoffset 2.1s var(--ease);
+}
+.premise.drawn .gate__line{stroke-dashoffset:0}
+.premise__art::after{
+  content:"";position:absolute;left:0;right:0;bottom:-1px;height:96px;
+  background:linear-gradient(transparent,var(--canvas) 82%);
+  pointer-events:none;
+}
+.premise__body .beat{
+  opacity:0;transform:translateY(20px);
+  transition:opacity .8s var(--ease),transform .8s var(--ease);
+}
+.premise.in .beat{opacity:1;transform:none;transition-delay:.35s}
+.premise.in .beat--accent{transition-delay:.7s}
+.beat--accent{color:var(--accent-ink);font-family:var(--d);font-weight:300;
+  font-size:clamp(1.2rem,1.9vw,1.6rem);line-height:1.25;max-width:24ch}
+
+@media (max-width:820px){
+  .premise{grid-template-columns:1fr}
+  .premise__art{max-width:380px;margin:0 auto}
+}
+
+/* ---------- Los cuatro pasos ---------- */
+
+.steps{position:relative}
+.steps__head{margin-bottom:clamp(38px,6vh,72px)}
+.thread{
+  position:absolute;
+  left:calc(var(--gut) + 27px);
+  top:clamp(190px,27vh,320px);
+  bottom:clamp(100px,14vh,180px);
+  width:1px;
+  pointer-events:none;
+  overflow:hidden;
+}
+.thread i{
+  display:block;width:100%;height:100%;
+  background:linear-gradient(var(--accent),rgba(212,169,75,.22) 55%,transparent);
+  transform:scaleY(0);transform-origin:top;
+  transition:transform 2.4s var(--ease);
+}
+.steps.drawn .thread i{transform:scaleY(1)}
+
+.steps__list{list-style:none;padding:0;margin:0;display:grid;gap:clamp(20px,3vh,38px)}
+.step{
+  display:grid;
+  grid-template-columns:56px minmax(0,180px) 1fr;
+  gap:clamp(18px,2.6vw,38px);
+  align-items:center;
+  padding:clamp(16px,2vw,24px) 0;
+  border-bottom:1px solid var(--line);
+}
+.step:last-child{border-bottom:0}
+.step__n{
+  font-family:var(--d);font-weight:300;
+  font-size:clamp(1.6rem,2.4vw,2.2rem);
+  color:var(--accent-ink);line-height:1;
+  align-self:start;padding-top:.2em;
+}
+.step__art{
+  aspect-ratio:4/3;border-radius:14px;overflow:hidden;
+  background:linear-gradient(150deg,#16272c,#0d1a1e);
+  border:1px solid var(--line);
+}
+.step__art img{width:100%;height:100%;object-fit:cover;
+  transition:transform 1.1s var(--ease)}
+.step:hover .step__art img{transform:scale(1.05)}
+.step__body h3{margin:0 0 .5rem}
+.step__body p{margin:0;color:var(--text-secondary);max-width:52ch}
+
+/* En movil el paso se reordena: foto arriba, y debajo el numero al lado
+   del texto.
+
+   Antes solo se le decia a la foto que ocupara las dos columnas. Al
+   colocarse sola en su fila, el texto caia en la siguiente fila y en la
+   PRIMERA columna, que es la del numero y mide 44px. El parrafo se
+   quedaba en una tira de una palabra por linea: 570px de alto para tres
+   frases. Con order:-1 la foto se coloca la primera, y numero y texto
+   quedan juntos en la fila de abajo, cada uno en su columna. */
+@media (max-width:820px){
+  .thread{display:none}
+  .step{grid-template-columns:44px 1fr;gap:16px}
+  .step__art{grid-column:1/-1;max-width:none;order:-1;margin-bottom:4px}
+  .step__n{grid-column:1}
+  .step__body{grid-column:2}
+}
+
+/* ---------- La calculadora de pre-valoracion ---------- */
+
+.calc{padding:clamp(84px,13vh,160px) var(--gut)}
+.calc__intro{margin-bottom:clamp(30px,5vh,56px);max-width:var(--maxw)}
+.calc__panel{
+  max-width:var(--maxw);
+  border:1px solid var(--line);border-radius:24px;
+  padding:clamp(22px,3.4vw,46px);
+  background:linear-gradient(150deg,var(--card-a),var(--card-b));
+  box-shadow:var(--lift);
+  display:grid;grid-template-columns:1.05fr .95fr;
+  gap:clamp(24px,4vw,56px);align-items:start;
+}
+.calc__grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:clamp(14px,1.8vw,22px);margin-bottom:1.8rem;
+}
+.cfield{display:flex;flex-direction:column;gap:.45rem;min-width:0}
+.cfield--wide{grid-column:1 / -1}
+.cfield label,.cextras legend{
+  font-family:var(--m);font-size:.72rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--text-secondary);
+}
+.cfield select,.cfield input[type=number]{
+  width:100%;padding:.78rem .9rem;
+  background:var(--panel);color:var(--text-primary);
+  border:1px solid var(--line);border-radius:10px;
+  font-family:var(--b);font-size:1rem;
+}
+.cfield select{
+  appearance:none;padding-right:2.2rem;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23566A6C' stroke-width='1.6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right .9rem center;
+}
+.cextras{border:0;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:.7rem 1.4rem}
+.cextras legend{margin-bottom:.55rem}
+.chk{
+  display:inline-flex;align-items:center;gap:.5rem;cursor:pointer;
+  color:var(--text-primary);
+}
+/* .cfield label alcanzaba tambien a estas etiquetas y las dejaba en
+   versalitas de la mono; aqui vuelven a ser texto normal, que se lee mejor */
+.cextras .chk{
+  font-family:var(--b);font-size:.95rem;
+  letter-spacing:0;text-transform:none;color:var(--text-primary);
+}
+.chk input{
+  width:18px;height:18px;accent-color:var(--accent);cursor:pointer;flex:none;
+}
+.calc__go{width:100%}
+
+/* el resultado */
+.calc__out{
+  border:1px solid var(--accent-muted);border-radius:18px;
+  padding:clamp(20px,2.6vw,32px);
+  background:linear-gradient(160deg,rgba(212,169,75,.07),rgba(11,20,23,.2));
+  align-self:stretch;
+}
+.calc__lbl{
+  font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent-ink);margin:0 0 .7rem;
+}
+.calc__num{
+  font-family:var(--d);font-weight:300;
+  font-size:clamp(1.9rem,3.4vw,2.9rem);line-height:1.1;
+  color:var(--text-primary);margin:0 0 .5rem;
+  font-variant-numeric:tabular-nums;text-wrap:balance;
+}
+.calc__unit{font-size:.76rem;color:var(--text-secondary);margin:0 0 1.4rem;line-height:1.6}
+.calc__warn{
+  font-size:.92rem;line-height:1.6;color:var(--text-secondary);
+  padding-top:1.1rem;border-top:1px solid var(--line);margin:0 0 1.6rem;
+}
+.calc__fuente{
+  font-size:.68rem;line-height:1.6;color:var(--text-secondary);
+  margin:-.9rem 0 1.2rem;letter-spacing:.02em;
+}
+.calc__warn--gen{
+  color:var(--accent-ink);border-top:0;border-left:2px solid var(--accent-muted);
+  padding:0 0 0 .9rem;margin-bottom:1.1rem;
+}
+.calc__cta{width:100%}
+
+@media (max-width:900px){
+  .calc__panel{grid-template-columns:1fr}
+}
+@media (max-width:520px){
+  .calc__grid{grid-template-columns:1fr}
+}
+
+/* ---------- La prueba ---------- */
+
+.proof__row{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:clamp(18px,3vw,44px);
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  padding:clamp(34px,5vh,58px) 0;
+}
+.stat{text-align:center}
+.stat__n{
+  font-family:var(--d);font-weight:300;
+  font-size:clamp(2.6rem,6vw,4.6rem);
+  line-height:1;margin:0 0 .5rem;
+  color:var(--accent-ink);
+  font-variant-numeric:tabular-nums;
+}
+.stat__l{margin:0;color:var(--text-secondary);font-size:.94rem;max-width:22ch;
+  margin-left:auto;margin-right:auto}
+
+@media (max-width:700px){
+  .proof__row{grid-template-columns:1fr;gap:34px}
+}
+
+/* ---------- Servicios ---------- */
+
+.svc{padding:clamp(84px,13vh,160px) var(--gut)}
+.svc__intro{max-width:var(--maxw);margin-bottom:clamp(30px,5vh,56px)}
+/* Una reticula de una sola pieza: los servicios son una lista, no siete
+   tarjetas sueltas, asi que comparten reglas en vez de flotar separados. */
+.svc__list{
+  list-style:none;margin:0 auto;padding:0;max-width:var(--maxw);
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(272px,1fr));
+  gap:1px;background:var(--line);
+  border:1px solid var(--line);border-radius:20px;overflow:hidden;
+}
+.svc__item{
+  background:var(--canvas);
+  padding:clamp(22px,2.6vw,34px);
+  display:flex;flex-direction:column;gap:.6rem;
+  transition:background .5s var(--ease);
+}
+.svc__item:hover{background:var(--panel)}
+/* Siete servicios no llenan cuatro columnas, asi que el primero ocupa dos.
+   No es relleno: la valoracion es a donde empuja toda la pagina, y ese peso
+   extra la senala como la puerta de entrada. */
+@media (min-width:1180px){
+  .svc__item:first-child{grid-column:span 2}
+  .svc__item:first-child h3{font-size:clamp(1.2rem,1.8vw,1.5rem)}
+}
+.svc__item h3{
+  font-family:var(--d);font-weight:500;
+  font-size:clamp(1.05rem,1.5vw,1.22rem);line-height:1.25;
+  color:var(--text-primary);margin:0;
+}
+.svc__item p{
+  margin:0;color:var(--text-secondary);
+  font-size:.95rem;line-height:1.6;
+}
+
+/* ---------- Preguntas ---------- */
+
+.faq{
+  display:grid;grid-template-columns:.85fr 1.15fr;
+  gap:clamp(26px,5vw,80px);
+  align-items:start;
+}
+.faq__head{position:sticky;top:110px}
+.faq__list{display:grid;gap:0}
+.qa{
+  border-bottom:1px solid var(--line);
+}
+.qa summary{
+  list-style:none;cursor:pointer;
+  display:flex;align-items:baseline;gap:16px;
+  padding:1.3rem 0;
+  font-family:var(--b);font-weight:700;font-size:1.02rem;
+  transition:color .35s var(--ease);
+}
+.qa summary::-webkit-details-marker{display:none}
+.qa summary::after{
+  content:"";flex:none;margin-left:auto;
+  width:11px;height:11px;
+  border-right:1.5px solid var(--accent);
+  border-bottom:1.5px solid var(--accent);
+  transform:rotate(45deg) translateY(-3px);
+  transition:transform .45s var(--ease);
+}
+.qa[open] summary::after{transform:rotate(-135deg) translateY(-1px)}
+.qa summary:hover{color:var(--accent-ink)}
+.qa p{
+  margin:0 0 1.5rem;color:var(--text-secondary);max-width:58ch;
+  animation:qaIn .5s var(--ease) both;
+}
+@keyframes qaIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+
+@media (max-width:860px){
+  .faq{grid-template-columns:1fr}
+  .faq__head{position:static}
+}
+
+/* ---------- El cierre ---------- */
+
+.close{
+  display:grid;grid-template-columns:.95fr 1.05fr;
+  gap:clamp(30px,5vw,84px);
+  align-items:start;
+}
+.office{
+  margin-top:2.6rem;padding-top:1.8rem;
+  border-top:1px solid var(--line);
+  color:var(--text-secondary);
+}
+.office__l{color:var(--accent-ink);margin:0 0 .7rem}
+.office p{margin:0 0 .8rem}
+.office__tel{
+  font-family:var(--d);font-size:1.4rem;font-weight:300;
+  color:var(--text-primary);
+  border-bottom:1px solid var(--accent-muted);
+  transition:border-color .4s var(--ease),color .4s var(--ease);
+}
+.office__tel:hover{color:var(--accent-ink);border-color:var(--accent-ink)}
+
+.form{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:16px;
+  border:1px solid var(--line);
+  border-radius:22px;
+  padding:clamp(22px,3vw,40px);
+  background:linear-gradient(160deg,var(--card-a),var(--card-b));
+  box-shadow:var(--lift);
+}
+.field{display:grid;gap:.5rem}
+.field--wide{grid-column:1/-1}
+.field label{
+  font-family:var(--m);font-size:.68rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--text-secondary);
+}
+.opt{text-transform:none;letter-spacing:0;opacity:.7}
+.field input,.field select,.field textarea{
+  font-family:var(--b);font-size:.98rem;color:var(--text-primary);
+  background:var(--panel);
+  border:1px solid var(--line-strong);
+  border-radius:11px;
+  padding:.82em .95em;
+  width:100%;
+  transition:border-color .35s var(--ease),background-color .35s var(--ease);
+}
+.field textarea{resize:vertical;min-height:88px}
+.field input::placeholder,.field textarea::placeholder{color:var(--text-secondary);opacity:.62}
+.field input:focus,.field select:focus,.field textarea:focus{
+  border-color:var(--accent-ink);background:#fff;
+}
+.field select{appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23566A6C' stroke-width='1.6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+.form__go{grid-column:1/-1;margin-top:.4rem}
+.form__note{grid-column:1/-1;color:var(--text-secondary);margin:.2rem 0 0;opacity:.72;
+  text-transform:none;letter-spacing:.02em;font-size:.78rem}
+.form__err{grid-column:1/-1;color:#A32118;margin:0;font-size:.9rem}
+.form__ok{
+  grid-column:1/-1;margin:.6rem 0 0;color:var(--accent-ink);
+  font-family:var(--d);font-size:1.15rem;font-weight:300;line-height:1.3;
+}
+
+@media (max-width:860px){
+  .close{grid-template-columns:1fr}
+  .form{grid-template-columns:1fr}
+}
+
+/* ---------- La cartera (comprar y alquilar) ---------- */
+
+.cart__head{padding:clamp(120px,17vh,190px) var(--gut) clamp(24px,4vh,44px);max-width:var(--maxw)}
+.cart{padding:0 var(--gut) clamp(60px,9vh,110px)}
+.cart__filtros{
+  max-width:var(--maxw);margin:0 auto clamp(22px,3.4vh,38px);
+  padding-bottom:clamp(18px,2.6vh,28px);border-bottom:1px solid var(--line);
+}
+/* Seis campos en fila, como el buscador de toda la vida de una
+   inmobiliaria: la referencia primero, porque quien la trae la trae de
+   otro sitio y quiere ir directo. */
+.cart__campos{
+  display:grid;grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:clamp(12px,1.3vw,18px);align-items:end;
+}
+.cart__acciones{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:1rem;flex-wrap:wrap;margin-top:clamp(14px,2vh,20px);
+}
+.cart__filtros input[type=search]{
+  width:100%;padding:.78rem .9rem;
+  background:var(--panel);color:var(--text-primary);
+  border:1px solid var(--line);border-radius:10px;
+  font-family:var(--m);font-size:1rem;letter-spacing:.04em;
+}
+.cart__filtros input[type=search]::placeholder{color:var(--text-secondary);opacity:.7}
+/* La cruz que pinta el navegador dentro de un campo de busqueda es gris
+   claro y sobre fondo oscuro casi no se ve: se esconde y manda el boton
+   de quitar filtros, que ademas limpia los seis a la vez. */
+.cart__filtros input[type=search]::-webkit-search-cancel-button{display:none}
+/* Solo el de la barra: el que va dentro del aviso lleva .btn--ghost y tiene
+   que seguir pareciendo un boton, al lado del de llamar. */
+.cart__acciones .f-limpiar{
+  background:none;border:0;cursor:pointer;padding:.2rem 0;
+  font-family:var(--m);font-size:.72rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--text-secondary);
+  border-bottom:1px solid var(--line);
+}
+.cart__acciones .f-limpiar:hover,
+.cart__acciones .f-limpiar:focus-visible{color:var(--accent-ink);border-bottom-color:var(--accent-ink)}
+/* La etiqueta envuelve al campo, que los asocia sin necesidad de id y deja
+   que varias carteras conviviesen en un mismo documento. */
+.cart__filtros label{display:flex;flex-direction:column;gap:.45rem}
+.cfield__t{
+  font-family:var(--m);font-size:.72rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--text-secondary);
+}
+.cart__cuenta{color:var(--text-secondary);font-size:.72rem;letter-spacing:.14em;
+  text-transform:uppercase;margin:0}
+
+.cart__grid{
+  list-style:none;margin:0 auto;padding:0;max-width:var(--maxw);
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));
+  gap:clamp(18px,2.4vw,30px);
+}
+.inm{
+  display:flex;flex-direction:column;
+  border:1px solid var(--line);border-radius:18px;overflow:hidden;
+  background:linear-gradient(160deg,var(--card-a),var(--card-b));
+  box-shadow:var(--lift);
+  transition:border-color .5s var(--ease),transform .5s var(--ease),box-shadow .5s var(--ease);
+}
+.inm:hover{border-color:var(--accent-muted);transform:translateY(-3px)}
+.inm--dest{border-color:var(--accent-muted)}
+.inm__foto{position:relative;aspect-ratio:4/3;background:var(--panel-2);overflow:hidden}
+.inm__foto img{width:100%;height:100%;object-fit:cover;display:block}
+.inm__foto--sin{display:grid;place-items:center;color:var(--text-secondary);
+  font-size:.7rem;letter-spacing:.14em;text-transform:uppercase}
+.inm__flag{
+  position:absolute;top:12px;left:12px;
+  background:var(--accent);color:#20170a;
+  font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;
+  padding:.3rem .6rem;border-radius:999px;
+}
+.inm__cuerpo{padding:clamp(16px,2vw,24px);display:flex;flex-direction:column;gap:.55rem;flex:1}
+.inm__sitio{color:var(--accent-ink);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;margin:0}
+.inm__t{font-family:var(--d);font-weight:500;font-size:1.1rem;line-height:1.28;margin:0;color:var(--text-primary)}
+.inm__datos{margin:0;color:var(--text-secondary);font-size:.9rem}
+.inm__tags{list-style:none;margin:.2rem 0 0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
+.inm__tags li{
+  font-family:var(--m);font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--text-secondary);border:1px solid var(--line);
+  padding:.24rem .55rem;border-radius:999px;
+}
+.inm__precio{
+  font-family:var(--d);font-weight:500;font-size:1.35rem;
+  color:var(--text-primary);margin:.5rem 0 0;font-variant-numeric:tabular-nums;
+}
+.inm__mes{font-family:var(--b);font-size:.8rem;color:var(--text-secondary)}
+.inm__cta{margin-top:auto;align-self:flex-start}
+
+.cart__vacio,.cart__sinres{
+  max-width:640px;margin:clamp(30px,6vh,70px) auto;text-align:center;
+  border:1px solid var(--line);border-radius:20px;
+  padding:clamp(28px,4vw,52px);
+  background:linear-gradient(160deg,var(--card-a),var(--card-b));
+  box-shadow:var(--lift);
+}
+.cart__vacio-t{font-family:var(--d);font-size:clamp(1.2rem,2.2vw,1.6rem);
+  color:var(--text-primary);margin:0 0 .7rem}
+.cart__vacio p,.cart__sinres p{color:var(--text-secondary);line-height:1.6;margin:0}
+.cart__vacio-btns,.cart__cierre-btns{
+  display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:1.8rem;
+}
+.cart__cierre{padding:clamp(60px,9vh,120px) var(--gut) clamp(80px,12vh,150px);
+  border-top:1px solid var(--line)}
+.cart__cierre-in{max-width:640px;margin:0 auto;text-align:center}
+.cart__cierre-in .lede{margin-top:.8rem}
+
+@media (max-width:1180px){
+  .cart__campos{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:760px){
+  .cart__campos{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:440px){
+  .cart__campos{grid-template-columns:1fr}
+  .cart__acciones{justify-content:flex-start}
+}
+
+/* ---------- Pie ---------- */
+
+.foot{
+  position:relative;z-index:1;
+  border-top:1px solid var(--line);
+  padding:clamp(46px,7vh,80px) var(--gut) 30px;
+  background:var(--canvas-deep);
+}
+.foot__top{
+  max-width:var(--maxw);margin:0 auto;
+  display:grid;grid-template-columns:auto 1fr;
+  gap:clamp(28px,5vw,80px);align-items:start;
+}
+.foot__cols{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:clamp(18px,3vw,44px);
+  color:var(--text-secondary);font-size:.94rem;
+}
+.foot__l{color:var(--accent-ink);margin:0 0 .7rem}
+.foot__cols p{margin:0}
+.foot__cols a{border-bottom:1px solid transparent;transition:border-color .35s var(--ease),color .35s var(--ease)}
+.foot__cols a:hover{color:var(--accent-ink);border-bottom-color:var(--accent-ink)}
+.foot__bar{
+  max-width:var(--maxw);margin:clamp(34px,5vh,58px) auto 0;
+  padding-top:22px;border-top:1px solid var(--line);
+  display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
+  color:var(--text-secondary);font-size:.8rem;
+}
+.foot__bar p{margin:0}
+.foot__note{opacity:.66;max-width:52ch}
+
+@media (max-width:760px){
+  .foot__top{grid-template-columns:1fr}
+  .foot__cols{grid-template-columns:1fr 1fr}
+}
+/* En un iPhone SE (320px) dos columnas dejan 131px cada una, y la
+   direccion de la oficina caia a dos palabras por linea. A esa anchura
+   el pie va en una sola columna. Y el boton largo del formulario se
+   partia en CUATRO renglones: se le baja el cuerpo, que a esa anchura
+   un boton de cuatro lineas parece un error de la pagina. */
+@media (max-width:420px){
+  .foot__cols{grid-template-columns:1fr;gap:22px}
+}
+@media (max-width:380px){
+  .btn--lg{padding:.9em 1.2em;font-size:.9rem}
+}
+
+/* =========================================================
+   MOVIMIENTO REDUCIDO
+   ========================================================= */
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{
+    animation-duration:.001ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.001ms!important;
+    transition-delay:0s!important;
+  }
+  body{opacity:1}
+  .reveal .part{opacity:1;transform:none}
+  .premise__body .beat{opacity:1;transform:none}
+  .gate__line{stroke-dashoffset:0}
+  .thread i{transform:scaleY(1)}
+  .zones__line{opacity:1;transform:none}
+}
+.rm .reveal .part{opacity:1;transform:none}
+.rm .premise__body .beat{opacity:1;transform:none}
+.rm .gate__line{stroke-dashoffset:0}
+.rm .thread i{transform:scaleY(1)}
+.rm .zones__line{opacity:1;transform:none}
+
+/* pausa global de animaciones */
+body.paused *,body.paused *::before,body.paused *::after{
+  animation-play-state:paused!important;
+}
+
+/* El arco del cargador. Vivia en un style= dentro del SVG; se ha traido
+   aqui para que la politica de seguridad pueda prohibir los estilos en
+   linea sin excepciones. El valor lo sigue moviendo site.js a traves de
+   la variable --ld, que es CSSOM y la politica no lo bloquea. */
+.ring__arc{stroke-dashoffset:var(--ld,126)}
+
+/* =========================================================
+   La pagina legal
+   =========================================================
+   Un aviso legal que no se puede leer no cumple su funcion, aunque
+   tecnicamente este publicado. Por eso aqui manda la legibilidad: columna
+   estrecha, linea generosa y jerarquia clara. Es texto para leer, no para
+   mirar. */
+
+.legal{max-width:74ch;margin:0 auto;padding:0 var(--gut) 8rem}
+
+.legal__idx{
+  display:flex;flex-wrap:wrap;gap:.5rem;
+  margin:0 0 3.5rem;padding:1rem 0;
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+}
+.legal__idx a{
+  font-family:var(--m);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;
+  padding:.5rem .9rem;border:1px solid var(--line);border-radius:2rem;
+  color:var(--text-secondary);text-decoration:none;transition:color .2s,border-color .2s;
+}
+.legal__idx a:hover,.legal__idx a:focus-visible{color:var(--text-primary);border-color:var(--line-strong)}
+
+.legal__s{margin:0 0 5rem;scroll-margin-top:6rem}
+.legal__s h3{
+  font-family:var(--b);font-weight:700;font-size:1.02rem;
+  margin:2.6rem 0 .7rem;color:var(--text-primary);
+}
+.legal__s p,.legal__s li{color:var(--text-secondary);line-height:1.75;font-size:.95rem}
+.legal__s p{margin:0 0 1rem}
+.legal__s ul{margin:0 0 1.4rem;padding-left:1.1rem}
+.legal__s li{margin:0 0 .55rem}
+.legal__s b{color:var(--text-primary);font-weight:700}
+.legal__s a{color:var(--text-primary);text-underline-offset:.2em}
+
+/* La ficha de datos del titular: etiqueta y valor, legible tambien
+   cuando no cabe en dos columnas. */
+.legal__datos{list-style:none;padding:0;margin:1.2rem 0 1.6rem;
+  border-top:1px solid var(--line)}
+.legal__datos li{
+  display:grid;grid-template-columns:15rem 1fr;gap:1rem;
+  margin:0;padding:.8rem 0;border-bottom:1px solid var(--line);
+}
+.legal__datos span{
+  font-family:var(--m);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--line-strong);padding-top:.15em;
+}
+@media (max-width:640px){
+  .legal__datos li{grid-template-columns:1fr;gap:.2rem}
+}
+
+/* Lo que todavia no nos han dado. Tiene que cantar: un aviso legal
+   publicado con huecos es peor que no tenerlo, porque parece cumplido. */
+[data-falta]{
+  color:#c0392b;background:rgba(192,57,43,.09);
+  border:1px dashed rgba(192,57,43,.5);border-radius:.3rem;
+  padding:.1em .45em;font-family:var(--m);font-size:.82em;
+}
+
+.legal__destacado{
+  font-size:1.1rem;line-height:1.6;color:var(--text-primary);
+  border-left:2px solid var(--line-strong);padding:.2rem 0 .2rem 1.2rem;margin:0 0 2rem;
+}
+.legal__nota{font-size:.85rem;color:var(--line-strong);font-style:italic;margin-top:-.6rem}
+.legal__fecha{color:var(--line-strong);padding-top:2rem;border-top:1px solid var(--line)}
+
+/* La casilla de consentimiento del formulario. Va discreta pero legible:
+   si no se lee, no es consentimiento informado, es una casilla. */
+.field--consent{margin-top:.4rem}
+.consent{
+  display:flex;gap:.7rem;align-items:flex-start;cursor:pointer;
+  font-size:.82rem;line-height:1.55;color:var(--text-secondary);
+}
+.consent input{
+  flex:none;margin:.2em 0 0;width:1.05rem;height:1.05rem;
+  accent-color:var(--accent);cursor:pointer;
+}
+.consent a{color:var(--text-primary);text-underline-offset:.2em}
+.consent input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Los enlaces legales del pie. */
+.foot__legal{
+  font-family:var(--m);font-size:.7rem;letter-spacing:.08em;
+  color:var(--text-secondary);margin:0;
+}
+.foot__legal a{color:var(--text-secondary);text-decoration:none;
+  border-bottom:1px solid var(--line);transition:color .2s,border-color .2s}
+.foot__legal a:hover,.foot__legal a:focus-visible{
+  color:var(--text-primary);border-color:var(--line-strong)}
+
+/* =========================================================
+   El selector de idioma
+   =========================================================
+   Va DENTRO del grupo de la derecha, junto al telefono y al boton. Como
+   cuarto hijo suelto de la barra quedaba flotando en medio de la nada.
+
+   Y lleva fondo y borde propios por un motivo concreto: arriba del todo
+   la barra es transparente y debajo pasa el video, que en el plano del
+   cielo es casi blanco. Sin este fondo, las tres letras desaparecen.
+
+   Van con <abbr> y el nombre completo en el title, para que un lector de
+   pantalla diga "Catala" y no deletree "ce a". El idioma activo no es un
+   enlace: no tiene sentido enlazar a la pagina en la que ya se esta. */
+.lang{
+  display:flex;align-items:center;gap:2px;
+  padding:3px;border-radius:2rem;
+  border:1px solid var(--line-strong);
+  background:var(--glass-2);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+}
+.lang a,.lang__on{
+  font-family:var(--m);font-size:.66rem;letter-spacing:.06em;line-height:1;
+  padding:.42rem .55rem;border-radius:2rem;
+  text-decoration:none;white-space:nowrap;
+  transition:color .25s var(--ease),background .25s var(--ease);
+}
+.lang abbr{text-decoration:none;border:0;cursor:inherit}
+.lang a{color:var(--text-secondary)}
+.lang a:hover,.lang a:focus-visible{color:var(--text-primary);background:var(--accent-muted)}
+.lang__on{color:#0B1417;background:var(--accent);cursor:default}
+.lang a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Cuando la barra se vuelve solida ya hay fondo detras, y el del selector
+   sobra: se queda solo el borde. */
+.nav.solid .lang{background:transparent}
+
+/* En movil manda el boton de llamada a la accion, asi que el selector se
+   aprieta todo lo que puede sin dejar de ser pulsable. */
+@media (max-width:720px){
+  .lang{padding:2px}
+  .lang a,.lang__on{padding:.38rem .4rem;font-size:.6rem;letter-spacing:.02em}
+}
+
+/* En pantallas muy estrechas (un iPhone SE son 320px) la barra se
+   desbordaba: marca, selector, telefono y boton no caben. Medido, faltan
+   unos 48px. Se recuperan apretando el hueco entre grupos y el boton, que
+   es lo que mas ocupa, sin tocar el area pulsable minima. */
+@media (max-width:380px){
+  .nav{gap:8px;padding-left:14px;padding-right:14px}
+  .nav__actions{gap:6px}
+  .nav__kicker{display:none}
+  .nav__tel{font-size:.72rem;padding:.55rem .7rem}
+}
+
+/* El area para tocar, mas grande que el dibujo.
+   Medido en movil: cada codigo ocupaba 25x22px y la recomendacion son
+   44x44. Agrandar el boton lo volveria un mamotreto en una barra donde no
+   sobra sitio, asi que se agranda solo la zona sensible al dedo, con una
+   capa invisible por encima. El selector se sigue viendo pequeno y
+   discreto, pero se acierta a la primera. */
+.lang a{position:relative}
+.lang a::after{
+  content:"";position:absolute;
+  left:-2px;right:-2px;top:-11px;bottom:-11px;
+}

@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Top House Real Estate · Inmobiliaria en el Maresme</title>
+<meta name="description" content="Inmobiliaria en el Maresme, con oficina en Arenys de Mar. Compra, venta y alquiler en los treinta municipios de la comarca, de Montgat a Tordera. Valoración gratuita y sin compromiso.">
+<meta name="theme-color" content="#0B1417">
+<meta name="author" content="Top House Real Estate">
+<!-- ===================================================================
+     Dominio definitivo: tophouserealestate.es
+
+     Si esta pagina se moviese de sitio dentro del dominio, hay que cambiar
+     las tres direcciones de abajo. Si no va en la home y se deja aqui la
+     direccion de la home, Google entiende que la buena es la otra y esta no
+     aparece en las busquedas.
+
+     PENDIENTE AL PUBLICAR: redirecciones permanentes (301) del dominio
+     viejo, tophouseconsulting.com, hacia este. Sin ellas se pierde el
+     posicionamiento acumulado.
+     =================================================================== -->
+<link rel="canonical" href="https://www.tophouserealestate.es/es/">
+<link rel="alternate" hreflang="ca" href="https://www.tophouserealestate.es/">
+<link rel="alternate" hreflang="es" href="https://www.tophouserealestate.es/es/">
+<link rel="alternate" hreflang="en" href="https://www.tophouserealestate.es/en/">
+<link rel="alternate" hreflang="x-default" href="https://www.tophouserealestate.es/">
+<meta property="og:url" content="https://www.tophouserealestate.es/es/">
+<meta property="og:image" content="https://www.tophouserealestate.es/assets/hero-ending.jpg">
+
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_ES">
+<meta property="og:site_name" content="Top House Real Estate">
+<meta property="og:title" content="Top House Real Estate · Inmobiliaria en el Maresme">
+<meta property="og:description" content="Compra, venta y alquiler en todo el Maresme. Le decimos lo que vale su vivienda en media hora, gratis y sin compromiso.">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" type="image/png" href="/assets/favicon.png?v=90aac445">
+
+<!-- Las tipografias se sirven desde este mismo dominio, no desde Google.
+     El motivo esta explicado arriba del todo de assets/fonts.css. -->
+<link rel="preload" href="/assets/fonts/fraunces-var-latin.woff2?v=48642176" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/manrope-var-latin.woff2?v=b4295101" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/fonts.css?v=69dae886">
+<link rel="stylesheet" href="/assets/site.css?v=fff4791a">
+</head>
+<body>
+
+<a class="skip" href="#main">Saltar al contenido</a>
+
+<!-- ============ CAPA DE ENTORNO FIJA ============ -->
+<div class="env" aria-hidden="true">
+  <div class="env__glow"></div>
+  <div class="env__grain"></div>
+</div>
+
+<!-- ============ NAVEGACIÓN ============ -->
+<nav class="nav" id="nav" aria-label="Principal">
+  <a class="nav__brand" href="#top" aria-label="Top House Real Estate, inicio">
+    <img class="mark" src="/assets/logo.png?v=e80d112c" width="256" height="256" alt="" aria-hidden="true" decoding="async">
+    <span class="nav__word">
+      <span class="nav__name">Top House</span>
+      <span class="nav__kicker">Real Estate</span>
+    </span>
+  </a>
+  <div class="nav__links">
+    <a href="#vender">Vender</a>
+    <a href="comprar.html">Comprar</a>
+    <a href="alquilar.html">Alquilar</a>
+    <a href="#valorar">Valoración</a>
+    <a href="#servicios">Servicios</a>
+    <a href="#contacto">Contacto</a>
+  </div>
+  <div class="nav__actions">
+    <div class="lang" role="group" aria-label="Idioma"><a href="/" hreflang="ca" lang="ca"><abbr title="Català">CA</abbr></a><span class="lang__on" aria-current="true"><abbr title="Castellano">ES</abbr></span><a href="/en/" hreflang="en" lang="en"><abbr title="English">EN</abbr></a></div>
+    <a class="btn btn--ghost nav__tel" href="tel:+34605273150">605 27 31 50</a>
+    <a class="btn btn--solid" href="#contacto">Pedir mi valoración</a>
+  </div>
+</nav>
+
+<!-- ============ HÉROE ============ -->
+<header class="hero" id="top">
+  <div class="stage" id="stage">
+
+    <div class="poster" id="poster" aria-hidden="true"></div>
+    <video id="hero-video" class="hero__video" preload="none" muted playsinline aria-hidden="true" tabindex="-1"></video>
+    <!-- En movil el plano se pinta aqui, fotograma a fotograma, en vez de
+         mover un video: va igual en todos los navegadores y pesa seis
+         veces menos. Lo decide y lo dibuja assets/site.js. -->
+    <canvas id="hero-lienzo" class="hero__lienzo" aria-hidden="true"></canvas>
+    <div class="scrim" aria-hidden="true"></div>
+
+    <div class="loader" id="loader" aria-hidden="true">
+      <svg class="ring" viewBox="0 0 48 48" focusable="false">
+        <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-dasharray="126" class="ring__arc"/>
+      </svg>
+    </div>
+
+    <div class="bands" id="bands">
+
+      <!-- TRES bandas, no cuatro. Con tres, cada una se lleva un tercio
+           del scroll y da tiempo a leerla; con cuatro iban apretadas. Los
+           rangos data-a y data-b se han repartido de nuevo. -->
+
+      <div class="band band--split" data-a="0" data-b="0.26" data-entrance="part" data-first="1">
+        <h1 class="ln">
+          <span class="sr-only">Su inmobiliaria en el Maresme.</span>
+          <span class="half half--l" aria-hidden="true" data-split="word">Su inmobiliaria</span>
+          <span class="half half--r" aria-hidden="true" data-split="word">en el Maresme.</span>
+        </h1>
+        <p class="sub sub--r" aria-hidden="true">Con oficina en la Riera de Arenys de Mar. No somos solo una web.</p>
+      </div>
+
+      <div class="band band--split band--bloom" data-a="0.32" data-b="0.58" data-entrance="depth">
+        <p class="ln">
+          <span class="sr-only">Más de diez años en este mercado.</span>
+          <span class="half half--l" aria-hidden="true" data-split="word">Más de diez años</span>
+          <span class="half half--r" aria-hidden="true" data-split="word">en este mercado.</span>
+        </p>
+        <p class="sub sub--l" aria-hidden="true">Los suficientes para saber lo que se paga de verdad en cada calle.</p>
+      </div>
+
+      <div class="band band--center" data-a="0.66" data-b="1" data-entrance="rise" data-ramp="0.09">
+        <p class="ln ln--center">
+          <span class="sr-only">Le acompañamos de principio a fin.</span>
+          <span class="cline" aria-hidden="true" data-split="word">Le acompañamos</span>
+          <span class="cline cline--2" aria-hidden="true" data-split="word">de principio a fin.</span>
+        </p>
+        <p class="sub sub--c" aria-hidden="true">Sin cuota de entrada ni gastos de publicación. Si su vivienda no se vende, usted no paga nada.</p>
+        <div class="band__cta" aria-hidden="true">
+          <a class="btn btn--solid btn--lg" href="#contacto" tabindex="-1">Pedir mi valoración</a>
+          <a class="btn btn--ghost btn--lg" href="#comprar" tabindex="-1">Ver qué hay en venta</a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="cue" id="cue" aria-hidden="true"><span></span></div>
+  </div>
+</header>
+
+<main id="main" tabindex="-1">
+
+<!-- ============ HÉROE ESTÁTICO (móvil y movimiento reducido) ============ -->
+<section class="statichero" id="statichero" hidden>
+  <div class="statichero__art" aria-hidden="true"></div>
+  <div class="statichero__body">
+    <p class="kicker">Inmobiliaria en el Maresme</p>
+    <h2 class="d1">Su inmobiliaria en el Maresme.</h2>
+    <p class="lede">Más de diez años vendiendo en el Maresme, de Montgat a Tordera, con oficina en la Riera del Bisbe Pol de Arenys de Mar. Le acompañamos de principio a fin: valoración, venta, papeles, financiación y obra.</p>
+    <p class="lede beat beat--accent">Sin cuota de entrada ni gastos de publicación. Si su vivienda no se vende, usted no paga nada.</p>
+    <div class="row">
+      <a class="btn btn--solid btn--lg" href="#contacto">Pedir mi valoración</a>
+      <a class="btn btn--ghost btn--lg" href="#comprar">Ver qué hay en venta</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LA BIFURCACIÓN ============ -->
+<section class="fork reveal" id="vender" aria-labelledby="fork-h">
+  <p class="kicker">Tres maneras de entrar</p>
+  <h2 class="sr-only" id="fork-h">Vender, comprar o alquilar en el Maresme</h2>
+  <div class="fork__grid">
+
+    <article class="door door--big part">
+      <div class="door__num" aria-hidden="true">01</div>
+      <h3 class="d2">Quiero saber qué vale mi casa</h3>
+      <p>Media hora en su casa. Le decimos lo que vale y con qué ventas lo comparamos, aunque acabe vendiéndola con otro.</p>
+      <ul class="ticks">
+        <li>La vemos por dentro. Nadie valora por foto</li>
+        <li>Comparada con lo que se ha firmado en su tramo</li>
+        <li>Sin coste, sin compromiso y sin exclusiva obligatoria</li>
+      </ul>
+      <a class="btn btn--solid" href="#contacto">Pedir mi valoración</a>
+    </article>
+
+    <article class="door door--small part" id="comprar">
+      <div class="door__num" aria-hidden="true">02</div>
+      <h3 class="d3">Quiero ver lo que hay en la comarca</h3>
+      <p>Pisos, casas, locales y terreno en los treinta municipios del Maresme, de Montgat a Tordera.</p>
+      <ul class="ticks">
+        <li>Filtre por tipo, población y precio máximo</li>
+        <li>La gran mayoría se cierra antes de publicarse: pregúntenos</li>
+        <li>Y si no está en la lista, la buscamos por usted</li>
+      </ul>
+      <a class="btn btn--ghost" href="comprar.html">Ver la cartera</a>
+    </article>
+
+    <article class="door door--small part" id="alquilar">
+      <div class="door__num" aria-hidden="true">03</div>
+      <h3 class="d3">Quiero alquilar</h3>
+      <p>Gestionamos todo tipo de alquiler, y buscamos un inquilino que encaje con lo que espera cobrar.</p>
+      <ul class="ticks">
+        <li>Alquiler garantizado</li>
+        <li>Inquilino con las máximas garantías</li>
+        <li>Contrato y papeles incluidos</li>
+      </ul>
+      <a class="btn btn--ghost" href="alquilar.html">Ver los alquileres</a>
+    </article>
+
+  </div>
+</section>
+
+<!-- ============ EL ARCO (elemento firma + premisa) ============ -->
+<section class="premise reveal" aria-labelledby="premise-h">
+  <div class="premise__art">
+    <svg class="gate" viewBox="0 0 400 520" aria-hidden="true" focusable="false" preserveAspectRatio="xMidYMax meet">
+      <defs>
+        <clipPath id="gateClip">
+          <path d="M56 520 V92 A34 34 0 0 1 90 58 H310 A34 34 0 0 1 344 92 V520 Z"/>
+        </clipPath>
+      </defs>
+      <g clip-path="url(#gateClip)">
+        <rect class="gate__bed" x="0" y="0" width="400" height="520"/>
+        <image class="gate__img" href="/assets/arenys-calle.jpg?v=ec45e854" x="0" y="0" width="400" height="520" preserveAspectRatio="xMidYMid slice"/>
+        <rect x="0" y="0" width="400" height="520" class="gate__wash"/>
+      </g>
+      <path class="gate__line" d="M56 520 V92 A34 34 0 0 1 90 58 H310 A34 34 0 0 1 344 92 V520"/>
+    </svg>
+  </div>
+  <div class="premise__body">
+    <p class="kicker">La demanda</p>
+    <h2 class="d1" id="premise-h">Puede que su casa se venda sin llegar a anunciarse.</h2>
+    <p class="lede beat">Es lo que ocurre con la gran mayoría de las que vendemos. Antes del anuncio ya sabemos a quién llamar: compradores que nos han dicho qué buscan, en qué pueblo y hasta en qué calle. Cuando entra una que encaja, esa llamada se hace el mismo día.</p>
+    <p class="lede beat beat--accent">Sin meses en un portal, sin bajadas de precio a la vista de todo el pueblo y sin desfile de curiosos por su casa.</p>
+  </div>
+</section>
+
+<!-- ============ CÓMO VENDEMOS ============ -->
+<section class="steps reveal" aria-labelledby="steps-h">
+  <header class="steps__head">
+    <p class="kicker">El encargo</p>
+    <h2 class="d1" id="steps-h">Lo que pasa si nos llama.</h2>
+  </header>
+
+  <div class="thread" aria-hidden="true"><i></i></div>
+
+  <ol class="steps__list">
+    <li class="step part">
+      <span class="step__n" aria-hidden="true">1</span>
+      <div class="step__art"><img src="/assets/paso-visita.jpg?v=8386f2c5" alt="" loading="lazy" decoding="async"></div>
+      <div class="step__body">
+        <h3 class="d3">Vamos a verla</h3>
+        <p>Media hora en su casa. Ningún formulario de veinte campos, ningún tasador automático que no ha visto la luz que entra por su ventana.</p>
+      </div>
+    </li>
+    <li class="step part">
+      <span class="step__n" aria-hidden="true">2</span>
+      <div class="step__art"><img src="/assets/paso-precio.jpg?v=aff0d659" alt="" loading="lazy" decoding="async"></div>
+      <div class="step__body">
+        <h3 class="d3">Le ponemos precio con datos de su tramo</h3>
+        <p>Con las ventas firmadas en su tramo delante. Si le sobra precio, se lo diremos aunque no le guste oírlo.</p>
+      </div>
+    </li>
+    <li class="step part">
+      <span class="step__n" aria-hidden="true">3</span>
+      <div class="step__art"><img src="/assets/paso-ensenar.jpg?v=a901851d" alt="" loading="lazy" decoding="async"></div>
+      <div class="step__body">
+        <h3 class="d3">La enseñamos como se merece</h3>
+        <p>Fotografía, plano y visitas filtradas. En su casa no entra quien no puede comprarla.</p>
+      </div>
+    </li>
+    <li class="step part">
+      <span class="step__n" aria-hidden="true">4</span>
+      <div class="step__art"><img src="/assets/paso-cerrar.jpg?v=88004d03" alt="" loading="lazy" decoding="async"></div>
+      <div class="step__body">
+        <h3 class="d3">Cerramos</h3>
+        <p>Arras, notaría y papeles. Usted firma, del resto nos ocupamos nosotros.</p>
+      </div>
+    </li>
+  </ol>
+</section>
+
+<!-- ============ EL MAPA (momento interactivo) ============ -->
+<!-- ============ CALCULADORA DE PRE-VALORACIÓN ============ -->
+<section class="calc reveal" id="valorar" aria-labelledby="calc-h">
+  <div class="calc__intro">
+    <p class="kicker">Valoración online</p>
+    <h2 class="d1" id="calc-h">Hágase una idea ahora mismo.</h2>
+    <p class="lede">Seis datos y le damos una horquilla al momento. Le va a salir un número ancho, y es a propósito: cualquier web que le dé una cifra exacta sin haber visto su casa se la está inventando.</p>
+  </div>
+
+  <div class="calc__panel">
+    <form class="calc__form" id="calc-form" novalidate>
+      <div class="calc__grid">
+
+        <div class="cfield">
+          <label for="c-tipo">Qué es</label>
+          <select id="c-tipo" name="tipo">
+            <option value="piso">Piso</option>
+            <option value="atico">Ático</option>
+            <option value="bajo">Planta baja</option>
+            <option value="casa">Casa o torre</option>
+          </select>
+        </div>
+
+        <div class="cfield">
+          <label for="c-poblacio">Población</label>
+          <select id="c-poblacio" name="poblacio"></select>
+        </div>
+
+        <div class="cfield">
+          <label for="c-zona">Zona</label>
+          <select id="c-zona" name="zona"></select>
+        </div>
+
+        <div class="cfield">
+          <label for="c-m2">Metros construidos</label>
+          <input id="c-m2" name="m2" type="number" inputmode="numeric" min="25" max="600" step="1" value="90">
+        </div>
+
+        <div class="cfield">
+          <label for="c-hab">Habitaciones</label>
+          <select id="c-hab" name="hab">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+            <option value="5">5 o más</option>
+          </select>
+        </div>
+
+        <div class="cfield cfield--wide">
+          <label for="c-estado">Cómo está</label>
+          <select id="c-estado" name="estado">
+            <option value="reformar">Para reformar</option>
+            <option value="bien" selected>En buen estado</option>
+            <option value="reformado">Reformado o a estrenar</option>
+          </select>
+        </div>
+
+        <fieldset class="cfield cfield--wide cextras">
+          <legend>Qué tiene</legend>
+          <label class="chk"><input type="checkbox" name="ex" value="ascensor"> <span>Ascensor</span></label>
+          <label class="chk"><input type="checkbox" name="ex" value="exterior"> <span>Terraza o patio</span></label>
+          <label class="chk"><input type="checkbox" name="ex" value="parking"> <span>Parking</span></label>
+          <label class="chk"><input type="checkbox" name="ex" value="mar"> <span>Vistas al mar</span></label>
+        </fieldset>
+
+      </div>
+      <button class="btn btn--solid btn--lg calc__go" type="submit">Calcular el precio</button>
+    </form>
+
+    <div class="calc__out" id="calc-out" role="status" aria-live="polite" hidden>
+      <p class="calc__lbl mono">Horquilla orientativa</p>
+      <p class="calc__num" id="calc-range"></p>
+      <p class="calc__unit mono" id="calc-unit"></p>
+      <p class="calc__warn calc__warn--gen" id="calc-generica" hidden>Ha elegido una población sin dato propio en nuestra tabla, así que este número es todavía más grueso: sale de la media de Catalunya. Si nos dice cuál es, se lo afinamos por teléfono.</p>
+      <p class="calc__fuente mono" id="calc-fuente"></p>
+      <p class="calc__warn">Esto es un cálculo automático a partir de precios de mercado de su comarca. No ve su calle exacta, ni la altura, ni la luz, ni el estado real, y esas cuatro cosas mueven el precio miles de euros. Para saber lo que vale de verdad hay que ir.</p>
+      <a class="btn btn--solid btn--lg calc__cta" id="calc-cta" href="#contacto">Quiero el precio real, con visita</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LA PRUEBA ============
+     La cifra de inmuebles en cartera vivia aqui escrita a mano. Se ha
+     quitado: decia "ahora mismo" y era un numero fijo en el codigo, asi
+     que a los dos meses mentia. Volvera cuando Mobilia este conectado y
+     se pueda contar sola de la cartera de verdad. Mientras tanto, aqui
+     solo hay cosas que no envejecen.
+     ============================================================ -->
+<section class="proof reveal" aria-labelledby="proof-h">
+  <h2 class="sr-only" id="proof-h">Top House Real Estate en cifras</h2>
+  <div class="proof__row">
+    <div class="stat part">
+      <p class="stat__n"><span class="count" data-to="10" data-prefix="+">+10</span></p>
+      <p class="stat__l">años vendiendo en el Maresme</p>
+    </div>
+    <div class="stat part">
+      <p class="stat__n"><span class="count" data-to="1">1</span></p>
+      <p class="stat__l">oficina en Arenys, con la puerta abierta</p>
+    </div>
+    <div class="stat part">
+      <p class="stat__n"><span class="count" data-to="3">3</span></p>
+      <p class="stat__l">idiomas: català, castellano y English</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PREGUNTAS ============ -->
+<!-- ============ SERVICIOS ============ -->
+<section class="svc reveal" id="servicios" aria-labelledby="svc-h">
+  <div class="svc__intro">
+    <p class="kicker">Lo que hacemos</p>
+    <h2 class="d1" id="svc-h">No solo abrimos puertas.</h2>
+    <p class="lede">Una casa se vende con papeles, con dinero y con obra. Nos ocupamos de las tres cosas para que usted no tenga que ir buscándolas por su cuenta.</p>
+  </div>
+
+  <ul class="svc__list">
+    <li class="svc__item part">
+      <h3>Valoración gratuita</h3>
+      <p>Valoramos su casa sin coste, con criterios técnicos, con lo que se ha vendido cerca y con cómo está el mercado hoy.</p>
+    </li>
+    <li class="svc__item part">
+      <h3>Venta de inmuebles</h3>
+      <p>Llevamos la venta desde el primer día hasta la firma ante notario. De todo lo de en medio nos encargamos nosotros.</p>
+    </li>
+    <li class="svc__item part">
+      <h3>Alquiler garantizado</h3>
+      <p>Buscamos un inquilino que encaje con lo que espera cobrar, y con las máximas garantías.</p>
+    </li>
+    <li class="svc__item part">
+      <h3>Financiación</h3>
+      <p>Nuestros agentes financieros buscan la mejor hipoteca del mercado para su perfil.</p>
+    </li>
+    <li class="svc__item part">
+      <h3>Certificados</h3>
+      <p>Tramitamos cédulas de habitabilidad, certificados energéticos e inspecciones técnicas de edificios.</p>
+    </li>
+    <li class="svc__item part">
+      <h3>Interiorismo y reformas</h3>
+      <p>Le gusta una casa pero no sabe qué costaría dejarla como la quiere. Nuestros arquitectos se lo ponen en un presupuesto y le dicen cómo hacerlo.</p>
+    </li>
+    <li class="svc__item part">
+      <h3>Personal shopper inmobiliario</h3>
+      <p>Buscamos por usted la casa que encaja con lo que pide, para comprar o para alquilar.</p>
+    </li>
+  </ul>
+</section>
+
+<section class="faq reveal" id="preguntas" aria-labelledby="faq-h">
+  <div class="faq__head">
+    <p class="kicker">Sin rodeos</p>
+    <h2 class="d1" id="faq-h">Lo que nadie se atreve a preguntar.</h2>
+  </div>
+  <div class="faq__list">
+    <details class="qa part">
+      <summary><span>¿Cuánto cobran?</span></summary>
+      <p>Un porcentaje sobre el precio final de venta, acordado con usted antes de firmar nada. Es decir: <b>si su casa no se vende, usted no paga</b>. No hay cuota de entrada, ni gastos de publicación, ni nada que adelantar.</p>
+    </details>
+    <details class="qa part">
+      <summary><span>Ya la tengo publicada y no llama nadie. ¿Qué cambia?</span></summary>
+      <p>Casi siempre es el precio, y a veces son las fotos. En la valoración le decimos cuál de las dos es. Si es solo cuestión de fotos, se lo diremos igual y podrá arreglarlo con quien ya tiene.</p>
+    </details>
+    <details class="qa part">
+      <summary><span>¿Me atan a una exclusiva?</span></summary>
+      <p>Trabajamos de las dos maneras. Le explicamos qué gana su casa con cada una y decide usted.</p>
+    </details>
+    <details class="qa part">
+      <summary><span>¿La valoración es gratis de verdad?</span></summary>
+      <p>Sí. Vamos a su casa, la vemos y le damos un precio con lo que se ha vendido en su tramo. Ni le cobramos ni se compromete a nada.</p>
+    </details>
+    <details class="qa part">
+      <summary><span>¿Cuánto tarda en venderse una casa en el Maresme?</span></summary>
+      <p>Depende del tramo y del precio de salida. Una casa bien puesta se mueve en semanas. Una mal puesta puede estar un año, y al final se vende igualmente: por menos de lo que valía el primer día.</p>
+    </details>
+    <details class="qa part">
+      <summary><span>¿Atienden en inglés?</span></summary>
+      <p>Sí. Y en català y en castellano.</p>
+    </details>
+  </div>
+</section>
+
+<!-- ============ EL CIERRE ============ -->
+<section class="close reveal" id="contacto" aria-labelledby="close-h">
+  <div class="close__body">
+    <p class="kicker">Valoración gratuita</p>
+    <h2 class="d1" id="close-h">Antes de firmar con nadie.</h2>
+    <p class="lede">Rellene esto y le llamamos hoy para acordar el día. Media hora en su casa, y se va con un número y con las ventas que lo sostienen. Nos dé el encargo o no.</p>
+    <p class="lede beat beat--accent">Y si otra agencia le promete más, pregúntele con qué ventas lo compara. Es la única pregunta que hace falta.</p>
+
+    <div class="office">
+      <p class="mono office__l">La oficina</p>
+      <p>Riera del Bisbe Pol, 56<br>08350 Arenys de Mar, Barcelona</p>
+      <a class="office__tel" href="tel:+34605273150">605 27 31 50</a>
+    </div>
+  </div>
+
+  <form class="form" id="form" novalidate>
+    <div class="field">
+      <label for="f-nombre">Nombre</label>
+      <input id="f-nombre" name="nombre" type="text" autocomplete="name" required placeholder="Su nombre">
+    </div>
+    <div class="field">
+      <label for="f-tel">Teléfono</label>
+      <input id="f-tel" name="telefono" type="tel" autocomplete="tel" required placeholder="Para llamarle hoy">
+    </div>
+    <div class="field">
+      <label for="f-zona">Dónde está el inmueble</label>
+      <input id="f-zona" name="zona" type="text" autocomplete="address-level2" placeholder="Población y zona">
+    </div>
+    <div class="field">
+      <label for="f-que">Qué necesita</label>
+      <select id="f-que" name="necesita">
+        <option value="Vender">Vender</option>
+        <option value="Comprar">Comprar</option>
+        <option value="Solo saber el precio">Solo saber el precio</option>
+      </select>
+    </div>
+    <div class="field field--wide">
+      <label for="f-msg">Mensaje <span class="opt">(opcional)</span></label>
+      <textarea id="f-msg" name="mensaje" rows="3" placeholder="Cuéntenos lo que quiera"></textarea>
+    </div>
+    <div class="field field--wide field--consent">
+      <label class="consent" for="f-ok">
+        <input id="f-ok" name="consentimiento" type="checkbox" required>
+        <span>He leído y acepto la política de privacidad. Al enviar, se abre WhatsApp: mis datos viajan por ese servicio, que es de Meta.</span>
+      </label>
+    </div>
+    <p class="form__err" id="form-err" role="alert" hidden></p>
+    <button class="btn btn--solid btn--lg form__go" type="submit">Pedir mi valoración</button>
+    <p class="form__note mono">Se abre WhatsApp con su mensaje ya escrito. Nada se guarda en esta web.</p>
+    <p class="form__ok" id="form-ok" role="status" hidden>Recibido. Se abre WhatsApp con su mensaje ya escrito para que solo tenga que darle a enviar.</p>
+  </form>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="foot__top">
+    <a class="nav__brand" href="#top" aria-label="Top House Real Estate, inicio">
+      <img class="mark" src="/assets/logo.png?v=e80d112c" width="256" height="256" alt="" aria-hidden="true" decoding="async">
+      <span class="nav__word">
+        <span class="nav__name">Top House</span>
+        <span class="nav__kicker">Real Estate</span>
+      </span>
+    </a>
+    <div class="foot__cols">
+      <div>
+        <p class="mono foot__l">Dónde</p>
+        <p>Riera del Bisbe Pol, 56<br>08350 Arenys de Mar<br>Barcelona</p>
+      </div>
+      <div>
+        <p class="mono foot__l">Hablar</p>
+        <p><a href="tel:+34605273150">605 27 31 50</a><br>
+           <a href="https://wa.me/34605273150" rel="noopener">WhatsApp</a></p>
+      </div>
+      <div>
+        <p class="mono foot__l">Idiomas</p>
+        <p>Català<br>Castellano<br>English</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot__bar">
+    <p>© <span id="year">2026</span> Top House Real Estate</p>
+    <p class="foot__note">Las imágenes de esta página son de ambiente y no corresponden a inmuebles en cartera.</p>
+  </div>
+</footer>
+
+<script src="/assets/poblacions.js?v=e24418ec" defer></script>
+<script src="/assets/idioma.js?v=55cc9447" defer></script>
+<script src="/assets/site.js?v=c2dec16e" defer></script>
+</body>
+</html>

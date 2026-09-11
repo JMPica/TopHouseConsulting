@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://www.tophouserealestate.es/</loc>
+    <xhtml:link rel="alternate" hreflang="ca" href="https://www.tophouserealestate.es/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.tophouserealestate.es/es/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tophouserealestate.es/en/"/>
+    <lastmod>2026-09-07</lastmod>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://www.tophouserealestate.es/es/</loc>
+    <xhtml:link rel="alternate" hreflang="ca" href="https://www.tophouserealestate.es/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.tophouserealestate.es/es/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tophouserealestate.es/en/"/>
+    <lastmod>2026-09-07</lastmod>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://www.tophouserealestate.es/en/</loc>
+    <xhtml:link rel="alternate" hreflang="ca" href="https://www.tophouserealestate.es/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.tophouserealestate.es/es/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tophouserealestate.es/en/"/>
+    <lastmod>2026-09-07</lastmod>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://www.tophouserealestate.es/comprar.html</loc>
+    <xhtml:link rel="alternate" hreflang="ca" href="https://www.tophouserealestate.es/comprar.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.tophouserealestate.es/es/comprar.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tophouserealestate.es/en/buy.html"/>
+    <lastmod>2026-09-07</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.tophouserealestate.es/es/comprar.html</loc>
+    <xhtml:link rel="alternate" hreflang="ca" href="https://www.tophouserealestate.es/comprar.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.tophouserealestate.es/es/comprar.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tophouserealestate.es/en/buy.html"/>
+    <lastmod>2026-09-07</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.tophouserealestate.es/en/buy.html</loc>
+    <xhtml:link rel="alternate" hreflang="ca" href="https://www.tophouserealestate.es/comprar.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.tophouserealestate.es/es/comprar.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tophouserealestate.es/en/buy.html"/>
+    <lastmod>2026-09-07</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.tophouserealestate.es/llogar.html</loc>
+    <xhtml:link rel="alternate" hreflang="ca" href="https://www.tophouserealestate.es/llogar.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.tophouserealestate.es/es/alquilar.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tophouserealestate.es/en/rent.html"/>
+    <lastmod>2026-09-07</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.tophouserealestate.es/es/alquilar.html</loc>
+    <xhtml:link rel="alternate" hreflang="ca" href="https://www.tophouserealestate.es/llogar.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.tophouserealestate.es/es/alquilar.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tophouserealestate.es/en/rent.html"/>
+    <lastmod>2026-09-07</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.tophouserealestate.es/en/rent.html</loc>
+    <xhtml:link rel="alternate" hreflang="ca" href="https://www.tophouserealestate.es/llogar.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.tophouserealestate.es/es/alquilar.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tophouserealestate.es/en/rent.html"/>
+    <lastmod>2026-09-07</lastmod>
+    <priority>0.8</priority>
+  </url>
+</urlset>
