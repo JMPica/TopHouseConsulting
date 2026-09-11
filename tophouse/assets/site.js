@@ -336,8 +336,10 @@
 
      LA SOLUCION. La misma que usa Apple en sus paginas de producto:
      no se mueve un video, se pintan FOTOGRAMAS sueltos en un lienzo.
-     Son 49 imagenes recortadas en vertical, 723 KB en total, seis veces
-     menos que el video. Y sobre todo: dibujar una imagen en un lienzo
+     Son 97 imagenes recortadas en vertical, 1,2 MB en total, casi cuatro
+     veces menos que el video. Con 49 se veian los saltos: a 500vh de
+     recorrido tocaban a un fotograma cada 70px de scroll, y el dedo eso
+     lo nota. Con 97 y un heroe algo mas corto salen a 28px, que ya no. Y sobre todo: dibujar una imagen en un lienzo
      es instantaneo y se comporta igual en todos los navegadores, que es
      precisamente lo que no se puede decir de buscar dentro de un video.
 
@@ -357,10 +359,10 @@
   var modeSeq = window.matchMedia('(max-width: 820px)').matches ||
                 window.matchMedia('(orientation: portrait) and (pointer: coarse)').matches;
 
-  var SEQ_N = 49;
+  var SEQ_N = 97;
   var SEQ_BASE = '/assets/hero-mobil/';
   /* esta cadena la sella el generador; de ahi se saca la version */
-  var SEQ_PRIMER = '/assets/hero-mobil/f-01.webp';
+  var SEQ_PRIMER = '/assets/hero-mobil/f-001.webp';
   var seqVersio = (function () {
     var i = SEQ_PRIMER.indexOf('?');
     return i === -1 ? '' : SEQ_PRIMER.slice(i);
@@ -373,7 +375,9 @@
   var seqPintat = -1;
 
   function seqRuta(n) {
-    return SEQ_BASE + 'f-' + (n < 10 ? '0' + n : n) + '.webp' + seqVersio;
+    var t = String(n);
+    while (t.length < 3) { t = '0' + t; }
+    return SEQ_BASE + 'f-' + t + '.webp' + seqVersio;
   }
 
   function mesuraLienzo() {
@@ -425,6 +429,10 @@
                principio del plano que un hueco mientras cargan los 48
                que faltan. */
             if (i === 0) { seqLlest = true; seqPinta(heroProgress()); }
+            /* Con la mitad dentro ya se puede ensenar: se ve movimiento y
+               los que faltan van entrando sin que nadie lo note. Esperar a
+               los 97 seria tener la pantalla en blanco de balde. */
+            if (fets === Math.ceil(SEQ_N / 2)) mostrar();
             if (fets + fallats === SEQ_N) acabar();
           };
           img.onerror = function () {
@@ -435,16 +443,19 @@
           seqImgs[i] = img;
         })(i);
       }
+      function mostrar() {
+        seqLlest = true;
+        if (stage) stage.classList.add('video-ready');
+        seqPinta(heroProgress());
+        onScroll();
+      }
       function acabar() {
         /* Con la mitad de los fotogramas ya se ve el movimiento; por
            debajo de eso seria un pase de diapositivas y es mejor la
            foto fija. */
         if (fets < SEQ_N / 2) { rebutja(new Error('faltan fotogramas')); return; }
-        seqLlest = true;
         if (ring) ring.style.setProperty('--ld', '0');
-        if (stage) stage.classList.add('video-ready');
-        seqPinta(heroProgress());
-        onScroll();
+        mostrar();
         resol();
       }
     });
