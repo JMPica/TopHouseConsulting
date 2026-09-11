@@ -367,13 +367,18 @@ a{color:inherit;text-decoration:none}
   position:absolute;inset:0;pointer-events:none;
   background:
     /* los dos lados, que es donde se apoya el texto */
+    /* Plano sobre las dos franjas de texto y cayendo solo al acercarse al
+       vano. Antes caia en rampa desde el borde, y esa rampa era el
+       desnivel que quedaba bajo la palabra despues de aplanar las bolsas
+       de las bandas: de un extremo a otro del titular el velo pasaba de
+       .46 a .18, y esos 0.28 de diferencia se veian como un corte. */
     linear-gradient(90deg,
-      rgba(245,240,230,.46) 0%,
-      rgba(245,240,230,.30) 22%,
-      rgba(245,240,230,0)   40%,
-      rgba(245,240,230,0)   60%,
-      rgba(245,240,230,.30) 78%,
-      rgba(245,240,230,.46) 100%),
+      rgba(245,240,230,.40) 0%,
+      rgba(245,240,230,.40) 34%,
+      rgba(245,240,230,0)   46%,
+      rgba(245,240,230,0)   54%,
+      rgba(245,240,230,.40) 66%,
+      rgba(245,240,230,.40) 100%),
     /* y un roce arriba y abajo, para que el plano no corte a hueso */
     linear-gradient(180deg,
       rgba(245,240,230,.55) 0%,
@@ -457,39 +462,58 @@ a{color:inherit;text-decoration:none}
    clara que la izquierda, y cada lado necesita distinto empujon para que
    las dos mitades de la frase pesen igual. Cada uno se apaga en su borde
    interior, de modo que el carril del arco queda intacto. */
+/* MESETA, no cupula.
+
+   La arista donde se cortan las dos paredes del plano barre del 37% al
+   6% del ancho segun avanza la camara. No hay ninguna posicion fija en
+   la que el texto la esquive: mover el titular solo cambia EN QUE
+   MOMENTO del plano lo cruza, y para la segunda banda la arista llega
+   al 10%, o sea que ni haciendo la letra mucho mas pequena se salva.
+
+   Lo que si se puede es que el texto no se entere. Antes estos velos
+   eran cupulas: fuertes en su centro y cayendo hacia los lados, asi que
+   una punta de la palabra quedaba mas tapada que la otra y la arista se
+   colaba por la parte floja. Medido: el fondo bajo "La seva
+   immobiliaria" variaba 0.302 de luminancia de una punta a otra de la
+   palabra. Eso es exactamente el corte que se ve.
+
+   Ahora son mesetas: plano sobre toda la huella del texto y cayendo
+   DESPUES de ella. La arista sigue pasando, pero por detras de un campo
+   uniforme, y la palabra se lee entera sobre el mismo tono. */
 .band--split::before{
   left:-8%;right:calc(50% + var(--lane)/2 - 6%);
-  background:radial-gradient(ellipse 48% 62% at 56% 50%,
-    rgba(248,244,236,.78) 0%,rgba(248,244,236,.60) 50%,rgba(248,244,236,0) 96%);
+  background:radial-gradient(ellipse 60% 52% at 40% 50%,
+    rgba(248,244,236,.95) 0%,rgba(248,244,236,.93) 58%,
+    rgba(248,244,236,.55) 82%,rgba(248,244,236,0) 100%);
 }
 .band--split::after{
   right:-8%;left:calc(50% + var(--lane)/2 - 6%);
-  background:radial-gradient(ellipse 46% 82% at 44% 50%,
-    rgba(248,244,236,.80) 0%,rgba(248,244,236,.72) 34%,
-    rgba(248,244,236,.56) 58%,rgba(248,244,236,.28) 80%,rgba(248,244,236,0) 100%);
+  background:radial-gradient(ellipse 60% 54% at 60% 50%,
+    rgba(248,244,236,.95) 0%,rgba(248,244,236,.93) 58%,
+    rgba(248,244,236,.55) 84%,rgba(248,244,236,0) 100%);
 }
 
 /* La banda 3 cruza el plano del cristal, donde la luz revienta. Ahi el
    marfil casi no cambia nada, porque la pared ya esta casi en marfil: es
    justo el sitio donde este planteamiento trabaja menos y mejor. */
 .band--bloom::before{
-  background:radial-gradient(ellipse 48% 60% at 56% 50%,
-    rgba(248,244,236,.88) 0%,rgba(248,244,236,.70) 48%,
-    rgba(248,244,236,.40) 74%,rgba(248,244,236,0) 96%);
+  background:radial-gradient(ellipse 60% 52% at 40% 50%,
+    rgba(248,244,236,.95) 0%,rgba(248,244,236,.93) 58%,
+    rgba(248,244,236,.55) 82%,rgba(248,244,236,0) 100%);
 }
 .band--bloom::after{
-  background:radial-gradient(ellipse 44% 78% at 44% 50%,
-    rgba(248,244,236,.92) 0%,rgba(248,244,236,.86) 34%,
-    rgba(248,244,236,.68) 60%,rgba(248,244,236,.34) 82%,rgba(248,244,236,0) 100%);
+  background:radial-gradient(ellipse 60% 54% at 60% 50%,
+    rgba(248,244,236,.95) 0%,rgba(248,244,236,.93) 58%,
+    rgba(248,244,236,.55) 84%,rgba(248,244,236,0) 100%);
 }
 
 /* velo único superior para el posado */
 .band--center::before{
   content:"";position:absolute;inset:-4%;pointer-events:none;z-index:0;
   opacity:calc(.86 + .14*var(--k,1));
-  background:radial-gradient(ellipse 86% 72% at 50% 46%,
-    rgba(248,244,236,.74) 0%,rgba(248,244,236,.60) 44%,
-    rgba(248,244,236,.34) 68%,rgba(248,244,236,0) 92%);
+  background:radial-gradient(ellipse 92% 64% at 50% 48%,
+    rgba(248,244,236,.93) 0%,rgba(248,244,236,.91) 62%,
+    rgba(248,244,236,.50) 84%,rgba(248,244,236,0) 100%);
 }
 
 .ln{
@@ -672,6 +696,14 @@ a{color:inherit;text-decoration:none}
      minimo de 3 y no hay de donde recortar. */
   .scrim{
     background:
+      /* Aqui NO se aplano como en escritorio, y se probo: no cambiaba
+         nada (0.520 de desnivel antes, 0.525 despues). En vertical el
+         desnivel bajo el texto no lo trae la forma del velo sino el
+         propio plano, que tiene el resplandor del sol a la derecha del
+         vano. Con el velo flojo que pidio Top House para ver mas video,
+         eso se transparenta. El texto se lee igual (12 de contraste) y
+         la palabra no se parte, porque no hay ninguna arista dura: es un
+         degradado suave. */
       radial-gradient(ellipse 150% 50% at 50% 49%,
         rgba(248,244,236,.62) 0%, rgba(248,244,236,.45) 52%, rgba(248,244,236,0) 82%),
       linear-gradient(180deg,
