@@ -444,9 +444,20 @@ a{color:inherit;text-decoration:none}
    el velo derecho caia sobre las propias letras y las apagaba, mientras el
    izquierdo (::before) si quedaba detras. De ahi que la mitad derecha se
    viera mucho mas floja que la izquierda. */
+/* El velo entra a la vez que su texto y no despues.
+
+   Llevaba una rampa propia, opacity:calc(.84 + .16*k), pensada como un
+   efecto: la bolsa florecia un poco por detras de las letras. El
+   problema es que en el instante en que el mensaje ya se lee, su fondo
+   todavia iba a medio aparecer, y por ese hueco se colaba el montante
+   del cristal. Medido: 0.042 de salto entre puntos vecinos, cuando por
+   encima de 0.020 el ojo ya lee una linea.
+
+   Ahora el velo esta siempre a pleno, y quien hace el fundido es la
+   banda entera: texto y fondo aparecen juntos, que es como tiene que
+   ser, porque un fondo que llega tarde no es un efecto, es un fallo. */
 .band--split::before,.band--split::after{
   content:"";position:absolute;top:-6%;bottom:-6%;pointer-events:none;z-index:0;
-  opacity:calc(.84 + .16*var(--k,1));
 }
 /* Velos asimetricos, y ahora de MARFIL, no de sombra.
 
@@ -462,7 +473,7 @@ a{color:inherit;text-decoration:none}
    clara que la izquierda, y cada lado necesita distinto empujon para que
    las dos mitades de la frase pesen igual. Cada uno se apaga en su borde
    interior, de modo que el carril del arco queda intacto. */
-/* MESETA, no cupula.
+/* MESETA OPACA, no cupula.
 
    La arista donde se cortan las dos paredes del plano barre del 37% al
    6% del ancho segun avanza la camara. No hay ninguna posicion fija en
@@ -478,19 +489,42 @@ a{color:inherit;text-decoration:none}
    palabra. Eso es exactamente el corte que se ve.
 
    Ahora son mesetas: plano sobre toda la huella del texto y cayendo
-   DESPUES de ella. La arista sigue pasando, pero por detras de un campo
-   uniforme, y la palabra se lee entera sobre el mismo tono. */
+   DESPUES de ella. Y la meseta es casi opaca (.975), no translucida.
+
+   Eso ultimo suena agresivo y no lo es, y vale la pena dejar escrito por
+   que. Medido bajo el titular con el plano crudo: la luminancia va de
+   0.134 a 0.688, un salto de 0.55. Con la meseta translucida anterior
+   quedaba en 0.051: el velo ya lo aplastaba once veces, pero ese 5%
+   restante era un escalon justo en la cola de la palabra, y eso es lo
+   que se veia.
+
+   Y lo importante: esa zona YA estaba en 0.87-0.90 de luminancia, que es
+   practicamente el marfil de la pagina. Subirla a opaca no tapa ningun
+   video visible, porque alli no quedaba video visible; solo quita el
+   escalon. El vano del fondo, que es adonde mira el plano, no se toca:
+   la meseta cae antes de llegar.
+
+   La meseta llega al 72% del radio y no al 58% por una razon medida: a
+   1440 el velo era plano hasta x=420 y caia en picado a partir de 440,
+   mientras que el titular acaba en 455. Las ultimas letras quedaban
+   sobre la pendiente. Eran 25 pixeles, y eran justo los de la "a" que
+   Top House veia cortada.
+
+   Se intento primero moviendo el texto, que es lo que pidio Top House, y
+   no llega: medidos los huecos limpios en pixeles de pantalla, en una
+   ventana de 1280x800 el mayor hueco de la izquierda son 234px porque el
+   video se recorta por los lados, y ahi no cabe ningun titular legible. */
 .band--split::before{
   left:-8%;right:calc(50% + var(--lane)/2 - 6%);
   background:radial-gradient(ellipse 60% 52% at 40% 50%,
-    rgba(248,244,236,.95) 0%,rgba(248,244,236,.93) 58%,
-    rgba(248,244,236,.55) 82%,rgba(248,244,236,0) 100%);
+    rgba(248,244,236,.985) 0%,rgba(248,244,236,.975) 72%,
+    rgba(248,244,236,.50) 90%,rgba(248,244,236,0) 100%);
 }
 .band--split::after{
   right:-8%;left:calc(50% + var(--lane)/2 - 6%);
   background:radial-gradient(ellipse 60% 54% at 60% 50%,
-    rgba(248,244,236,.95) 0%,rgba(248,244,236,.93) 58%,
-    rgba(248,244,236,.55) 84%,rgba(248,244,236,0) 100%);
+    rgba(248,244,236,.985) 0%,rgba(248,244,236,.975) 72%,
+    rgba(248,244,236,.50) 92%,rgba(248,244,236,0) 100%);
 }
 
 /* La banda 3 cruza el plano del cristal, donde la luz revienta. Ahi el
@@ -498,22 +532,28 @@ a{color:inherit;text-decoration:none}
    justo el sitio donde este planteamiento trabaja menos y mejor. */
 .band--bloom::before{
   background:radial-gradient(ellipse 60% 52% at 40% 50%,
-    rgba(248,244,236,.95) 0%,rgba(248,244,236,.93) 58%,
-    rgba(248,244,236,.55) 82%,rgba(248,244,236,0) 100%);
+    rgba(248,244,236,.985) 0%,rgba(248,244,236,.975) 72%,
+    rgba(248,244,236,.50) 90%,rgba(248,244,236,0) 100%);
 }
 .band--bloom::after{
   background:radial-gradient(ellipse 60% 54% at 60% 50%,
-    rgba(248,244,236,.95) 0%,rgba(248,244,236,.93) 58%,
-    rgba(248,244,236,.55) 84%,rgba(248,244,236,0) 100%);
+    rgba(248,244,236,.985) 0%,rgba(248,244,236,.975) 72%,
+    rgba(248,244,236,.50) 92%,rgba(248,244,236,0) 100%);
 }
 
 /* velo único superior para el posado */
 .band--center::before{
   content:"";position:absolute;inset:-4%;pointer-events:none;z-index:0;
-  opacity:calc(.86 + .14*var(--k,1));
+  /* Esta banda cae sobre el vano, que es lo mas luminoso y lo mas bonito
+     del plano, asi que su meseta se queda mas floja que las laterales a
+     proposito: alli la variacion del fondo es un degradado suave (cielo,
+     sol, mar) y un degradado detras del texto se lee como atmosfera, no
+     como un corte. Lo unico que habia que matar era el montante del
+     cristal, que si hacia arista bajo el subtitulo: 0.031 de salto entre
+     puntos vecinos, y por encima de 0.02 el ojo lo lee como una linea. */
   background:radial-gradient(ellipse 92% 64% at 50% 48%,
-    rgba(248,244,236,.93) 0%,rgba(248,244,236,.91) 62%,
-    rgba(248,244,236,.50) 84%,rgba(248,244,236,0) 100%);
+    rgba(248,244,236,.965) 0%,rgba(248,244,236,.955) 72%,
+    rgba(248,244,236,.50) 90%,rgba(248,244,236,0) 100%);
 }
 
 .ln{
