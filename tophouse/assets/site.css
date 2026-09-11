@@ -331,18 +331,33 @@ a{color:inherit;text-decoration:none}
 
 .poster{
   position:absolute;inset:0;
-  background-size:cover;background-position:center;
+  /* mismo encuadre que el video: manda el ancho */
+  background-size:100% auto;background-position:center;
+  background-repeat:no-repeat;
   background-color:var(--canvas);
 }
 
+/* El plano ensena SIEMPRE todo su ancho.
+
+   Antes llenaba la pantalla con object-fit:cover, que en una ventana mas
+   alta que 16:9 escala por la altura y recorta por los lados. Ese
+   recorte arrastraba las esquinas de las paredes hacia dentro, justo
+   encima del texto: medido, a 1440x900 el titular habria tenido que
+   moverse 199px hacia fuera y solo tiene 72 hasta el borde. No era un
+   problema de margenes, era de encuadre.
+
+   Ahora el ancho manda y la altura cae donde cae: si sobra, se recorta
+   arriba y abajo como antes; si falta, quedan dos franjas de marfil que
+   se funden con el velo, que en esos bordes ya iba a marfil. Asi la
+   geometria es la misma en todas las ventanas, y en todas se comporta
+   como a 1920, donde ya estaba limpio. */
 .hero__video{
-  position:absolute;inset:0;
-  width:100%;height:100%;
-  object-fit:cover;
+  position:absolute;left:0;right:0;top:50%;
+  transform:translate3d(0,-50%,0);
+  width:100%;height:auto;
   opacity:0;
   transition:opacity .9s var(--ease-soft);
   will-change:transform;
-  transform:translateZ(0);
 }
 .stage.video-ready .hero__video{opacity:1}
 .stage.video-failed .hero__video{display:none}
@@ -464,10 +479,20 @@ a{color:inherit;text-decoration:none}
   font-family:var(--d);
   font-weight:300;
   font-variation-settings:'SOFT' 24,'WONK' 1;
-  /* Bajado de 3.5vw/3.4rem: con el anterior, entre 1200 y 1440 una
-     mitad rompia a dos lineas y la otra se quedaba en una, y el
-     titular se leia descuadrado. */
-  font-size:clamp(1.5rem,3vw,3rem);
+  /* PROPORCIONAL AL PLANO, no a la pantalla.
+
+     Con el encuadre nuevo el video ensena siempre el mismo trozo, asi
+     que las esquinas de las paredes caen siempre en el mismo porcentaje
+     del ancho. Para que el titular quede limpio en todas las ventanas
+     basta con que ocupe siempre el mismo porcentaje tambien.
+
+     No lo hacia: a 1920 el cuerpo se quedaba en el tope de 3rem y el
+     titular ocupaba el 25.7% del ancho, mientras que a 1440, donde 3vw
+     todavia no llegaba al tope, ocupaba el 31.6%. Esa diferencia de seis
+     puntos era justo la que lo metia encima de la esquina en los
+     portatiles. Con 2.5vw el porcentaje es el mismo en todas partes: a
+     1920 mide igual que antes, y en ventanas menores encoge con ellas. */
+  font-size:clamp(1.35rem,2.5vw,3.4rem);
   line-height:1.05;
   letter-spacing:-.015em;
 }
@@ -495,6 +520,21 @@ a{color:inherit;text-decoration:none}
    composicion y no como un descuadre, porque el texto esta claramente
    sujeto al marco de la pagina. */
 .half--l{grid-column:1;justify-self:start;text-align:left;padding-inline:0}
+/* La primera mitad de la primera banda, en dos renglones.
+
+   Es la unica que no cabe. Medido sobre el fotograma en que aparece: la
+   esquina donde se juntan las dos paredes cae en el 22% del ancho, y esa
+   mitad, en una linea, llega al 26%. La arista entra por medio de
+   "immobiliaria", que es exactamente lo que veia Top House.
+
+   Se puede arreglar de dos maneras: bajando el cuerpo un 23%, o
+   partiendo la frase. Se parte, porque el titular es lo primero que se
+   lee de la casa y no conviene encogerlo. Partida, la linea mas larga
+   llega al 17% y sobran cinco puntos hasta la esquina.
+
+   Solo esta. Las otras tres mitades caben de sobra en una linea y no se
+   tocan; el limite se aplica por banda a proposito. */
+.band[data-a="0"] .half--l{max-width:15vw}
 .half--r{grid-column:3;justify-self:end;text-align:right;padding-inline:0}
 
 .sub{
@@ -522,10 +562,12 @@ a{color:inherit;text-decoration:none}
 /* Los subtitulos cuelgan del mismo borde que su titular, no del centro
    de la pared: asi cada lado es un bloque con un solo borde de
    referencia en vez de dos piezas centradas por separado. */
-.sub--l,.sub--r{max-width:34ch}
+.sub--l,.sub--r{max-width:min(34ch,19vw)}
 .sub--l{margin-left:0;margin-right:auto;text-align:left}
 .sub--r{margin-left:auto;margin-right:0;text-align:right}
-.sub--c{max-width:46ch;margin-left:auto;margin-right:auto;text-align:center}
+/* El de la tercera banda cae sobre el vano y cruza los montantes del
+   cristal; se estrecha para caber entre ellos. */
+.sub--c{max-width:min(46ch,17vw);margin-left:auto;margin-right:auto;text-align:center}
 
 .ln--center{display:block;text-align:center}
 .cline{display:block}
@@ -538,7 +580,7 @@ a{color:inherit;text-decoration:none}
 .band--center::before{
   content:"";position:absolute;inset:-4%;pointer-events:none;z-index:0;
   background:radial-gradient(ellipse 90% 60% at 50% 48%,
-    rgba(248,244,236,.72) 0%,rgba(248,244,236,.66) 62%,
+    rgba(248,244,236,.88) 0%,rgba(248,244,236,.82) 62%,
     rgba(248,244,236,.30) 86%,rgba(248,244,236,0) 100%);
 }
 .band__cta{position:relative;z-index:1;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:2rem}
