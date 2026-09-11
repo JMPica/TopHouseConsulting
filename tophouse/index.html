@@ -50,7 +50,7 @@
 </div>
 
 <!-- ============ NAVEGACIÓN ============ -->
-<nav class="nav nav--fosc" id="nav" aria-label="Principal">
+<nav class="nav" id="nav" aria-label="Principal">
   <a class="nav__brand" href="#top" aria-label="Top House Real Estate, inicio">
     <img class="mark" src="/assets/logo.png" width="256" height="256" alt="" aria-hidden="true" decoding="async">
     <span class="nav__word">
@@ -78,6 +78,10 @@
 
     <div class="poster" id="poster" aria-hidden="true"></div>
     <video id="hero-video" class="hero__video" preload="none" muted playsinline aria-hidden="true" tabindex="-1"></video>
+    <!-- En movil el plano se pinta aqui, fotograma a fotograma, en vez de
+         mover un video: va igual en todos los navegadores y pesa seis
+         veces menos. Lo decide y lo dibuja assets/site.js. -->
+    <canvas id="hero-lienzo" class="hero__lienzo" aria-hidden="true"></canvas>
     <div class="scrim" aria-hidden="true"></div>
 
     <div class="loader" id="loader" aria-hidden="true">

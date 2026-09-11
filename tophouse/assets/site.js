@@ -199,7 +199,8 @@
     var settled = Math.abs(target - shown) < 0.0005;
     if (settled) { shown = target; }
 
-    if (video.duration) requestSeek(shown * video.duration);
+    if (modeSeq) seqPinta(shown);
+    else if (video.duration) requestSeek(shown * video.duration);
     updateBands(shown);
 
     if (settled && loadK >= 1) {
@@ -298,6 +299,21 @@
   function initHeroOnce() {
     if (heroStarted) return;
     heroStarted = true;
+
+    if (modeSeq) {
+      if (stage) stage.classList.add('stage--seq');
+      loadStart = performance.now();
+      kick();
+      carregaSeq().catch(function () {
+        /* Si los fotogramas no llegan, se cae a la foto fija de siempre:
+           mas vale un heroe quieto que un hueco negro. */
+        disableScrub();
+        failVideo();
+      });
+      window.addEventListener('resize', function () { mesuraLienzo(); seqPinta(shown); }, { passive: true });
+      return;
+    }
+
     if (poster) poster.style.backgroundImage = "url('" + POSTER_URL + "')";
     var img = new Image();
     img.onload = startBlobFetch;
@@ -309,17 +325,146 @@
   }
 
   /* =========================================================
+     5 bis. El mismo heroe en el movil, pintado con fotogramas
+     =========================================================
+
+     EL PROBLEMA. En el movil este heroe estaba apagado, y con razon:
+     mover un video con el dedo (ir cambiando currentTime segun el
+     scroll) va a tirones en iPhone, y el video pesa 4,3 MB de datos
+     moviles. Asi que el telefono veia una foto fija y el ordenador una
+     pelicula: dos webs distintas.
+
+     LA SOLUCION. La misma que usa Apple en sus paginas de producto:
+     no se mueve un video, se pintan FOTOGRAMAS sueltos en un lienzo.
+     Son 49 imagenes recortadas en vertical, 723 KB en total, seis veces
+     menos que el video. Y sobre todo: dibujar una imagen en un lienzo
+     es instantaneo y se comporta igual en todos los navegadores, que es
+     precisamente lo que no se puede decir de buscar dentro de un video.
+
+     Lo demas no cambia. El calculo del scroll, el suavizado y las
+     bandas son exactamente el mismo codigo que en el ordenador. Lo
+     unico que cambia es quien pinta.
+
+     LA CACHE. Los ficheros se piden a mano, asi que el generador no
+     puede sellarlos uno a uno como hace con el resto. Se le pide la
+     huella de UN fotograma, que el generador si sella por ser una
+     cadena literal, y se le pega la misma a los otros 48: si algun dia
+     se regenera la secuencia, cambia el primero y cambian todos. */
+
+  /* Donde no hay sitio para el plano entero ni conviene bajar 4,3 MB, se
+     pinta con fotogramas. Se decide una sola vez: cambiar de motor a
+     mitad de sesion no aporta nada y complica el codigo. */
+  var modeSeq = window.matchMedia('(max-width: 820px)').matches ||
+                window.matchMedia('(orientation: portrait) and (pointer: coarse)').matches;
+
+  var SEQ_N = 49;
+  var SEQ_BASE = '/assets/hero-mobil/';
+  /* esta cadena la sella el generador; de ahi se saca la version */
+  var SEQ_PRIMER = '/assets/hero-mobil/f-01.webp';
+  var seqVersio = (function () {
+    var i = SEQ_PRIMER.indexOf('?');
+    return i === -1 ? '' : SEQ_PRIMER.slice(i);
+  })();
+
+  var lienzo = $('#hero-lienzo');
+  var ctx = null;
+  var seqImgs = [];
+  var seqLlest = false;
+  var seqPintat = -1;
+
+  function seqRuta(n) {
+    return SEQ_BASE + 'f-' + (n < 10 ? '0' + n : n) + '.webp' + seqVersio;
+  }
+
+  function mesuraLienzo() {
+    if (!lienzo) return;
+    var r = lienzo.getBoundingClientRect();
+    /* Se limita a 2 el factor de pantalla: en un movil de 3x el lienzo
+       seria enorme y no se notaria, porque el fotograma de origen mide
+       540 de ancho y no da para mas. */
+    var d = Math.min(2, window.devicePixelRatio || 1);
+    var w = Math.round(r.width * d), h = Math.round(r.height * d);
+    if (w && h && (lienzo.width !== w || lienzo.height !== h)) {
+      lienzo.width = w; lienzo.height = h;
+      seqPintat = -1;
+    }
+  }
+
+  function seqPinta(p) {
+    if (!seqLlest || !ctx) return;
+    var n = clamp(Math.round(p * (SEQ_N - 1)), 0, SEQ_N - 1);
+    if (n === seqPintat) return;
+    var img = seqImgs[n];
+    if (!img || !img.complete || !img.naturalWidth) return;
+    seqPintat = n;
+    /* recorte "cover" a mano: asi se comporta igual en todos los
+       navegadores, sin depender de object-fit sobre un lienzo */
+    var W = lienzo.width, H = lienzo.height;
+    var e = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+    var dw = img.naturalWidth * e, dh = img.naturalHeight * e;
+    ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+  }
+
+  function carregaSeq() {
+    if (!lienzo) return Promise.reject(new Error('sin lienzo'));
+    ctx = lienzo.getContext('2d');
+    if (!ctx) return Promise.reject(new Error('sin contexto'));
+    mesuraLienzo();
+
+    var fets = 0;
+    return new Promise(function (resol, rebutja) {
+      var fallats = 0;
+      for (var i = 0; i < SEQ_N; i++) {
+        (function (i) {
+          var img = new Image();
+          img.decoding = 'async';
+          img.onload = function () {
+            fets++;
+            if (ring) ring.style.setProperty('--ld', String(Math.round(126 * (1 - fets / SEQ_N))));
+            /* El primero se pinta en cuanto llega: mas vale ver el
+               principio del plano que un hueco mientras cargan los 48
+               que faltan. */
+            if (i === 0) { seqLlest = true; seqPinta(heroProgress()); }
+            if (fets + fallats === SEQ_N) acabar();
+          };
+          img.onerror = function () {
+            fallats++;
+            if (fets + fallats === SEQ_N) acabar();
+          };
+          img.src = seqRuta(i + 1);
+          seqImgs[i] = img;
+        })(i);
+      }
+      function acabar() {
+        /* Con la mitad de los fotogramas ya se ve el movimiento; por
+           debajo de eso seria un pase de diapositivas y es mejor la
+           foto fija. */
+        if (fets < SEQ_N / 2) { rebutja(new Error('faltan fotogramas')); return; }
+        seqLlest = true;
+        if (ring) ring.style.setProperty('--ld', '0');
+        if (stage) stage.classList.add('video-ready');
+        seqPinta(heroProgress());
+        onScroll();
+        resol();
+      }
+    });
+  }
+
+  /* =========================================================
      6. Las cinco compuertas del héroe estático, vivas
      ========================================================= */
 
+  /* Solo quedan dos motivos para renunciar al heroe en movimiento: que
+     el visitante haya pedido menos animacion, y el telefono tumbado, que
+     no tiene alto suficiente para que quepan las bandas. Las tres
+     compuertas que quedaban antes eran "esto es un movil", y ya no hacen
+     falta: en el movil el heroe se pinta con fotogramas. */
   var GATES = [
-    '(max-width: 720px)',
-    '(orientation: portrait) and (max-width: 1024px)',
-    '(orientation: portrait) and (pointer: coarse)',
     '(orientation: landscape) and (pointer: coarse) and (max-height: 560px)',
     '(prefers-reduced-motion: reduce)'
   ];
   var MQLS = GATES.map(function (q) { return window.matchMedia(q); });
+
   var scrubOn = false;
 
   function enableScrub() {
@@ -365,24 +510,11 @@
      ========================================================= */
 
   var navSolid = false;
-  var navFosc = null;
-  var heroEl = $('.hero');
   function navCheck() {
     var want = window.scrollY > (window.innerHeight * 0.6);
     if (want !== navSolid) {
       navSolid = want;
       navEl.classList.toggle('solid', want);
-    }
-    /* La barra va en claro mientras el video la tape y en tinta en cuanto
-       sale al marfil. Se mira contra el borde de abajo del heroe y no
-       contra una altura fija: el heroe mide 760vh y esa cuenta cambia con
-       cada pantalla. */
-    if (heroEl) {
-      var oscura = heroEl.getBoundingClientRect().bottom > navEl.offsetHeight;
-      if (oscura !== navFosc) {
-        navFosc = oscura;
-        navEl.classList.toggle('nav--fosc', oscura);
-      }
     }
   }
   navCheck();
