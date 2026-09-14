@@ -21,34 +21,39 @@ Que resuelve, para que se entienda por que no se hizo de la forma corta:
   - Si Mobilia falla o tarda, sirve la ultima copia buena. Y si no la hay,
     la web se cae al fichero local sin romperse.
 
-Falta una sola cosa: las llaves de la API de Mobilia.
+Falta una sola cosa: pegar la direccion del XML en el fichero de
+configuracion del servidor. Diez minutos.
 
 
-MOBILIA NO TIENE FEED: TIENE UNA API CON PUERTA
+DE DONDE SALE ESA DIRECCION
 
-Se miro y no existe el XML de portales que se suponia. Lo que hay es una
-API (Mobilia Public API 1.0) que funciona asi: se cambian un client_id y
-un client_secret por un token temporal, y ese token abre la cartera. El
-token caduca; el puente lo renueva solo y lo guarda mientras le quede
-vida, asi que mil visitas siguen sin ser mil llamadas.
+Se pidio por ticket al soporte de Mobilia y la dieron ellos. Conviene
+dejar escrito por que, porque durante un tiempo se dio por hecho lo
+contrario: mirando el panel de Mobilia solo se veia la API (Mobilia
+Public API, con OAuth) y parecia que el XML de portales no existia. Si
+existe, pero no esta a la vista en el panel: lo genera el soporte.
 
-Eso ya esta hecho en api/cartera.php. No hay que pedirle nada a nadie: las
-llaves se generan desde vuestro propio Mobilia.
+La direccion es de la forma
+
+    http://tophouseconsulting.mobiliagestion.es/ExportarInmueblesMobilia/<clave>.xml
+
+y la documentacion del formato, en
+
+    https://tophouseconsulting.mobiliagestion.es/Documentos/InterfazExportacionMobilia.pdf
+
+DOS COSAS SOBRE ESA DIRECCION
+
+  - La parte <clave> ES la contrasena. No hay usuario ni token: quien
+    tenga la direccion entera ve la cartera. Por eso va en el fichero de
+    configuracion, que esta fuera de public_html y fuera del repositorio,
+    y no en un correo ni en un chat. Si alguna vez se filtra, se le pide
+    al soporte que la regenere.
+  - La dieron en http, sin cifrar. Merece la pena probar primero la misma
+    direccion en https y quedarse con esa si responde. En http, la clave
+    viaja en claro.
 
 
-COMO SE GENERAN LAS LLAVES (lo hace Top House, 2 minutos)
-
-  Mobilia -> Configuracion -> Integraciones -> API Desarrolladores
-          -> boton "Anadir aplicacion cliente"
-
-Eso devuelve dos cosas: un client_id y un client_secret. El secret suele
-ensenarse UNA sola vez: hay que copiarlo en ese momento.
-
-IMPORTANTE: esas dos cadenas no se pegan en un chat ni en un correo. Van
-directamente al fichero del servidor que se explica aqui debajo.
-
-
-COMO SE INSTALA, UNA VEZ TENGAIS LAS LLAVES
+COMO SE INSTALA
 
 Se crea UN fichero en el alojamiento, FUERA de public_html. Va fuera a
 proposito: asi ninguna publicacion lo pisa y no acaba nunca en el
@@ -60,29 +65,47 @@ repositorio, que es donde las claves no deben estar.
 
       <?php
       return array(
-        'url'   => 'https://api.mobiliagestion.es/api/v1/inmuebles',
-        'oauth' => array(
-          'url_token'     => 'https://api.mobiliagestion.es/api/v1/token',
-          'client_id'     => '...',   // lo que os dio Mobilia
-          'client_secret' => '...',   // idem, y no sale de aqui
-          'grant_type'    => 'client_credentials',
-          'scope'         => '',      // solo si Mobilia os pide uno
-        ),
+        'url'       => 'https://tophouseconsulting.mobiliagestion.es/Exp...',
+        'cabeceras' => array(),       // el xml no pide ninguna
         'minutos'   => 15,            // cada cuanto se refresca
-        'operacion' => '',            // 'venta' o 'alquiler' SOLO si la
-                                      // respuesta es de un tipo y no lo dice
+        'operacion' => '',            // 'venta' o 'alquiler' SOLO si el
+                                      // feed es de un tipo y no lo dice
         'campos'    => array(),       // normalmente vacio
         'clave'     => '...',         // secreto del diagnostico, 16 caracteres
                                       // o mas (si es mas corta, se apaga)
       );
 
-Las dos direcciones de arriba son las que corresponden a la documentacion
-de Mobilia. Si al probar no responden, el diagnostico lo dira con todas
-las letras y se corrigen en el mismo fichero.
+Y ya esta. El puente detecta solo que es XML y lo traduce.
 
-Junto a ese fichero el puente creara solo un mobilia-token.json con el
-token vigente. Es normal, se regenera solo y tampoco es accesible desde
-la web.
+PROBADO CONTRA XML DE VERDAD, no solo en teoria: feed con varios
+inmuebles, feed con UNO SOLO (que al convertirlo deja de ser una lista y
+es donde fallan casi todos los importadores), y feed que trae los datos
+como atributos en vez de como etiquetas. En los tres casos el alquiler
+coge su precio de alquiler y no el de venta.
+
+
+SI ALGUN DIA HACE FALTA LA API EN VEZ DEL XML
+
+El puente tambien sabe hablar OAuth 2.0 con la API de Mobilia
+(client_credentials: cambia client_id y client_secret por un token
+temporal, lo guarda mientras le quede vida y lo renueva solo). Esta
+escrito y probado, y no estorba: si en la configuracion no hay una
+seccion 'oauth', ni se enciende.
+
+Se llego a escribir porque parecia el unico camino. Se queda porque la
+API da cosas que el XML no da (por ejemplo, el historico para calcular el
+porcentaje del final de este documento). Para usarla, las llaves se
+generan en Mobilia -> Configuracion -> Integraciones -> API
+Desarrolladores -> "Anadir aplicacion cliente", y la configuracion pasa a
+ser:
+
+      'url'   => 'https://api.mobiliagestion.es/api/v1/inmuebles',
+      'oauth' => array(
+        'url_token'     => 'https://api.mobiliagestion.es/api/v1/token',
+        'client_id'     => '...',
+        'client_secret' => '...',
+        'grant_type'    => 'client_credentials',
+      ),
 
 Con eso puesto, la cartera se llena sola y se mantiene al dia sin tocar nada.
 

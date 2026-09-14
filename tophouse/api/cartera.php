@@ -533,7 +533,7 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, &$informe) {
             $valor = buscar($plano, $nombres, $usado);
             if ($usado !== null) {
                 $tocados[$usado] = true;
-                $informe['emparejados'][$campo] = $usado;
+                $informe['emparejados'][$campo][$usado] = true;
             }
             return $valor;
         };
@@ -563,7 +563,7 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, &$informe) {
         $precio = numero(buscar($plano, $nombresPrecio, $usadoPrecio));
         if ($usadoPrecio !== null) {
             $tocados[$usadoPrecio] = true;
-            $informe['emparejados']['precio'] = $usadoPrecio;
+            $informe['emparejados']['precio'][$usadoPrecio] = true;
         }
 
         $ref = texto($lee('ref'));
@@ -619,6 +619,15 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, &$informe) {
             }
         }
     }
+
+    /* Un feed no tiene por que ser uniforme: la venta puede traer 'precio'
+       y el alquiler 'precio_alquiler'. Guardando solo el ultimo nombre, el
+       diagnostico ensenaba uno y escondia el otro, que es justo el dato que
+       se va a mirar cuando algo salga raro. Salen todos. */
+    foreach ($informe['emparejados'] as $campo => $nombres) {
+        $informe['emparejados'][$campo] = implode(', ', array_keys($nombres));
+    }
+
     return $fuera;
 }
 
