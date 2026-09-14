@@ -535,6 +535,22 @@ a{color:inherit;text-decoration:none}
    Solo esta. Las otras tres mitades caben de sobra en una linea y no se
    tocan; el limite se aplica por banda a proposito. */
 .band[data-a="0"] .half--l{max-width:15vw}
+/* En ingles la frase es mas larga: "Your Real Estate agents" contra "La
+   seva immobiliaria". Con el ancho del catalan partia en "Your Real /
+   Estate agents", es decir por la mitad de "Real Estate", que es el
+   nombre de la casa. Un poco mas de sitio y el renglon se llena con
+   "Your Real Estate" entero, que es donde tiene que partir, y "agents"
+   baja solo.
+
+   Y un 18% menos de cuerpo, solo esta linea y solo en ingles. Medido
+   contra el fotograma: "Your Real Estate" necesita 210px de pared limpia
+   y en una ventana de 1280 solo hay 192 antes de la esquina. Con el
+   cuerpo del catalan el bloque acababa 20px mas a la derecha y tocaba la
+   esquina. A 2.05vw cabe con holgura en las cuatro medidas, y la
+   diferencia con los otros dos idiomas no se ve porque nunca se miran
+   juntos. */
+html[lang="en"] .band[data-a="0"] .ln{font-size:clamp(1.2rem,2.05vw,3.1rem)}
+html[lang="en"] .band[data-a="0"] .half--l{max-width:15.5vw}
 .half--r{grid-column:3;justify-self:end;text-align:right;padding-inline:0}
 
 .sub{
