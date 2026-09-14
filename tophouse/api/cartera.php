@@ -32,15 +32,33 @@
 
        <?php
        return array(
-         'url'       => 'https://...',  // el feed que de Mobilia
-         'cabeceras' => array(),        // p.ej. array('Authorization: Bearer xxx')
-         'minutos'   => 15,             // cada cuanto se refresca
-         'operacion' => '',             // 'venta' o 'alquiler' si el feed
+         // la direccion que devuelve los inmuebles
+         'url'   => 'https://api.mobiliagestion.es/api/v1/inmuebles',
+
+         // Mobilia usa OAuth 2.0: el client_id y el client_secret salen
+         // de Mobilia > Configuracion > Integraciones > API
+         // Desarrolladores > Anadir aplicacion cliente.
+         'oauth' => array(
+           'url_token'     => 'https://api.mobiliagestion.es/api/v1/token',
+           'client_id'     => '...',
+           'client_secret' => '...',
+           'grant_type'    => 'client_credentials',
+           'scope'         => '',       // solo si Mobilia lo pide
+         ),
+
+         'cabeceras' => array(),        // cabeceras extra, casi nunca hacen falta
+         'minutos'   => 15,             // cada cuanto se refresca la cartera
+         'operacion' => '',             // 'venta' o 'alquiler' si la respuesta
                                         // es de un solo tipo y no lo dice
          'campos'    => array(),        // solo si hace falta forzar un
                                         // nombre: array('precio'=>'PVP')
-         'clave'     => '',             // secreto del modo diagnostico
+         'clave'     => '',             // secreto del diagnostico, 16+ letras
        );
+
+   El token que devuelve Mobilia se guarda en mobilia-token.json, en esa
+   misma carpeta de fuera de public_html, y se reutiliza hasta que
+   caduca. Ese fichero se puede borrar en cualquier momento: se vuelve a
+   pedir solo.
 
    COMO SE AVERIGUAN LOS NOMBRES DE LOS CAMPOS
 
@@ -108,6 +126,7 @@ $cfg = include $rutaCfg;
 if (!is_array($cfg) || empty($cfg['url'])) {
     servir_copia($CACHE, 'mobilia-config.php no trae url');
 }
+$oauth = isset($cfg['oauth']) && is_array($cfg['oauth']) ? $cfg['oauth'] : null;
 
 $clave  = isset($cfg['clave']) ? (string) $cfg['clave'] : '';
 $pedida = isset($_GET['diagnostico']) ? (string) $_GET['diagnostico'] : '';
@@ -132,24 +151,147 @@ if (!$DIAG && is_readable($CACHE) && (time() - filemtime($CACHE)) < $minutos * 6
     }
 }
 
-/* ---------- 3. pedir a Mobilia ---------- */
+/* =====================================================================
+   3. El billete: OAuth 2.0
+
+   Mobilia no publica un fichero que se pueda pedir y ya. Tiene una API
+   con puerta: primero se cambian un client_id y un client_secret por un
+   token, y ese token es el que abre la cartera. El token caduca, asi
+   que hay que pedir uno nuevo de vez en cuando.
+
+   El token se guarda en disco junto a la configuracion, FUERA de
+   public_html, y se reutiliza mientras le quede vida. Sin eso cada
+   visita a la web serian dos llamadas a Mobilia en vez de ninguna.
+
+   El estandar de OAuth dice que la peticion va como formulario, pero no
+   todas las implementaciones lo cumplen, asi que si el formulario falla
+   se reintenta en json. Cual de las dos ha funcionado sale en el
+   diagnostico, para no tener que adivinarlo nunca mas.
+   ===================================================================== */
 if (!function_exists('curl_init')) {
     servir_copia($CACHE, 'el servidor no tiene curl');
 }
-$ch = curl_init($cfg['url']);
-curl_setopt_array($ch, array(
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_TIMEOUT        => 12,
-    CURLOPT_CONNECTTIMEOUT => 6,
-    CURLOPT_FOLLOWLOCATION => true,
-    CURLOPT_MAXREDIRS      => 3,
-    CURLOPT_HTTPHEADER     => isset($cfg['cabeceras']) ? $cfg['cabeceras'] : array(),
-    CURLOPT_USERAGENT      => 'TopHouseRealEstate/1.0',
-));
-$cuerpo = curl_exec($ch);
-$codigo = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-$fallo  = curl_error($ch);
-curl_close($ch);
+
+$notaOAuth = 'sin oauth';
+
+function pedir($url, $opciones) {
+    $ch = curl_init($url);
+    curl_setopt_array($ch, $opciones + array(
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 12,
+        CURLOPT_CONNECTTIMEOUT => 6,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_MAXREDIRS      => 3,
+        CURLOPT_USERAGENT      => 'TopHouseRealEstate/1.0',
+    ));
+    $cuerpo = curl_exec($ch);
+    $codigo = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $fallo  = curl_error($ch);
+    curl_close($ch);
+    return array($cuerpo, $codigo, $fallo);
+}
+
+function token_guardado($ruta) {
+    if (!is_readable($ruta)) { return null; }
+    $t = json_decode(file_get_contents($ruta), true);
+    /* Con un minuto de margen: un token que caduca mientras viaja la
+       peticion da un 401 que no se entiende al leer el registro. */
+    if (is_array($t) && !empty($t['token']) && isset($t['caduca']) && $t['caduca'] > time() + 60) {
+        return $t['token'];
+    }
+    return null;
+}
+
+function guardar_token($ruta, $token, $segundos) {
+    $tmp = $ruta . '.' . getmypid();
+    $dato = json_encode(array('token' => $token, 'caduca' => time() + max(60, (int) $segundos)));
+    if (file_put_contents($tmp, $dato) !== false) {
+        @chmod($tmp, 0600);
+        @rename($tmp, $ruta);
+    } else { @unlink($tmp); }
+}
+
+function conseguir_token($oauth, $ruta, &$nota) {
+    $guardado = token_guardado($ruta);
+    if ($guardado) { $nota = 'token reutilizado'; return $guardado; }
+
+    $campos = array(
+        'grant_type'    => isset($oauth['grant_type']) ? $oauth['grant_type'] : 'client_credentials',
+        'client_id'     => isset($oauth['client_id']) ? $oauth['client_id'] : '',
+        'client_secret' => isset($oauth['client_secret']) ? $oauth['client_secret'] : '',
+    );
+    if (!empty($oauth['scope'])) { $campos['scope'] = $oauth['scope']; }
+
+    $intentos = array(
+        array('como' => 'formulario',
+              'op' => array(CURLOPT_POST => true,
+                            CURLOPT_POSTFIELDS => http_build_query($campos),
+                            CURLOPT_HTTPHEADER => array('Content-Type: application/x-www-form-urlencoded',
+                                                        'Accept: application/json'))),
+        array('como' => 'json',
+              'op' => array(CURLOPT_POST => true,
+                            CURLOPT_POSTFIELDS => json_encode($campos),
+                            CURLOPT_HTTPHEADER => array('Content-Type: application/json',
+                                                        'Accept: application/json'))),
+    );
+
+    foreach ($intentos as $i) {
+        list($cuerpo, $codigo, $fallo) = pedir($oauth['url_token'], $i['op']);
+        if ($cuerpo === false || $codigo >= 400) {
+            $nota = 'token rechazado (' . $i['como'] . '): ' . ($codigo ? $codigo : $fallo);
+            continue;
+        }
+        $r = json_decode($cuerpo, true);
+        if (!is_array($r)) { $nota = 'token: respuesta ilegible (' . $i['como'] . ')'; continue; }
+        /* Cada implementacion lo llama a su manera. */
+        $token = '';
+        foreach (array('access_token', 'accessToken', 'token', 'bearer') as $k) {
+            if (!empty($r[$k]) && is_string($r[$k])) { $token = $r[$k]; break; }
+        }
+        if ($token === '') { $nota = 'token: la respuesta no trae access_token (' . $i['como'] . ')'; continue; }
+        $vida = 3600;
+        foreach (array('expires_in', 'expiresIn', 'expira_en') as $k) {
+            if (!empty($r[$k])) { $vida = (int) $r[$k]; break; }
+        }
+        guardar_token($ruta, $token, $vida);
+        $nota = 'token nuevo por ' . $i['como'] . ', vale ' . $vida . 's';
+        return $token;
+    }
+    return null;
+}
+
+$cabeceras = isset($cfg['cabeceras']) && is_array($cfg['cabeceras']) ? $cfg['cabeceras'] : array();
+
+if ($oauth && !empty($oauth['url_token'])) {
+    $rutaToken = $PRIVADO . '/mobilia-token.json';
+    $token = conseguir_token($oauth, $rutaToken, $notaOAuth);
+    if (!$token) {
+        servir_copia($CACHE, 'no se ha podido conseguir el token: ' . $notaOAuth);
+    }
+    $cabeceras[] = 'Authorization: Bearer ' . $token;
+    $cabeceras[] = 'Accept: application/json';
+}
+list($cuerpo, $codigo, $fallo) = pedir($cfg['url'], array(CURLOPT_HTTPHEADER => $cabeceras));
+
+/* Un 401 con token casi siempre significa que el guardado ya no vale
+   aunque la fecha dijera que si. Se tira y se pide uno nuevo, una vez. */
+if ($oauth && $codigo == 401) {
+    @unlink($PRIVADO . '/mobilia-token.json');
+    $token = conseguir_token($oauth, $PRIVADO . '/mobilia-token.json', $notaOAuth);
+    if ($token) {
+        /* Se quita la cabecera del token caducado antes de poner la
+           nueva. Anadirla sin mas manda dos Authorization en la misma
+           peticion, y hay servidores que ante eso responden 400. */
+        $limpias = array();
+        foreach ($cabeceras as $c) {
+            if (stripos($c, 'authorization:') !== 0) { $limpias[] = $c; }
+        }
+        $limpias[] = 'Authorization: Bearer ' . $token;
+        $cabeceras = $limpias;
+        list($cuerpo, $codigo, $fallo) = pedir($cfg['url'], array(CURLOPT_HTTPHEADER => $cabeceras));
+        $notaOAuth .= ' (tras un 401)';
+    }
+}
 
 if ($cuerpo === false || $codigo >= 400) {
     servir_copia($CACHE, 'Mobilia responde ' . ($codigo ? $codigo : $fallo));
@@ -517,6 +659,7 @@ if ($DIAG) {
     $muestra = array();
     if (isset($lista[0])) { $muestra = tapar($lista[0]); }
     responder(array(
+        'oauth'         => $notaOAuth,
         'formato'       => $formato,
         'http'          => $codigo,
         'registros'     => $informe['registros'],

@@ -21,26 +21,34 @@ Que resuelve, para que se entienda por que no se hizo de la forma corta:
   - Si Mobilia falla o tarda, sirve la ultima copia buena. Y si no la hay,
     la web se cae al fichero local sin romperse.
 
-Falta una sola cosa: la direccion del feed.
+Falta una sola cosa: las llaves de la API de Mobilia.
 
 
-LO QUE HAY QUE PEDIRLE A MOBILIA
+MOBILIA NO TIENE FEED: TIENE UNA API CON PUERTA
 
-A quien lleve Mobilia, o a su soporte, literalmente esto:
+Se miro y no existe el XML de portales que se suponia. Lo que hay es una
+API (Mobilia Public API 1.0) que funciona asi: se cambian un client_id y
+un client_secret por un token temporal, y ese token abre la cartera. El
+token caduca; el puente lo renueva solo y lo guarda mientras le quede
+vida, asi que mil visitas siguen sin ser mil llamadas.
 
-  "Necesitamos la direccion (URL) del feed de nuestros inmuebles para
-   nuestra propia web. El mismo que usais para publicar en Idealista,
-   Fotocasa o Habitaclia nos vale. Si lleva usuario y clave o un token,
-   pasadnoslo tambien."
-
-Casi con seguridad existe: es como Mobilia publica en los portales. Suele
-llamarse feed, export, XML de portales o sindicacion.
-
-YA NO HACE FALTA preguntar por CORS ni por el formato. El puente aguanta
-JSON y XML, y el permiso de dominio deja de importar.
+Eso ya esta hecho en api/cartera.php. No hay que pedirle nada a nadie: las
+llaves se generan desde vuestro propio Mobilia.
 
 
-COMO SE INSTALA, UNA VEZ TENGAIS LA DIRECCION
+COMO SE GENERAN LAS LLAVES (lo hace Top House, 2 minutos)
+
+  Mobilia -> Configuracion -> Integraciones -> API Desarrolladores
+          -> boton "Anadir aplicacion cliente"
+
+Eso devuelve dos cosas: un client_id y un client_secret. El secret suele
+ensenarse UNA sola vez: hay que copiarlo en ese momento.
+
+IMPORTANTE: esas dos cadenas no se pegan en un chat ni en un correo. Van
+directamente al fichero del servidor que se explica aqui debajo.
+
+
+COMO SE INSTALA, UNA VEZ TENGAIS LAS LLAVES
 
 Se crea UN fichero en el alojamiento, FUERA de public_html. Va fuera a
 proposito: asi ninguna publicacion lo pisa y no acaba nunca en el
@@ -52,16 +60,29 @@ repositorio, que es donde las claves no deben estar.
 
       <?php
       return array(
-        'url'       => 'https://...',   // la direccion que os den
-        'cabeceras' => array(),         // si hay token:
-                                        // array('Authorization: Bearer xxx')
-        'minutos'   => 15,              // cada cuanto se refresca
-        'operacion' => '',              // 'venta' o 'alquiler' SOLO si el
-                                        // feed es de un tipo y no lo dice
-        'campos'    => array(),         // normalmente vacio
-        'clave'     => '...',           // secreto del diagnostico, 16 caracteres
-                                        // o mas (si es mas corta, se apaga)
+        'url'   => 'https://api.mobiliagestion.es/api/v1/inmuebles',
+        'oauth' => array(
+          'url_token'     => 'https://api.mobiliagestion.es/api/v1/token',
+          'client_id'     => '...',   // lo que os dio Mobilia
+          'client_secret' => '...',   // idem, y no sale de aqui
+          'grant_type'    => 'client_credentials',
+          'scope'         => '',      // solo si Mobilia os pide uno
+        ),
+        'minutos'   => 15,            // cada cuanto se refresca
+        'operacion' => '',            // 'venta' o 'alquiler' SOLO si la
+                                      // respuesta es de un tipo y no lo dice
+        'campos'    => array(),       // normalmente vacio
+        'clave'     => '...',         // secreto del diagnostico, 16 caracteres
+                                      // o mas (si es mas corta, se apaga)
       );
+
+Las dos direcciones de arriba son las que corresponden a la documentacion
+de Mobilia. Si al probar no responden, el diagnostico lo dira con todas
+las letras y se corrigen en el mismo fichero.
+
+Junto a ese fichero el puente creara solo un mobilia-token.json con el
+token vigente. Es normal, se regenera solo y tampoco es accesible desde
+la web.
 
 Con eso puesto, la cartera se llena sola y se mantiene al dia sin tocar nada.
 
