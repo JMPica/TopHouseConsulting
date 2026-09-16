@@ -195,3 +195,50 @@ sale mas bajo de lo esperado, se queda "la mayoria", que ya es cierto.
 
 Cuando se conecte el feed, este es el primer numero que vale la pena
 sacar.
+
+=======================================================================
+EL DOMINIO VIEJO: LO QUE HAY QUE SABER ANTES DE TOCAR NADA
+=======================================================================
+
+Medido el 16/09/2026 preguntando al DNS publico:
+
+  tophouseconsulting.com
+      nameservers   ns100.ovh.net, dns100.ovh.net
+      correo (MX)   mx1 / mx2 / mx3 .mail.ovh.net
+      SPF           v=spf1 include:mx.ovh.com ~all
+
+  tophouserealestate.es
+      nameservers   helios / aster .dns-parking.com  (Hostinger)
+      correo (MX)   NINGUNO
+
+DOS CONCLUSIONES, Y LA SEGUNDA ES LA IMPORTANTE
+
+1. El dominio viejo NO lo controla Mobilia: esta en OVH. Mobilia ofrecio
+   "modificar el dominio" a cambio de una IP, pero la zona no es suya. O
+   tienen acceso a la cuenta de OVH, o daban por hecho algo que no es.
+   Conviene averiguar A NOMBRE DE QUIEN esta esa cuenta de OVH: si el
+   dominio se registro en su dia a nombre del proveedor y no de Top
+   House, eso se arregla ahora, no el dia que haya prisa.
+
+2. EL CORREO DE LA EMPRESA VIVE EN ESE DOMINIO Y EN OVH. Mover los
+   nameservers a Hostinger se lleva por delante los MX y el SPF, y el
+   correo entrante deja de llegar. No rebota de forma escandalosa: se
+   pierde en silencio, que es peor. Cualquier plan que empiece por
+   "cambiamos los nameservers" esta mal por este motivo.
+
+LA FORMA SEGURA DE HACERLO
+
+  - Los nameservers se quedan en OVH. No se tocan.
+  - Los MX, el SPF y cualquier TXT de correo NO SE TOCAN. Se copian
+    antes en un papel de todos modos.
+  - En OVH se cambia SOLO el registro A de tophouseconsulting.com y el
+    de www, apuntandolos al alojamiento nuevo.
+  - En el panel de Hostinger se anade tophouseconsulting.com como
+    dominio aparcado, para que el servidor sepa que tiene que atenderlo.
+  - El 301 hacia tophouserealestate.es lo sirve el .htaccess, que ya
+    conserva las rutas viejas (/es/venta, /es/alquiler, /es/servicios...).
+    Asi no se pierde ni un enlace de los que ya corren por los portales.
+
+La IP para ese registro A sale del panel de Hostinger, no de Mobilia.
+
+=======================================================================
