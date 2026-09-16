@@ -226,19 +226,73 @@ DOS CONCLUSIONES, Y LA SEGUNDA ES LA IMPORTANTE
    pierde en silencio, que es peor. Cualquier plan que empiece por
    "cambiamos los nameservers" esta mal por este motivo.
 
-LA FORMA SEGURA DE HACERLO
+LO QUE CONTESTO MOBILIA (16/09/2026, ticket de soporte)
 
-  - Los nameservers se quedan en OVH. No se tocan.
-  - Los MX, el SPF y cualquier TXT de correo NO SE TOCAN. Se copian
-    antes en un papel de todos modos.
-  - En OVH se cambia SOLO el registro A de tophouseconsulting.com y el
-    de www, apuntandolos al alojamiento nuevo.
-  - En el panel de Hostinger se anade tophouseconsulting.com como
-    dominio aparcado, para que el servidor sepa que tiene que atenderlo.
-  - El 301 hacia tophouserealestate.es lo sirve el .htaccess, que ya
-    conserva las rutas viejas (/es/venta, /es/alquiler, /es/servicios...).
-    Asi no se pierde ni un enlace de los que ya corren por los portales.
+Confirmado lo que se sospechaba: el dominio esta registrado a nombre de
+ellos, no de Top House. Y lo resuelven bien, hay que decirlo: ofrecen
+pasar el Auth Code para que Top House se lo lleve a su propio proveedor y
+lo gestione desde alli. Eso es lo correcto y es lo que hay que hacer.
 
-La IP para ese registro A sale del panel de Hostinger, no de Mobilia.
+Sobre el correo dicen, textualmente, que "las cuentas de correo no se
+pueden migrar", que hay que crear el servicio en el proveedor nuevo, y
+que luego se pueden dejar las direcciones del .com como alias hacia las
+nuevas para no perder nada de lo que siga entrando.
+
+ESO ES CIERTO Y ESTA INCOMPLETO. Es verdad que el SERVICIO no se mueve.
+Lo que no dicen es que el CONTENIDO de esos buzones se pierde con ellos.
+Cuando el dominio salga de OVH, los buzones de OVH mueren y se llevan
+por delante todo el historico: conversaciones con clientes, contratos
+adjuntos, encargos, valoraciones. Para una inmobiliaria eso no es una
+molestia, es un archivo, y parte de el puede hacer falta anos despues.
+
+Se baja ANTES. No hay segunda oportunidad.
+
+EL ORDEN. NO SE PUEDE IMPROVISAR
+
+  FASE 0 -- antes de tocar absolutamente nada
+    - Bajar TODO el correo de TODOS los buzones de OVH a un ordenador
+      (Thunderbird o Mail configurados por IMAP, dejar que sincronicen
+      entero, y comprobar que las carpetas viejas estan ahi).
+    - Apuntar todas las direcciones que existen en el dominio. Todas:
+      tambien las que solo usa el gestor o el banco.
+    - Captura de pantalla de la zona DNS entera de OVH.
+
+  FASE 1 -- montar el lado nuevo, con el viejo aun funcionando
+    - Crear el servicio de correo en Hostinger para tophouserealestate.es.
+    - Crear ahi los buzones de verdad y comprobar que envian y reciben.
+    - Empezar a firmar los correos con la direccion nueva. Cuanto antes
+      empiece esto, menos gente escribe a la vieja el dia del cambio.
+
+  FASE 2 -- cerrar la web
+    - El fichero de configuracion con el XML: la cartera se llena sola.
+    - Las fichas de inmueble con su direccion propia.
+    - Avisar a Mobilia para que cambien la URL por su lado.
+
+  FASE 3 -- y SOLO entonces, el dominio
+    - Pedir el Auth Code.
+    - Transferir el .com a Hostinger. Tarda unos dias y pide que el
+      dominio este desbloqueado. Transferir no cambia el DNS por si solo,
+      pero tampoco hay que confiar en que el proveedor viejo siga
+      sirviendo la zona despues: se rehace en Hostinger cuanto antes.
+    - En Hostinger, la zona del .com: el registro A al sitio nuevo, los
+      MX al correo de Hostinger, y un SPF NUEVO. El SPF viejo dice
+      'include:mx.ovh.com' y ya no vale; si se deja, el correo que salga
+      acaba en la carpeta de no deseado.
+    - Las direcciones del .com, como alias hacia las nuevas. Asi lo que
+      siga entrando por el .com llega igual.
+    - Anadir el .com en el panel de Hostinger y dejar que el .htaccess
+      sirva el 301, que ya conserva las rutas viejas.
+
+  Y DESPUES: seguir pagando el .com. Indefinidamente. Cuesta poco y es lo
+  que sostiene los enlaces, el correo que siga llegando y lo que Google
+  ya tenia indexado.
+
+ESTO CORRIGE LO QUE YO MISMO ESCRIBI AYER
+
+Aqui decia antes que los nameservers se quedaban en OVH y que solo habia
+que cambiar el registro A. Se escribio sin saber que el dominio estaba a
+nombre de Mobilia: con ese dato, dejarlo en OVH era dejarlo en una cuenta
+que no es vuestra. Transferirlo es mejor, y ademas arregla de paso el
+problema de la titularidad.
 
 =======================================================================
