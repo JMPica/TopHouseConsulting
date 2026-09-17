@@ -686,6 +686,7 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPO
 
     $informe = array(
         'destacados_propios' => count($PROPIOS),
+        'inmueblessinpublicar' => array(),
         'destacados_sin_encontrar' => array(),
         'registros'    => count($lista),
         'publicados'   => 0,
@@ -725,6 +726,15 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPO
            generico, que es el que sirve para cualquier otro CRM. */
         $variantes = operacionesMobilia($p);
         if (!count($variantes)) { $variantes = array(null); }
+
+        /* Cuantas fichas ha dado ESTE inmueble. Contar solo operaciones
+           descartadas no dice lo que de verdad importa: un local en venta y
+           en traspaso sale igual en la web -su venta- y solo pierde una
+           operacion, mientras que uno que solo esta en traspaso no aparece
+           en ningun sitio. La primera situacion no urge; la segunda es
+           cartera invisible. */
+        $dadas = 0;
+        $refFicha = '';
 
         foreach ($variantes as $op) {
             /* La operacion primero: de ella depende que precio es el bueno. */
@@ -788,7 +798,7 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPO
             /* Para avisar de las erratas: una referencia mal escrita en la
                lista de destacados no da ningun error, simplemente no
                destaca nada, y eso se pasa por alto durante semanas. */
-            if ($ref !== '') { $vistas[normalizar($ref)] = true; }
+            if ($ref !== '') { $vistas[normalizar($ref)] = true; $refFicha = $ref; }
 
             if ($operacion === 'traspaso') {
                 $informe['descartados'][] = array('n' => $indice, 'ref' => $ref, 'motivo' => 'traspaso: la web no tiene esa seccion todavia');
@@ -869,6 +879,11 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPO
 
             $fuera[] = $ficha;
             $informe['publicados']++;
+            $dadas++;
+        }
+
+        if ($dadas === 0) {
+            $informe['inmueblessinpublicar'][] = $refFicha !== '' ? $refFicha : ('#' . $indice);
         }
 
         /* Para el diagnostico: que nombres han llegado y cuales no se han
@@ -942,17 +957,33 @@ function tapar($registro, $hondo = 0) {
        'TelefonoAgente' y 'EmailAgente', no 'telefono' ni 'email', y asi el
        telefono y el correo de una empleada salieron enteros en un
        diagnostico de verdad. Un dato personal no deja de serlo porque el
-       campo lleve un sufijo, asi que ademas de la lista se mira si el
-       nombre CONTIENE alguna de estas palabras. */
-    $delatores = array('telefon', 'telefono', 'movil', 'mobil', 'email', 'correo',
-                       'whatsapp', 'nif', 'dni', 'cif', 'iban', 'propietario', 'agente');
+       campo lleve un sufijo. */
+    $largos = array('telefon', 'email', 'correo', 'whatsapp', 'propietario', 'agente');
+
+    /* Estas son demasiado cortas para buscarlas sueltas dentro del nombre:
+       'nif' vive dentro de 'TratamientoIgnifugo', que es un si/no de un
+       local y no el documento de nadie. Taparlo no hacia dano, pero un
+       diagnostico que esconde campos que no son personales despista a quien
+       lo lee y puede ocultar justo el que hacia falta para emparejar. Asi
+       que estas solo cuentan si son el nombre entero, el principio o el
+       final: 'Nif', 'NifPropietario', 'NumeroNif'. */
+    $cortos = array('nif', 'dni', 'cif', 'iban', 'movil', 'mobil');
+
     $fuera = array();
     foreach ($registro as $clave => $valor) {
         $k = normalizar($clave);
         $personal = in_array($k, $delicados, true);
         if (!$personal) {
-            foreach ($delatores as $d) {
+            foreach ($largos as $d) {
                 if (strpos($k, $d) !== false) { $personal = true; break; }
+            }
+        }
+        if (!$personal) {
+            foreach ($cortos as $d) {
+                $l = strlen($d);
+                if ($k === $d || strncmp($k, $d, $l) === 0 || substr($k, -$l) === $d) {
+                    $personal = true; break;
+                }
             }
         }
         if ($personal) {
@@ -978,6 +1009,7 @@ if ($DIAG) {
         'formato'       => $formato,
         'http'          => $codigo,
         'destacados_propios'       => $informe['destacados_propios'],
+        'inmuebles_sin_publicar'   => $informe['inmueblessinpublicar'],
         'destacados_sin_encontrar' => $informe['destacados_sin_encontrar'],
         'registros'     => $informe['registros'],
         'publicados'    => $informe['publicados'],
