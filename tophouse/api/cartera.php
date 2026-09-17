@@ -99,7 +99,26 @@ function responder($datos, $origen, $cachear = true) {
        no se guardan nunca, o se quedaria pegado el fallo. */
     header('Cache-Control: ' . ($cachear ? 'public, max-age=300' : 'no-store'));
     header('X-Origen: ' . preg_replace('/[^\x20-\x7e]/', ' ', $origen));
-    echo json_encode($datos, JSON_UNESCAPED_UNICODE);
+
+    /* json_encode devuelve FALSE si en los datos hay un solo byte que no
+       sea UTF-8 valido, y 'echo false' no escribe nada: la respuesta salia
+       vacia, con codigo 200 y sin un mal error en ningun sitio. Una pagina
+       en blanco sin motivo es lo mas caro de diagnosticar que existe, y
+       aqui se llevaria por delante la cartera entera por culpa de un
+       acento mal codificado en la descripcion de un piso. */
+    $json = json_encode($datos, JSON_UNESCAPED_UNICODE);
+    if ($json === false) {
+        apuntar('json_encode ha fallado (' . json_last_error_msg() . '), se reintenta sustituyendo lo que no es utf-8');
+        if (defined('JSON_INVALID_UTF8_SUBSTITUTE')) {
+            $json = json_encode($datos, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+        }
+    }
+    if ($json === false) {
+        /* Ni asi. Se contesta algo honesto en vez de nada. */
+        apuntar('json_encode ha fallado incluso sustituyendo');
+        $json = '{"error":"la respuesta no se ha podido codificar"}';
+    }
+    echo $json;
     exit;
 }
 
@@ -641,6 +660,29 @@ $limpio = traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $informe);
  * COMO SE LLAMA el campo y de que tipo es. Se conserva el nombre y se
  * sustituye el contenido.
  */
+/**
+ * Recorta a lo ancho de CARACTERES, no de bytes. Un substr a pelo parte
+ * una letra acentuada por la mitad y lo que queda ya no es UTF-8: a
+ * partir de ahi json_encode se niega a codificar el conjunto entero.
+ * En un feed en castellano eso no es un caso raro, es cuestion de tiempo.
+ */
+function recortar($t, $max) {
+    if (function_exists('mb_substr')) {
+        return mb_substr($t, 0, $max, 'UTF-8');
+    }
+    /* Sin mbstring: se retrocede mientras el ultimo byte sea la
+       continuacion de un caracter (10xxxxxx), y se suelta tambien el byte
+       inicial que se haya quedado sin su continuacion. */
+    $corte = substr($t, 0, $max);
+    while ($corte !== '' && (ord($corte[strlen($corte) - 1]) & 0xC0) === 0x80) {
+        $corte = substr($corte, 0, -1);
+    }
+    if ($corte !== '' && (ord($corte[strlen($corte) - 1]) & 0xC0) === 0xC0) {
+        $corte = substr($corte, 0, -1);
+    }
+    return $corte;
+}
+
 function tapar($registro, $hondo = 0) {
     if (!is_array($registro) || $hondo > 3) { return $registro; }
     $delicados = array('propietario', 'telefono', 'movil', 'mobil', 'email', 'correo',
@@ -657,7 +699,7 @@ function tapar($registro, $hondo = 0) {
             /* Un texto largo puede ser la descripcion, y ahi la gente escribe
                de todo. Se recorta: para ver el nombre del campo sobra. */
             $t = (string) $valor;
-            $fuera[$clave] = strlen($t) > 80 ? substr($t, 0, 80) . '...' : $valor;
+            $fuera[$clave] = strlen($t) > 80 ? recortar($t, 80) . '...' : $valor;
         }
     }
     return $fuera;
