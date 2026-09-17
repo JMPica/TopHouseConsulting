@@ -362,3 +362,53 @@ inmueble no es una pagina, es una tarjeta dentro de una lista, y no hay
 nada que contar.
 
 =======================================================================
+
+=======================================================================
+LO QUE DICE EL MANUAL DE MOBILIA (InterfazExportacionMobilia.pdf)
+=======================================================================
+
+Llego el PDF de la especificacion. Confirma lo que se habia deducido
+leyendo los datos, y trae dos cosas que no se sabian.
+
+CONFIRMADO
+
+  - "Nodo por cada operacion que tenga el inmueble". O sea que un inmueble
+    con varias operaciones manda varios nodos, que es exactamente lo que
+    tumbaba dos fichas antes de arreglarlo.
+  - CalificacionEnergetica: el propio manual la describe como "a spanish
+    mandatory value". Sus valores son 1..7 para A..G, mas 8 pendiente de
+    certificar, 9 no necesaria y 10 en tramite. La web no la ensena
+    todavia y en publicidad inmobiliaria es obligatoria.
+
+NUEVO Y PENDIENTE DE DECIDIR: EL TRASPASO
+
+El manual da TRES tipos de operacion, no dos: venta, alquiler y traspaso.
+El traspaso no es ninguna de las otras dos -no se compra el local, se
+releva un contrato- y la web solo tiene Comprar y Llogar.
+
+De momento se reconoce y NO se publica, pero sale NOMBRADO en el
+diagnostico ('traspaso: la web no tiene esa seccion todavia') en vez de
+caer en el saco de 'sin operacion'. Asi, si Top House tiene traspasos en
+cartera, se ve en cuanto se mire, en lugar de perderse en silencio.
+
+Un local que este a la vez en venta y en traspaso si sale: se publica su
+venta y se reporta el traspaso.
+
+Queda por decidir que se hace con ellos. Publicarlos como venta seria
+mentir al visitante; dejarlos fuera es perder cartera. Lo razonable, si
+los hay, es una seccion propia o una etiqueta clara dentro de Comprar.
+
+TAMBIEN APARECE PrecioRenta, el precio de renta de un traspaso. Anadido a
+los nombres de precio de alquiler, para que nunca se coja el precio del
+traspaso donde deberia ir una mensualidad.
+
+OTRO MANDO POSIBLE: EL NODO Grupos
+
+El manual documenta un nodo Grupos > Grupo, "los grupos a los que
+pertenece el inmueble". Si esos grupos son organizacion interna de
+Mobilia y no viajan a los portales -hay que comprobarlo en Mobilia antes
+de fiarse-, serian mejor mando que destacados.txt para elegir que sale
+primero en la web: se haria donde Top House ya trabaja cada dia, sin
+tocar ficheros del servidor y sin afectar a Idealista ni Fotocasa.
+
+=======================================================================

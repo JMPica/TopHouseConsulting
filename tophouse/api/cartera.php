@@ -741,6 +741,15 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPO
                                     strpos($n, 'sale') !== false || strpos($n, 'sell') !== false ||
                                     strpos($n, 'compra') !== false)) {
                 $operacion = 'venta';
+            } elseif ($n !== '' && strpos($n, 'traspas') !== false) {
+                /* El manual de Mobilia da TRES tipos de operacion: venta,
+                   alquiler y traspaso. Un traspaso no es ninguna de las dos
+                   cosas -no se compra el local, se releva un contrato- y la
+                   web no tiene esa seccion, asi que no se publica. Pero se
+                   reconoce, para que salga NOMBRADO en el diagnostico en vez
+                   de caer en el saco de 'sin operacion' y perderse de vista.
+                   Si Top House tiene traspasos en cartera, esto lo dira. */
+                $operacion = 'traspaso';
             } else {
                 /* Sin campo de operacion no se inventa: o lo dice la
                    configuracion (feed de un solo tipo) o el inmueble no sale. */
@@ -781,6 +790,10 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPO
                destaca nada, y eso se pasa por alto durante semanas. */
             if ($ref !== '') { $vistas[normalizar($ref)] = true; }
 
+            if ($operacion === 'traspaso') {
+                $informe['descartados'][] = array('n' => $indice, 'ref' => $ref, 'motivo' => 'traspaso: la web no tiene esa seccion todavia');
+                continue;
+            }
             if ($operacion === '') {
                 $informe['descartados'][] = array('n' => $indice, 'ref' => $ref, 'motivo' => 'sin operacion (venta/alquiler)');
                 continue;
