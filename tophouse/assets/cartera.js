@@ -138,6 +138,27 @@
      hace con los seis a la vez. */
   var MANDOS = [fRef, fTipo, fPob, fHab, fMin, fMax].filter(Boolean);
 
+  /* UN DISTINTIVO QUE LO LLEVA TODO EL MUNDO NO DISTINGUE A NADIE.
+
+     La cartera de verdad venia entera marcada como destacada, asi que
+     las treinta y tres fichas salian con su etiqueta y con el borde
+     resaltado. Una etiqueta que lo lleva todo el mundo deja de querer
+     decir nada: es ruido repetido en cada tarjeta.
+
+     Asi que el distintivo se ensena solo cuando de verdad senala a unos
+     pocos. Si lo lleva la mitad o mas, se apaga entero, etiqueta y borde.
+     Y se corrige solo: el dia que en Mobilia se marquen cuatro pisos en
+     vez de treinta y tres, vuelve a aparecer sin tocar nada de aqui.
+
+     El ORDEN no depende de esto: si todos estan destacados ese criterio
+     no desempata y manda la fecha, que es justo lo que se quiere. */
+  var DESTACA = (function () {
+    if (!TODOS.length) return false;
+    var cuantos = TODOS.filter(function (i) { return i.destacado; }).length;
+    return cuantos > 0 && cuantos < TODOS.length / 2;
+  })();
+  function destaca(i) { return !!i.destacado && DESTACA; }
+
   /* El separador de miles cambia con el idioma, y aqui no es un detalle:
      '380.000' leido por un ingles son trescientos ochenta euros. */
   var LOCAL = { ca: 'ca-ES', es: 'es-ES', en: 'en-GB' }[IDIOMA] || 'es-ES';
@@ -260,7 +281,7 @@
   }
 
   function ficha(i) {
-    var li = nodo('li', 'inm' + (i.destacado ? ' inm--dest' : ''));
+    var li = nodo('li', 'inm' + (destaca(i) ? ' inm--dest' : ''));
 
     /* --- la foto --- */
     var foto = fotoSegura(i.foto);
@@ -277,13 +298,13 @@
         caja.className = 'inm__foto inm__foto--sin';
         caja.textContent = '';
         caja.appendChild(nodo('span', 'mono', T('Sin foto todavía')));
-        if (i.destacado) caja.appendChild(nodo('span', 'inm__flag mono', T('Destacado')));
+        if (destaca(i)) caja.appendChild(nodo('span', 'inm__flag mono', T('Destacado')));
       });
       caja.appendChild(img);
     } else {
       caja.appendChild(nodo('span', 'mono', T('Sin foto todavía')));
     }
-    if (i.destacado) caja.appendChild(nodo('span', 'inm__flag mono', T('Destacado')));
+    if (destaca(i)) caja.appendChild(nodo('span', 'inm__flag mono', T('Destacado')));
     li.appendChild(caja);
 
     /* --- el cuerpo --- */
