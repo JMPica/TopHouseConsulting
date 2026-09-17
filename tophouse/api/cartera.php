@@ -515,6 +515,42 @@ function localizarLista($crudo, $profundidad = 0) {
 }
 
 /**
+ * Saca las operaciones de un inmueble de Mobilia, ya aplanadas.
+ *
+ * Mobilia no deja la operacion y el precio sueltos en el inmueble: los
+ * mete juntos y anidados, Operaciones > Operacion > {Tipo, Precio}. Y
+ * cuando una finca esta a la vez en venta y en alquiler, Operacion es una
+ * LISTA de dos. Aplanar eso a ciegas no encontraba ni tipo ni precio, y el
+ * inmueble entero se caia: eran los dos que el diagnostico contaba como
+ * 'sin operacion'.
+ *
+ * Leerlo aqui da ademas lo que de verdad importa: que el tipo y el precio
+ * salgan SIEMPRE de la misma operacion. Cruzar el alquiler de una con el
+ * precio de la otra es el unico error que esta pagina no se puede permitir.
+ */
+function operacionesMobilia($p) {
+    $dentro = null;
+    foreach ($p as $k => $v) {
+        if (normalizar($k) === 'operaciones' && is_array($v)) { $dentro = $v; break; }
+    }
+    if ($dentro === null) { return array(); }
+
+    $ops = null;
+    foreach ($dentro as $k => $v) {
+        if (normalizar($k) === 'operacion' && is_array($v)) { $ops = $v; break; }
+    }
+    if ($ops === null) { return array(); }
+    /* Una sola operacion llega como objeto; varias, como lista. */
+    if (!isset($ops[0])) { $ops = array($ops); }
+
+    $fuera = array();
+    foreach ($ops as $o) {
+        if (is_array($o)) { $fuera[] = aplanar($o); }
+    }
+    return $fuera;
+}
+
+/**
  * Traduce la respuesta de Mobilia al formato de la web.
  *
  * Descarta sin contemplaciones el inmueble al que no le encuentra precio
@@ -557,75 +593,105 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, &$informe) {
             return $valor;
         };
 
-        /* La operacion primero: de ella depende que precio es el bueno. */
-        $bruta = texto($lee('operacion'));
-        $n = normalizar($bruta);
-        if ($n !== '' && (strpos($n, 'alq') !== false || strpos($n, 'llog') !== false ||
-                          strpos($n, 'rent') !== false || strpos($n, 'arrend') !== false)) {
-            $operacion = 'alquiler';
-        } elseif ($n !== '' && (strpos($n, 'vent') !== false || strpos($n, 'venda') !== false ||
-                                strpos($n, 'sale') !== false || strpos($n, 'sell') !== false ||
-                                strpos($n, 'compra') !== false)) {
-            $operacion = 'venta';
-        } else {
-            /* Sin campo de operacion no se inventa: o lo dice la
-               configuracion (feed de un solo tipo) o el inmueble no sale. */
-            $operacion = ($porDefecto === 'venta' || $porDefecto === 'alquiler') ? $porDefecto : '';
+        /* Un inmueble puede estar a la vez en venta y en alquiler. Cuando
+           pasa, sale una ficha por operacion: en la web son dos paginas
+           distintas, Comprar y Llogar, y tiene que aparecer en las dos.
+           Sin operaciones reconocibles se pasa una sola vez por el camino
+           generico, que es el que sirve para cualquier otro CRM. */
+        $variantes = operacionesMobilia($p);
+        if (!count($variantes)) { $variantes = array(null); }
+
+        foreach ($variantes as $op) {
+            /* La operacion primero: de ella depende que precio es el bueno. */
+            $bruta = ($op !== null && isset($op['tipo'])) ? texto($op['tipo']) : texto($lee('operacion'));
+            if ($op !== null && isset($op['tipo'])) {
+                $tocados['operaciones'] = true;
+                $informe['emparejados']['operacion']['operaciones>operacion>tipo'] = true;
+            }
+            $n = normalizar($bruta);
+            if ($n !== '' && (strpos($n, 'alq') !== false || strpos($n, 'llog') !== false ||
+                              strpos($n, 'rent') !== false || strpos($n, 'arrend') !== false)) {
+                $operacion = 'alquiler';
+            } elseif ($n !== '' && (strpos($n, 'vent') !== false || strpos($n, 'venda') !== false ||
+                                    strpos($n, 'sale') !== false || strpos($n, 'sell') !== false ||
+                                    strpos($n, 'compra') !== false)) {
+                $operacion = 'venta';
+            } else {
+                /* Sin campo de operacion no se inventa: o lo dice la
+                   configuracion (feed de un solo tipo) o el inmueble no sale. */
+                $operacion = ($porDefecto === 'venta' || $porDefecto === 'alquiler') ? $porDefecto : '';
+            }
+
+            /* Si la operacion trae su propio precio, ese y no otro: es el precio
+               DE ESTA operacion, que es justo lo que hay que publicar. */
+            $precio = 0;
+            if ($op !== null) {
+                $suyo = null;
+                $nombresSuyos = $operacion === 'alquiler'
+                    ? array_merge($SINONIMOS_ALQUILER, $SINONIMOS['precio'])
+                    : $SINONIMOS['precio'];
+                $precio = numero(buscar($op, $nombresSuyos, $suyo));
+                if ($suyo !== null) {
+                    $tocados['operaciones'] = true;
+                    $informe['emparejados']['precio']['operaciones>operacion>' . $suyo] = true;
+                }
+            }
+            if ($precio <= 0) {
+                $nombresPrecio = $SINONIMOS['precio'];
+                if ($operacion === 'alquiler') {
+                    $nombresPrecio = array_merge($SINONIMOS_ALQUILER, $nombresPrecio);
+                }
+                $usadoPrecio = null;
+                if (isset($forzados['precio'])) { array_unshift($nombresPrecio, normalizar($forzados['precio'])); }
+                $precio = numero(buscar($plano, $nombresPrecio, $usadoPrecio));
+                if ($usadoPrecio !== null) {
+                    $tocados[$usadoPrecio] = true;
+                    $informe['emparejados']['precio'][$usadoPrecio] = true;
+                }
+            }
+
+            $ref = texto($lee('ref'));
+
+            if ($operacion === '') {
+                $informe['descartados'][] = array('n' => $indice, 'ref' => $ref, 'motivo' => 'sin operacion (venta/alquiler)');
+                continue;
+            }
+            if ($precio <= 0) {
+                $informe['descartados'][] = array('n' => $indice, 'ref' => $ref, 'motivo' => 'sin precio reconocible');
+                continue;
+            }
+
+            /* 'area' vale por barrio en unos feeds y por superficie en otros.
+               Un barrio nunca es un numero pelado, asi que si llega un numero se
+               descarta: mas vale sin barrio que con '105' de nombre de barrio. */
+            $zona = texto($lee('zona'));
+            if ($zona !== '' && preg_match('/^[0-9.,]+$/', $zona)) { $zona = ''; }
+
+            $ficha = array(
+                'ref'       => $ref !== '' ? $ref : ('THR-' . $indice),
+                'operacion' => $operacion,
+                'tipo'      => strtolower(texto($lee('tipo'))),
+                'titulo'    => texto($lee('titulo')),
+                'poblacio'  => texto($lee('poblacio')),
+                'zona'      => $zona,
+                'precio'    => $precio,
+                'm2'        => (int) numero($lee('m2')),
+                'hab'       => (int) numero($lee('hab')),
+                'banys'     => (int) numero($lee('banys')),
+                'extras'    => listaExtras($lee('extras')),
+                'foto'      => primeraFoto($lee('foto')),
+            );
+
+            /* Sin titulo la ficha sigue siendo util: se compone uno con lo
+               que si se sabe, que es lo que hace el propio portal. */
+            if ($ficha['titulo'] === '') {
+                $partes = array_filter(array($ficha['tipo'], $ficha['poblacio']));
+                $ficha['titulo'] = count($partes) ? ucfirst(implode(' en ', $partes)) : $ficha['ref'];
+            }
+
+            $fuera[] = $ficha;
+            $informe['publicados']++;
         }
-
-        $nombresPrecio = $SINONIMOS['precio'];
-        if ($operacion === 'alquiler') {
-            $nombresPrecio = array_merge($SINONIMOS_ALQUILER, $nombresPrecio);
-        }
-        $usadoPrecio = null;
-        if (isset($forzados['precio'])) { array_unshift($nombresPrecio, normalizar($forzados['precio'])); }
-        $precio = numero(buscar($plano, $nombresPrecio, $usadoPrecio));
-        if ($usadoPrecio !== null) {
-            $tocados[$usadoPrecio] = true;
-            $informe['emparejados']['precio'][$usadoPrecio] = true;
-        }
-
-        $ref = texto($lee('ref'));
-
-        if ($operacion === '') {
-            $informe['descartados'][] = array('n' => $indice, 'ref' => $ref, 'motivo' => 'sin operacion (venta/alquiler)');
-            continue;
-        }
-        if ($precio <= 0) {
-            $informe['descartados'][] = array('n' => $indice, 'ref' => $ref, 'motivo' => 'sin precio reconocible');
-            continue;
-        }
-
-        /* 'area' vale por barrio en unos feeds y por superficie en otros.
-           Un barrio nunca es un numero pelado, asi que si llega un numero se
-           descarta: mas vale sin barrio que con '105' de nombre de barrio. */
-        $zona = texto($lee('zona'));
-        if ($zona !== '' && preg_match('/^[0-9.,]+$/', $zona)) { $zona = ''; }
-
-        $ficha = array(
-            'ref'       => $ref !== '' ? $ref : ('THR-' . $indice),
-            'operacion' => $operacion,
-            'tipo'      => strtolower(texto($lee('tipo'))),
-            'titulo'    => texto($lee('titulo')),
-            'poblacio'  => texto($lee('poblacio')),
-            'zona'      => $zona,
-            'precio'    => $precio,
-            'm2'        => (int) numero($lee('m2')),
-            'hab'       => (int) numero($lee('hab')),
-            'banys'     => (int) numero($lee('banys')),
-            'extras'    => listaExtras($lee('extras')),
-            'foto'      => primeraFoto($lee('foto')),
-        );
-
-        /* Sin titulo la ficha sigue siendo util: se compone uno con lo
-           que si se sabe, que es lo que hace el propio portal. */
-        if ($ficha['titulo'] === '') {
-            $partes = array_filter(array($ficha['tipo'], $ficha['poblacio']));
-            $ficha['titulo'] = count($partes) ? ucfirst(implode(' en ', $partes)) : $ficha['ref'];
-        }
-
-        $fuera[] = $ficha;
-        $informe['publicados']++;
 
         /* Para el diagnostico: que nombres han llegado y cuales no se han
            usado. Ahi es donde se ve si falta un sinonimo. */
@@ -689,9 +755,24 @@ function tapar($registro, $hondo = 0) {
                        'nif', 'dni', 'cif', 'nombrepropietario', 'contacto', 'observaciones',
                        'notas', 'notasinternas', 'direccion', 'calle', 'numero', 'piso',
                        'portal', 'catastro', 'referenciacatastral', 'iban', 'titular');
+    /* La lista de nombres exactos no basta: Mobilia llama a las cosas
+       'TelefonoAgente' y 'EmailAgente', no 'telefono' ni 'email', y asi el
+       telefono y el correo de una empleada salieron enteros en un
+       diagnostico de verdad. Un dato personal no deja de serlo porque el
+       campo lleve un sufijo, asi que ademas de la lista se mira si el
+       nombre CONTIENE alguna de estas palabras. */
+    $delatores = array('telefon', 'telefono', 'movil', 'mobil', 'email', 'correo',
+                       'whatsapp', 'nif', 'dni', 'cif', 'iban', 'propietario', 'agente');
     $fuera = array();
     foreach ($registro as $clave => $valor) {
-        if (in_array(normalizar($clave), $delicados, true)) {
+        $k = normalizar($clave);
+        $personal = in_array($k, $delicados, true);
+        if (!$personal) {
+            foreach ($delatores as $d) {
+                if (strpos($k, $d) !== false) { $personal = true; break; }
+            }
+        }
+        if ($personal) {
             $fuera[$clave] = '(tapado: ' . gettype($valor) . ')';
         } elseif (is_array($valor)) {
             $fuera[$clave] = tapar($valor, $hondo + 1);
