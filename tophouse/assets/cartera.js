@@ -36,7 +36,48 @@
   if (!raices.length) return;
 
   var NOM_TIPO = { piso:T('Piso'), atico:T('Ático'), casa:T('Casa'), bajo:T('Planta baja'),
-                   local:T('Local'), terreno:T('Terreno') };
+                   local:T('Local'), terreno:T('Terreno'),
+                   garaje:T('Plaza de aparcamiento'), trastero:T('Trastero') };
+
+  /* En que idioma se esta leyendo la pagina. El generador deja el codigo en
+     <html lang>, asi que no hace falta preguntarselo a nadie. */
+  var IDIOMA = (document.documentElement.getAttribute('lang') || 'es').slice(0, 2);
+
+  /* El texto de un inmueble en el idioma de la pagina.
+
+     El puente manda el castellano en el campo de siempre y, cuando Mobilia
+     lo tiene, el catalan y el ingles en i.i18n. Antes esto no se leia y las
+     fichas salian en castellano en las tres versiones de la web, teniendo
+     la traduccion al lado. Si falta, se cae al castellano: mejor una ficha
+     en el idioma que no toca que una ficha sin titulo.
+
+     El TIPO es aparte: si es uno de los que la web sabe nombrar, manda su
+     traduccion (NOM_TIPO), que esta escrita por nosotros. El campo de
+     Mobilia solo se usa para los tipos que no conocemos. */
+  function texto(i, campo) {
+    if (IDIOMA !== 'es' && i.i18n && i.i18n[IDIOMA] && i.i18n[IDIOMA][campo]) {
+      return i.i18n[IDIOMA][campo];
+    }
+    return i[campo] || '';
+  }
+
+  function nombreTipo(i) {
+    return NOM_TIPO[i.tipo] || texto(i, 'tipo') || i.tipo || '';
+  }
+
+  /* El titulo en el idioma de la pagina. Mobilia rellena el castellano casi
+     siempre y el catalan y el ingles casi nunca, asi que cuando no lo hay
+     se compone aqui y no en el puente: aqui se sabe decir 'Pis', mientras
+     que Mobilia guarda los tipos en plural y saldria 'Pisos a Arenys'. */
+  function tituloDe(i) {
+    var propio = (IDIOMA !== 'es' && i.i18n && i.i18n[IDIOMA])
+      ? i.i18n[IDIOMA].titulo
+      : i.titulo;
+    if (propio) return propio;
+    var tipo = nombreTipo(i), donde = i.poblacio || '';
+    if (tipo && donde) return tipo + T(' en ') + donde;
+    return tipo || donde || i.titulo || '';
+  }
 
   /* Trae los inmuebles del feed si lo hay, y si no del fichero local. */
   function traerInmuebles() {
@@ -97,7 +138,10 @@
      hace con los seis a la vez. */
   var MANDOS = [fRef, fTipo, fPob, fHab, fMin, fMax].filter(Boolean);
 
-  var eur = function (n) { return new Intl.NumberFormat('es-ES').format(n); };
+  /* El separador de miles cambia con el idioma, y aqui no es un detalle:
+     '380.000' leido por un ingles son trescientos ochenta euros. */
+  var LOCAL = { ca: 'ca-ES', es: 'es-ES', en: 'en-GB' }[IDIOMA] || 'es-ES';
+  var eur = function (n) { return new Intl.NumberFormat(LOCAL).format(n); };
 
   /* Los filtros se construyen con lo que hay de verdad en la cartera, no con
      una lista fija: asi nunca se ofrece un filtro que no devuelve nada. */
@@ -110,9 +154,16 @@
   }
 
   function montarFiltros() {
-    opcionesDe('tipo', NOM_TIPO).forEach(function (t) {
+    /* La etiqueta del desplegable sale del propio inmueble cuando el tipo
+       no es de los que la web sabe nombrar: asi un 'Trastero' que Mobilia
+       llame de otra manera sigue saliendo en catalan o en ingles. El VALOR
+       es siempre la clave, que es igual en los tres idiomas; si no, filtrar
+       en catalan no encontraria nada. */
+    var ETIQUETA = {};
+    TODOS.forEach(function (i) { if (i.tipo && !ETIQUETA[i.tipo]) ETIQUETA[i.tipo] = nombreTipo(i); });
+    opcionesDe('tipo', ETIQUETA).forEach(function (t) {
       var o = document.createElement('option');
-      o.value = t; o.textContent = NOM_TIPO[t] || t; fTipo.appendChild(o);
+      o.value = t; o.textContent = ETIQUETA[t] || t; fTipo.appendChild(o);
     });
     opcionesDe('poblacio').forEach(function (p) {
       var o = document.createElement('option');
@@ -241,7 +292,7 @@
     var sitio = String(i.poblacio || '') + (i.zona ? ' · ' + i.zona : '');
     cuerpo.appendChild(nodo('p', 'inm__sitio mono', sitio));
 
-    cuerpo.appendChild(nodo('h3', 'inm__t', i.titulo || NOM_TIPO[i.tipo] || T('Inmueble')));
+    cuerpo.appendChild(nodo('h3', 'inm__t', tituloDe(i) || T('Inmueble')));
 
     var datos = [];
     var m2 = numero(i.m2), hab = numero(i.hab), banys = numero(i.banys);
@@ -313,9 +364,20 @@
       if (max && i.precio && i.precio > max) return false;
       return true;
     });
+    /* EL ORDEN. Primero lo que la agencia ha marcado como destacado en
+       Mobilia, que es el unico criterio de "popularidad" que existe: el
+       feed no trae visitas ni contactos, asi que quien decide que se
+       ensena primero es Top House y no una formula inventada aqui.
+
+       Despues, lo mas reciente. Antes venia el precio de menor a mayor, y
+       eso abria la pagina de Comprar con tres plazas de aparcamiento, que
+       es lo mas barato de la cartera. Quien entra buscando casa se
+       encontraba cuatro fotos de garaje. */
     lista.sort(function (a, b) {
       if (!!b.destacado !== !!a.destacado) return b.destacado ? 1 : -1;
-      return (a.precio || 0) - (b.precio || 0);
+      var fa = numero(a.fecha), fb = numero(b.fecha);
+      if (fa !== fb) return fb - fa;
+      return (b.precio || 0) - (a.precio || 0);
     });
 
     grid.innerHTML = '';

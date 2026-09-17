@@ -24,6 +24,9 @@ window.T = (function () {
       'Piso':'Pis', 'Ático':'Àtic', 'Planta baja':'Planta baixa',
       'Casa':'Casa', 'Casa o torre':'Casa o torre',
       'Local':'Local', 'Terreno':'Terreny',
+      'Plaza de aparcamiento':'Plaça d’aparcament', 'Trastero':'Traster',
+      /* el enlace de un titulo compuesto: 'Pis a Arenys de Mar' */
+      ' en ':' a ',
 
       /* la calculadora */
       'Unos ':'Uns ',
@@ -68,6 +71,8 @@ window.T = (function () {
       'Piso':'Flat', 'Ático':'Penthouse', 'Planta baja':'Ground floor',
       'Casa':'House', 'Casa o torre':'House or villa',
       'Local':'Commercial unit', 'Terreno':'Land',
+      'Plaza de aparcamiento':'Parking space', 'Trastero':'Storage room',
+      ' en ':' in ',
 
       'Unos ':'About ',
       ' · precios de ':' · prices from ',

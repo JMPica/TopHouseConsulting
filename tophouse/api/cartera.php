@@ -362,11 +362,40 @@ $SINONIMOS = array(
     'banys'     => array('banos', 'banyos', 'banys', 'aseos', 'bathrooms', 'nbanos', 'numbanos', 'wc'),
     'extras'    => array('extras', 'caracteristicas', 'caracteristiques', 'features', 'equipamiento', 'servicios', 'amenities', 'etiquetas'),
     'foto'      => array('foto', 'fotos', 'imagen', 'imagenes', 'imatges', 'image', 'images', 'photo', 'photos', 'foto1', 'fotoprincipal', 'urlfoto', 'thumbnail', 'multimedia'),
+    /* Mobilia marca en su propio panel los inmuebles que quiere empujar.
+       Ese es el unico dato de 'popularidad' que manda: no hay visitas ni
+       contactos en el feed, asi que el criterio lo pone la agencia. */
+    'destacado' => array('destacado', 'destacada', 'destaque', 'featured', 'highlight', 'resaltado'),
+    'fecha'     => array('fechamodificacion', 'fecha', 'fechacreacion', 'fechaalta', 'updated', 'modified', 'date'),
 );
 
 /* El precio del alquiler suele venir en su propio campo, y publicar un
    alquiler con el precio de venta seria el peor error posible. */
 $SINONIMOS_ALQUILER = array('precioalquiler', 'preualquiler', 'preulloguer', 'preciolloguer', 'preciomes', 'preciomensual', 'rentprice', 'rent', 'mensualidad', 'renta');
+
+/* Los idiomas de la web y el sufijo con que Mobilia nombra cada uno.
+   El castellano es el campo sin sufijo, asi que no esta en la tabla. */
+$IDIOMAS = array('ca' => 'Ca', 'en' => 'En');
+
+/* La CLAVE del tipo tiene que ser la misma en los tres idiomas: es lo que
+   compara el filtro, y un desplegable que en catalan filtra por 'Pisos' y
+   en ingles por 'Flats' no encuentra nada. Asi que el tipo viaja como
+   clave estable y el nombre visible lo pone la web, que ya sabe traducir.
+   Mobilia los manda en plural ('Pisos'), de ahi la tabla. */
+$TIPOS = array(
+    'piso' => 'piso', 'pisos' => 'piso', 'apartamento' => 'piso', 'apartamentos' => 'piso',
+    'atico' => 'atico', 'aticos' => 'atico',
+    'casa' => 'casa', 'casas' => 'casa', 'chalet' => 'casa', 'chalets' => 'casa',
+    'torre' => 'casa', 'torres' => 'casa', 'villa' => 'casa', 'villas' => 'casa',
+    'adosado' => 'casa', 'adosados' => 'casa', 'unifamiliar' => 'casa', 'unifamiliares' => 'casa',
+    'bajo' => 'bajo', 'bajos' => 'bajo', 'plantabaja' => 'bajo', 'plantasbajas' => 'bajo',
+    'local' => 'local', 'locales' => 'local', 'localcomercial' => 'local',
+    'terreno' => 'terreno', 'terrenos' => 'terreno', 'solar' => 'terreno', 'solares' => 'terreno',
+    'parcela' => 'terreno', 'parcelas' => 'terreno',
+    'garaje' => 'garaje', 'garajes' => 'garaje', 'parking' => 'garaje', 'parkings' => 'garaje',
+    'plazadeaparcamiento' => 'garaje', 'plazasdeaparcamiento' => 'garaje', 'aparcamiento' => 'garaje',
+    'trastero' => 'trastero', 'trasteros' => 'trastero',
+);
 
 /**
  * Deja un nombre de campo en su forma comparable: sin mayusculas, sin
@@ -374,10 +403,20 @@ $SINONIMOS_ALQUILER = array('precioalquiler', 'preualquiler', 'preulloguer', 'pr
  * y 'PRECIO VENTA' son el mismo nombre.
  */
 function normalizar($nombre) {
-    $n = strtolower((string) $nombre);
+    /* strtolower solo baja la A-Z de toda la vida: una 'A con tilde' la deja
+       entera, y el filtro de la ultima linea se la lleva por delante. Asi es
+       como 'Aticos' con tilde acababa convertido en 'ticos', no encontraba su
+       sitio en la tabla de tipos y salia sin traducir en las tres webs. */
+    $n = (string) $nombre;
+    $n = function_exists('mb_strtolower') ? mb_strtolower($n, 'UTF-8') : strtolower($n);
+    /* Las mayusculas acentuadas siguen en la tabla por si el servidor no
+       trae mbstring: entonces la linea de arriba no las ha bajado. */
     $n = strtr($n, array('á'=>'a','à'=>'a','ä'=>'a','â'=>'a','é'=>'e','è'=>'e','ë'=>'e','ê'=>'e',
                          'í'=>'i','ì'=>'i','ï'=>'i','î'=>'i','ó'=>'o','ò'=>'o','ö'=>'o','ô'=>'o',
-                         'ú'=>'u','ù'=>'u','ü'=>'u','û'=>'u','ñ'=>'n','ç'=>'c'));
+                         'ú'=>'u','ù'=>'u','ü'=>'u','û'=>'u','ñ'=>'n','ç'=>'c',
+                         'Á'=>'a','À'=>'a','Ä'=>'a','Â'=>'a','É'=>'e','È'=>'e','Ë'=>'e','Ê'=>'e',
+                         'Í'=>'i','Ì'=>'i','Ï'=>'i','Î'=>'i','Ó'=>'o','Ò'=>'o','Ö'=>'o','Ô'=>'o',
+                         'Ú'=>'u','Ù'=>'u','Ü'=>'u','Û'=>'u','Ñ'=>'n','Ç'=>'c'));
     return preg_replace('/[^a-z0-9]/', '', $n);
 }
 
@@ -515,6 +554,57 @@ function localizarLista($crudo, $profundidad = 0) {
 }
 
 /**
+ * Compone un titulo cuando el CRM no lo trae en ese idioma. Mobilia
+ * rellena el castellano y deja el catalan y el ingles vacios mas veces que
+ * no, y una ficha sin titulo en la pagina catalana acabaria ensenando el
+ * castellano, que es justo lo que se quiere evitar.
+ */
+function componerTitulo($tipo, $poblacio, $idioma) {
+    $tipo = trim((string) $tipo);
+    $poblacio = trim((string) $poblacio);
+    if ($tipo === '') { return $poblacio; }
+    if ($poblacio === '') { return $tipo; }
+    $enlace = array('ca' => ' a ', 'en' => ' in ', 'es' => ' en ');
+    return $tipo . (isset($enlace[$idioma]) ? $enlace[$idioma] : ' en ') . $poblacio;
+}
+
+/**
+ * Una fecha de Mobilia ('11-09-2026 14:24:25', dia primero) convertida en
+ * un numero con el que se pueda ordenar. Se acepta tambien el orden
+ * internacional por si otro CRM lo manda asi. Lo que no se entiende vale
+ * cero, que es lo mismo que decir "el mas viejo de todos".
+ */
+function fechaMobilia($v) {
+    $t = trim((string) $v);
+    if ($t === '') { return 0; }
+    if (preg_match('/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/', $t, $m)) {
+        return (int) mktime(0, 0, 0, (int) $m[2], (int) $m[1], (int) $m[3]);
+    }
+    if (preg_match('/^(\d{4})-(\d{1,2})-(\d{1,2})/', $t, $m)) {
+        return (int) mktime(0, 0, 0, (int) $m[2], (int) $m[3], (int) $m[1]);
+    }
+    return 0;
+}
+
+/**
+ * Mobilia manda las poblaciones como 'Arenys De Mar', con la preposicion
+ * en mayuscula. Sale en todas las fichas y en el desplegable, asi que se
+ * arregla aqui una vez: las palabras de enlace van en minuscula, salvo la
+ * primera.
+ */
+function poblacionBonita($t) {
+    $t = trim((string) $t);
+    if ($t === '') { return ''; }
+    $enlaces = array('de', 'del', 'la', 'las', 'les', 'los', 'el', 'i', 'y', 'd', 'da', 'dels');
+    $partes = preg_split('/\s+/', $t);
+    foreach ($partes as $n => $palabra) {
+        $baja = function_exists('mb_strtolower') ? mb_strtolower($palabra, 'UTF-8') : strtolower($palabra);
+        if ($n > 0 && in_array($baja, $enlaces, true)) { $partes[$n] = $baja; }
+    }
+    return implode(' ', $partes);
+}
+
+/**
  * Saca las operaciones de un inmueble de Mobilia, ya aplanadas.
  *
  * Mobilia no deja la operacion y el precio sueltos en el inmueble: los
@@ -557,7 +647,7 @@ function operacionesMobilia($p) {
  * u operacion: una ficha con el precio en blanco es peor que una ficha
  * que no esta. Lo descartado se cuenta y sale en el diagnostico.
  */
-function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, &$informe) {
+function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPOS, &$informe) {
     $lista = localizarLista($crudo);
     $forzados = isset($cfg['campos']) && is_array($cfg['campos']) ? $cfg['campos'] : array();
     $porDefecto = isset($cfg['operacion']) ? strtolower((string) $cfg['operacion']) : '';
@@ -667,12 +757,21 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, &$informe) {
             $zona = texto($lee('zona'));
             if ($zona !== '' && preg_match('/^[0-9.,]+$/', $zona)) { $zona = ''; }
 
+            /* El tipo viaja como CLAVE estable, igual en los tres idiomas:
+               es lo que compara el filtro. El nombre visible lo pone la web,
+               que ya sabe traducir 'piso' a 'Pis' y a 'Flat'. */
+            $tipoCru   = texto($lee('tipo'));
+            $tipoClave = normalizar($tipoCru);
+            if (isset($TIPOS[$tipoClave])) { $tipoClave = $TIPOS[$tipoClave]; }
+
+            $poblacio = poblacionBonita(texto($lee('poblacio')));
+
             $ficha = array(
                 'ref'       => $ref !== '' ? $ref : ('THR-' . $indice),
                 'operacion' => $operacion,
-                'tipo'      => strtolower(texto($lee('tipo'))),
+                'tipo'      => $tipoClave,
                 'titulo'    => texto($lee('titulo')),
-                'poblacio'  => texto($lee('poblacio')),
+                'poblacio'  => $poblacio,
                 'zona'      => $zona,
                 'precio'    => $precio,
                 'm2'        => (int) numero($lee('m2')),
@@ -680,14 +779,37 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, &$informe) {
                 'banys'     => (int) numero($lee('banys')),
                 'extras'    => listaExtras($lee('extras')),
                 'foto'      => primeraFoto($lee('foto')),
+                'destacado' => numero($lee('destacado')) > 0,
+                'fecha'     => fechaMobilia($lee('fecha')),
             );
 
             /* Sin titulo la ficha sigue siendo util: se compone uno con lo
                que si se sabe, que es lo que hace el propio portal. */
             if ($ficha['titulo'] === '') {
-                $partes = array_filter(array($ficha['tipo'], $ficha['poblacio']));
-                $ficha['titulo'] = count($partes) ? ucfirst(implode(' en ', $partes)) : $ficha['ref'];
+                $ficha['titulo'] = componerTitulo($tipoCru, $poblacio, 'es');
+                if ($ficha['titulo'] === '') { $ficha['titulo'] = $ficha['ref']; }
             }
+
+            /* Mobilia ya guarda el titulo y el tipo en catalan y en ingles.
+               Hasta ahora no se leian, y la pagina catalana ensenaba fichas
+               en castellano teniendo la traduccion al lado. Van todas en el
+               mismo sitio: una sola peticion, una sola copia guardada, y la
+               web coge la que toca segun en que idioma se este. */
+            $otros = array();
+            foreach ($IDIOMAS as $codigo => $sufijo) {
+                $suTipo   = texto(buscar($plano, array(normalizar('tipo' . $sufijo),
+                                                       normalizar('familia' . $sufijo))));
+                $suTitulo = texto(buscar($plano, array(normalizar('titulo' . $sufijo))));
+                /* Si Mobilia no lo tiene en este idioma NO se compone aqui:
+                   se manda vacio y lo compone la web, que es la que sabe
+                   decir 'Pis' y no 'Pisos'. Mobilia guarda los tipos en
+                   plural, y un titulo compuesto con ellos queda raro. */
+                $entrada = array();
+                if ($suTipo !== '')   { $entrada['tipo'] = $suTipo; }
+                if ($suTitulo !== '' && $suTitulo !== $ficha['titulo']) { $entrada['titulo'] = $suTitulo; }
+                if (count($entrada)) { $otros[$codigo] = $entrada; }
+            }
+            if (count($otros)) { $ficha['i18n'] = $otros; }
 
             $fuera[] = $ficha;
             $informe['publicados']++;
@@ -717,7 +839,7 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, &$informe) {
 }
 
 $informe = array();
-$limpio = traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $informe);
+$limpio = traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPOS, $informe);
 
 /* ---------- 5. el modo diagnostico ---------- */
 /**
