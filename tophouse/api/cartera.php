@@ -605,6 +605,38 @@ function poblacionBonita($t) {
 }
 
 /**
+ * La lista de destacados PROPIA de la web, si la hay.
+ *
+ * En Mobilia, la casilla 'Destacado' no es un mando de esta web: alimenta
+ * tambien lo que se destaca en Idealista y Fotocasa, que se paga aparte.
+ * Tocarla para ordenar la web propia saldria caro en el sitio equivocado.
+ *
+ * Por eso existe este fichero, al lado de la configuracion y fuera de
+ * public_html: un texto con una referencia por linea. Lo que este ahi sale
+ * primero en la web y con su distintivo, y en Mobilia no cambia nada.
+ *
+ *     # los que empujamos esta semana
+ *     1418
+ *     1500
+ *
+ * Si el fichero no existe o esta vacio, manda la casilla de Mobilia, que
+ * es como estaba antes.
+ */
+function destacadosPropios($ruta) {
+    if (!is_readable($ruta)) { return array(); }
+    $fuera = array();
+    foreach (preg_split('/\r\n|\r|\n/', (string) file_get_contents($ruta)) as $linea) {
+        $linea = trim($linea);
+        /* Una almohadilla delante es un comentario: asi se pueden dejar
+           referencias apuntadas sin que cuenten. */
+        if ($linea === '' || $linea[0] === '#') { continue; }
+        $clave = normalizar($linea);
+        if ($clave !== '') { $fuera[$clave] = true; }
+    }
+    return $fuera;
+}
+
+/**
  * Saca las operaciones de un inmueble de Mobilia, ya aplanadas.
  *
  * Mobilia no deja la operacion y el precio sueltos en el inmueble: los
@@ -647,12 +679,14 @@ function operacionesMobilia($p) {
  * u operacion: una ficha con el precio en blanco es peor que una ficha
  * que no esta. Lo descartado se cuenta y sale en el diagnostico.
  */
-function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPOS, &$informe) {
+function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPOS, $PROPIOS, &$informe) {
     $lista = localizarLista($crudo);
     $forzados = isset($cfg['campos']) && is_array($cfg['campos']) ? $cfg['campos'] : array();
     $porDefecto = isset($cfg['operacion']) ? strtolower((string) $cfg['operacion']) : '';
 
     $informe = array(
+        'destacados_propios' => count($PROPIOS),
+        'destacados_sin_encontrar' => array(),
         'registros'    => count($lista),
         'publicados'   => 0,
         'descartados'  => array(),
@@ -662,6 +696,7 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPO
     );
 
     $fuera = array();
+    $vistas = array();
     $indice = 0;
     foreach ($lista as $p) {
         $indice++;
@@ -741,6 +776,10 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPO
             }
 
             $ref = texto($lee('ref'));
+            /* Para avisar de las erratas: una referencia mal escrita en la
+               lista de destacados no da ningun error, simplemente no
+               destaca nada, y eso se pasa por alto durante semanas. */
+            if ($ref !== '') { $vistas[normalizar($ref)] = true; }
 
             if ($operacion === '') {
                 $informe['descartados'][] = array('n' => $indice, 'ref' => $ref, 'motivo' => 'sin operacion (venta/alquiler)');
@@ -779,7 +818,11 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPO
                 'banys'     => (int) numero($lee('banys')),
                 'extras'    => listaExtras($lee('extras')),
                 'foto'      => primeraFoto($lee('foto')),
-                'destacado' => numero($lee('destacado')) > 0,
+                /* La lista propia manda sobre la casilla de Mobilia: esa
+                   es de los portales, no de esta web. */
+                'destacado' => count($PROPIOS)
+                    ? isset($PROPIOS[normalizar($ref)])
+                    : numero($lee('destacado')) > 0,
                 'fecha'     => fechaMobilia($lee('fecha')),
             );
 
@@ -827,6 +870,10 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPO
         }
     }
 
+    /* Las referencias de la lista propia que no existen en la cartera:
+       casi siempre una errata al escribirlas a mano. */
+    $informe['destacados_sin_encontrar'] = array_keys(array_diff_key($PROPIOS, $vistas));
+
     /* Un feed no tiene por que ser uniforme: la venta puede traer 'precio'
        y el alquiler 'precio_alquiler'. Guardando solo el ultimo nombre, el
        diagnostico ensenaba uno y escondia el otro, que es justo el dato que
@@ -839,7 +886,8 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPO
 }
 
 $informe = array();
-$limpio = traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPOS, $informe);
+$PROPIOS = destacadosPropios($PRIVADO . '/destacados.txt');
+$limpio = traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPOS, $PROPIOS, $informe);
 
 /* ---------- 5. el modo diagnostico ---------- */
 /**
@@ -916,6 +964,8 @@ if ($DIAG) {
         'oauth'         => $notaOAuth,
         'formato'       => $formato,
         'http'          => $codigo,
+        'destacados_propios'       => $informe['destacados_propios'],
+        'destacados_sin_encontrar' => $informe['destacados_sin_encontrar'],
         'registros'     => $informe['registros'],
         'publicados'    => $informe['publicados'],
         'descartados'   => array_slice($informe['descartados'], 0, 20),

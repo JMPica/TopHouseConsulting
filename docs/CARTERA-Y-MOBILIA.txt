@@ -307,3 +307,58 @@ que no es vuestra. Transferirlo es mejor, y ademas arregla de paso el
 problema de la titularidad.
 
 =======================================================================
+
+=======================================================================
+QUE SALE PRIMERO EN LA WEB (Y POR QUE NO SE TOCA MOBILIA)
+=======================================================================
+
+La pagina de Comprar ordena asi: primero los destacados, y entre ellos y
+el resto, lo mas reciente arriba.
+
+LA CASILLA 'DESTACADO' DE MOBILIA NO ES EL MANDO DE ESTA WEB
+
+Parecia el sitio natural para decidirlo, pero esa casilla alimenta
+tambien lo que se destaca en Idealista y en Fotocasa, que se paga aparte.
+Desmarcar inmuebles ahi para colocar la web como se quiere sale caro en
+el sitio equivocado. Ademas venia la cartera entera marcada, con lo cual
+no distinguia nada.
+
+EL MANDO PROPIO: destacados.txt
+
+Al lado de mobilia-config.php, fuera de public_html:
+
+    /home/<usuario>/domains/tophouserealestate.es/destacados.txt
+
+Un texto con UNA REFERENCIA POR LINEA. Lo que este ahi sale primero en la
+web y con su distintivo. En Mobilia no cambia nada, y en los portales
+tampoco.
+
+    # los que empujamos esta semana
+    1418
+    1500
+    1372
+
+Las lineas vacias y las que empiezan por almohadilla se ignoran, asi que
+se pueden dejar referencias apuntadas sin que cuenten. Los cambios tardan
+como mucho los minutos que diga 'minutos' en la configuracion.
+
+Si el fichero no existe o esta vacio, manda la casilla de Mobilia.
+
+DOS COSAS QUE HACE SOLO
+
+  - Una referencia mal escrita no da error, simplemente no destaca nada, y
+    eso se pasa por alto durante semanas. Por eso el diagnostico dice
+    cuantas referencias tiene la lista y CUALES NO HA ENCONTRADO.
+  - Si acaban destacados la mitad o mas de los inmuebles, la web apaga el
+    distintivo entero, etiqueta y borde. Una etiqueta que la lleva todo el
+    mundo no distingue a nadie. El orden no cambia por eso.
+
+LO QUE ESTO NO ES
+
+No es "los mas visitados". Ese dato no existe todavia: Mobilia no lo
+manda y la web no lleva analitica ninguna. Se podra medir de verdad
+cuando cada inmueble tenga su propia pagina, porque hasta entonces un
+inmueble no es una pagina, es una tarjeta dentro de una lista, y no hay
+nada que contar.
+
+=======================================================================
