@@ -59,7 +59,18 @@ Se crea UN fichero en el alojamiento, FUERA de public_html. Va fuera a
 proposito: asi ninguna publicacion lo pisa y no acaba nunca en el
 repositorio, que es donde las claves no deben estar.
 
-  Ruta:  /home/<vuestro usuario>/mobilia-config.php
+  Ruta:  la carpeta que CONTIENE public_html, sea cual sea.
+
+  En el plan de Hostinger de Top House los webs cuelgan de domains/, asi
+  que ahi es:
+
+      /home/u791814495/domains/tophouserealestate.es/mobilia-config.php
+
+  No es el directorio personal: comprobado mirando el gestor de ficheros,
+  ahi no hay ningun public_html. El puente calcula esta carpeta solo
+  (dirname(dirname(__DIR__)) desde api/cartera.php), asi que la regla de
+  verdad es "al lado de public_html", y si algun dia cambia la estructura
+  del alojamiento, el fichero se mueve con ella.
 
   Contenido:
 
