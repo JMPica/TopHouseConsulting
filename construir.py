@@ -36,14 +36,14 @@ FUENTE  = os.path.join(RAIZ, 'tophouse')
 SALIDA  = os.path.join(RAIZ, 'web')
 TABLAS  = os.path.join(RAIZ, 'idiomas')
 
-PAGINAS = ['index.html', 'comprar.html', 'alquilar.html']
+PAGINAS = ['index.html', 'comprar.html', 'alquilar.html', 'legal.html']
 
 # Como se llama cada pagina en cada idioma. La clave es el nombre en la
 # fuente. Los enlaces entre paginas se reescriben con esto.
 NOMBRES = {
-    'ca': {'index.html':'index.html', 'comprar.html':'comprar.html', 'alquilar.html':'llogar.html'},
-    'es': {'index.html':'index.html', 'comprar.html':'comprar.html', 'alquilar.html':'alquilar.html'},
-    'en': {'index.html':'index.html', 'comprar.html':'buy.html',     'alquilar.html':'rent.html'},
+    'ca': {'index.html':'index.html', 'comprar.html':'comprar.html', 'alquilar.html':'llogar.html',  'legal.html':'legal.html'},
+    'es': {'index.html':'index.html', 'comprar.html':'comprar.html', 'alquilar.html':'alquilar.html', 'legal.html':'legal.html'},
+    'en': {'index.html':'index.html', 'comprar.html':'buy.html',     'alquilar.html':'rent.html',     'legal.html':'legal.html'},
 }
 CARPETA = {'ca':'', 'es':'es', 'en':'en'}
 CODIGO  = {'ca':'ca', 'es':'es', 'en':'en'}

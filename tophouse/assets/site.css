@@ -1485,6 +1485,12 @@ body.paused *,body.paused *::before,body.paused *::after{
    estrecha, linea generosa y jerarquia clara. Es texto para leer, no para
    mirar. */
 
+/* La cabecera de la pagina legal comparte estilo con la de la cartera,
+   que es ancha y pegada a la izquierda. Pero el cuerpo del legal es una
+   columna estrecha y centrada, asi que el titular quedaba desplazado a un
+   lado y el texto en el medio, como dos paginas distintas pegadas. Aqui
+   se le da al encabezado la misma columna que al texto. */
+.legal__cap{max-width:74ch;margin-inline:auto}
 .legal{max-width:74ch;margin:0 auto;padding:0 var(--gut) 8rem}
 
 .legal__idx{
