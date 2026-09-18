@@ -3,3 +3,4 @@ review/
 node_modules/
 web/
 mobilia-config.php
+__pycache__/

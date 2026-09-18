@@ -39,6 +39,29 @@
                    local:T('Local'), terreno:T('Terreno'),
                    garaje:T('Plaza de aparcamiento'), trastero:T('Trastero') };
 
+  /* El nombre visible de cada caracteristica. El puente manda CLAVES
+     estables ('primera-linia') y no texto, para que salgan iguales en los
+     tres idiomas y no dependan de como las escriba Mobilia. El orden de
+     la ficha lo pone el puente, que las manda ya priorizadas. */
+  var NOM_EXTRA = {
+    'primera-linia':T('Primera línea de playa'), 'segona-linia':T('Segunda línea de playa'),
+    'vistes':T('Vistas'), 'piscina':T('Piscina privada'),
+    'piscina-comunitaria':T('Piscina comunitaria'), 'ascensor':T('Ascensor'),
+    'terrassa':T('Terraza'), 'jardi':T('Jardín'), 'pati':T('Patio'),
+    'parquing':T('Parking'), 'traster':T('Trastero'),
+    'calefaccio':T('Calefacción'), 'aire':T('Aire acondicionado'),
+    'llar-de-foc':T('Chimenea'), 'moblat':T('Amueblado'),
+    'cuina-equipada':T('Cocina equipada'), 'armaris':T('Armarios'),
+    'exterior':T('Exterior'), 'zones-comunes':T('Zonas comunes'),
+    'zones-verdes':T('Zonas verdes'), 'barbacoa':T('Barbacoa'),
+    'solarium':T('Solárium'), 'safareig':T('Lavadero'), 'celler':T('Bodega'),
+    'golfes':T('Buhardilla'), 'gimnas':T('Gimnasio'), 'padel':T('Pista de pádel'),
+    'tenis':T('Pista de tenis'), 'conserge':T('Conserje'),
+    'vigilancia':T('Vigilancia 24 h'), 'alarma':T('Alarma'),
+    'porta-blindada':T('Puerta blindada'), 'adaptat':T('Adaptado'),
+    'mascotes':T('Admite mascotas')
+  };
+
   /* En que idioma se esta leyendo la pagina. El generador deja el codigo en
      <html lang>, asi que no hace falta preguntarselo a nadie. */
   var IDIOMA = (document.documentElement.getAttribute('lang') || 'es').slice(0, 2);
@@ -322,11 +345,28 @@
     if (banys) datos.push(banys + (banys === 1 ? T(' baño') : T(' baños')));
     if (datos.length) cuerpo.appendChild(nodo('p', 'inm__datos', datos.join(' · ')));
 
-    var extras = (i.extras || []).filter(Boolean);
+    /* En la tarjeta caben pocas y ordenadas: el puente las manda ya
+       priorizadas, asi que las cinco primeras son las que mas venden. Con
+       ocho, la lista ocupaba cuatro lineas y hundia el precio, que es lo
+       que la gente busca con la mirada. Las demas viajan igualmente en los
+       datos, para la ficha del inmueble. */
+    var extras = (i.extras || []).filter(Boolean).slice(0, 5);
     if (extras.length) {
       var ul = nodo('ul', 'inm__tags');
-      extras.forEach(function (e) { ul.appendChild(nodo('li', '', String(e))); });
+      extras.forEach(function (e) {
+        /* Si no es una clave conocida, se ensena tal cual: hay CRM que
+           mandan la lista de extras en texto y esos no se pierden. */
+        ul.appendChild(nodo('li', '', NOM_EXTRA[e] || String(e)));
+      });
       cuerpo.appendChild(ul);
+    }
+
+    /* La calificacion energetica es obligatoria en la publicidad de un
+       inmueble. Va despues de las caracteristicas y en tono menor: es un
+       dato legal, no un argumento de venta. */
+    var energia = texto(i, 'energia');
+    if (energia) {
+      cuerpo.appendChild(nodo('p', 'inm__energia mono', T('Energía') + ': ' + energia));
     }
 
     var pPrecio = nodo('p', 'inm__precio');

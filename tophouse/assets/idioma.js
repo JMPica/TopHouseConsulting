@@ -25,6 +25,27 @@ window.T = (function () {
       'Casa':'Casa', 'Casa o torre':'Casa o torre',
       'Local':'Local', 'Terreno':'Terreny',
       'Plaza de aparcamiento':'Plaça d’aparcament', 'Trastero':'Traster',
+
+      /* caracteristicas de los inmuebles */
+      'Primera línea de playa':'Primera línia de platja',
+      'Segunda línea de playa':'Segona línia de platja',
+      'Vistas':'Vistes', 'Piscina privada':'Piscina privada',
+      'Piscina comunitaria':'Piscina comunitària', 'Ascensor':'Ascensor',
+      'Terraza':'Terrassa', 'Jardín':'Jardí', 'Patio':'Pati',
+      'Parking':'Pàrquing', 'Trastero':'Traster',
+      'Calefacción':'Calefacció', 'Aire acondicionado':'Aire condicionat',
+      'Chimenea':'Llar de foc', 'Amueblado':'Moblat',
+      'Cocina equipada':'Cuina equipada', 'Armarios':'Armaris',
+      'Exterior':'Exterior', 'Zonas comunes':'Zones comunes',
+      'Zonas verdes':'Zones verdes', 'Barbacoa':'Barbacoa',
+      'Solárium':'Solàrium', 'Lavadero':'Safareig', 'Bodega':'Celler',
+      'Buhardilla':'Golfes', 'Gimnasio':'Gimnàs',
+      'Pista de pádel':'Pista de pàdel', 'Pista de tenis':'Pista de tennis',
+      'Conserje':'Consergeria', 'Vigilancia 24 h':'Vigilància 24 h',
+      'Alarma':'Alarma', 'Puerta blindada':'Porta blindada',
+      'Adaptado':'Adaptat', 'Admite mascotas':'Admet mascotes',
+      'Energía':'Energia',
+
       /* el enlace de un titulo compuesto: 'Pis a Arenys de Mar' */
       ' en ':' a ',
 
@@ -72,6 +93,27 @@ window.T = (function () {
       'Casa':'House', 'Casa o torre':'House or villa',
       'Local':'Commercial unit', 'Terreno':'Land',
       'Plaza de aparcamiento':'Parking space', 'Trastero':'Storage room',
+
+      /* property features */
+      'Primera línea de playa':'Seafront',
+      'Segunda línea de playa':'Second line from the sea',
+      'Vistas':'Views', 'Piscina privada':'Private pool',
+      'Piscina comunitaria':'Communal pool', 'Ascensor':'Lift',
+      'Terraza':'Terrace', 'Jardín':'Garden', 'Patio':'Courtyard',
+      'Parking':'Parking', 'Trastero':'Storage room',
+      'Calefacción':'Heating', 'Aire acondicionado':'Air conditioning',
+      'Chimenea':'Fireplace', 'Amueblado':'Furnished',
+      'Cocina equipada':'Fitted kitchen', 'Armarios':'Fitted wardrobes',
+      'Exterior':'Outward facing', 'Zonas comunes':'Communal areas',
+      'Zonas verdes':'Green areas', 'Barbacoa':'Barbecue',
+      'Solárium':'Roof terrace', 'Lavadero':'Utility room', 'Bodega':'Cellar',
+      'Buhardilla':'Attic', 'Gimnasio':'Gym',
+      'Pista de pádel':'Padel court', 'Pista de tenis':'Tennis court',
+      'Conserje':'Concierge', 'Vigilancia 24 h':'24-hour security',
+      'Alarma':'Alarm', 'Puerta blindada':'Reinforced door',
+      'Adaptado':'Step-free access', 'Admite mascotas':'Pets allowed',
+      'Energía':'Energy rating',
+
       ' en ':' in ',
 
       'Unos ':'About ',

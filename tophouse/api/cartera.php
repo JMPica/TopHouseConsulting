@@ -367,6 +367,10 @@ $SINONIMOS = array(
        contactos en el feed, asi que el criterio lo pone la agencia. */
     'destacado' => array('destacado', 'destacada', 'destaque', 'featured', 'highlight', 'resaltado'),
     'fecha'     => array('fechamodificacion', 'fecha', 'fechacreacion', 'fechaalta', 'updated', 'modified', 'date'),
+    /* La calificacion energetica es OBLIGATORIA en la publicidad de un
+       inmueble en venta o alquiler, y el propio manual de Mobilia la
+       describe como 'a spanish mandatory value'. La web no la ensenaba. */
+    'energia'   => array('calificacionenergetica', 'certificadoenergetico', 'eficienciaenergetica', 'energia'),
 );
 
 /* El precio del alquiler suele venir en su propio campo, y publicar un
@@ -376,6 +380,61 @@ $SINONIMOS_ALQUILER = array('precioalquiler', 'preualquiler', 'preulloguer', 'pr
 /* Los idiomas de la web y el sufijo con que Mobilia nombra cada uno.
    El castellano es el campo sin sufijo, asi que no esta en la tabla. */
 $IDIOMAS = array('ca' => 'Ca', 'en' => 'En');
+
+/* LAS CARACTERISTICAS.
+
+   Mobilia no manda una lista de extras: manda un centenar de casillas
+   sueltas, una por cosa (Ascensor 1, PiscinaPrivada 0, Trasteros 2...).
+   Por eso las fichas salian sin ni una sola caracteristica teniendo toda
+   la informacion delante.
+
+   Aqui se eligen las que de verdad mira quien compra, y en el orden en
+   que las mira: primero lo que decide una visita (playa, vistas, piscina,
+   ascensor) y al final la letra pequena. Van como CLAVE, no como texto,
+   por lo mismo que el tipo: las traduce la web y asi salen iguales en los
+   tres idiomas.
+
+   La regla es una sola para todas: cuenta si el campo trae algo que no
+   sea vacio ni cero. Vale igual para un si/no ('1'), para un contador
+   ('2' trasteros) y para un texto ('calefaccion central'). */
+$EXTRAS_MOBILIA = array(
+    'primeralineaplaya'    => 'primera-linia',
+    'segundalineaplaya'    => 'segona-linia',
+    'vistas'               => 'vistes',
+    'piscinaprivada'       => 'piscina',
+    'piscinacomunitaria'   => 'piscina-comunitaria',
+    'ascensor'             => 'ascensor',
+    'terrazas'             => 'terrassa',
+    'metrosjardin'         => 'jardi',
+    'patio'                => 'pati',
+    'plazasgaraje'         => 'parquing',
+    'plazasparking'        => 'parquing',
+    'trasteros'            => 'traster',
+    'calefaccion'          => 'calefaccio',
+    'aireacondicionado'    => 'aire',
+    'chimeneas'            => 'llar-de-foc',
+    'amueblado'            => 'moblat',
+    'cocinaamueblada'      => 'cuina-equipada',
+    'armarios'             => 'armaris',
+    'exterior'             => 'exterior',
+    'zonascomunes'         => 'zones-comunes',
+    'zonasverdes'          => 'zones-verdes',
+    'barbacoa'             => 'barbacoa',
+    'solarium'             => 'solarium',
+    'lavadero'             => 'safareig',
+    'bodega'               => 'celler',
+    'buhardilla'           => 'golfes',
+    'gimnasio'             => 'gimnas',
+    'pistapadel'           => 'padel',
+    'pistatenis'           => 'tenis',
+    'conserje'             => 'conserge',
+    'vigilancia24h'        => 'vigilancia',
+    'alarma'               => 'alarma',
+    'puertablindad'        => 'porta-blindada',
+    'adaptado'             => 'adaptat',
+    'accesodiscapacitados' => 'adaptat',
+    'admitemascotas'       => 'mascotes',
+);
 
 /* La CLAVE del tipo tiene que ser la misma en los tres idiomas: es lo que
    compara el filtro, y un desplegable que en catalan filtra por 'Pisos' y
@@ -637,6 +696,27 @@ function destacadosPropios($ruta) {
 }
 
 /**
+ * Las caracteristicas de un inmueble, a partir de las casillas de Mobilia.
+ *
+ * Cuenta lo que trae algo que no sea vacio ni cero. Un '0' en una casilla
+ * de si/no es un NO, y un cero colado como caracteristica ('0 trasteros')
+ * seria peor que no ensenar nada.
+ */
+function extrasMobilia($plano, $tabla) {
+    $fuera = array();
+    foreach ($tabla as $campo => $clave) {
+        if (isset($fuera[$clave]) || !array_key_exists($campo, $plano)) { continue; }
+        $v = $plano[$campo];
+        if (is_array($v)) { continue; }
+        $t = trim((string) $v);
+        if ($t === '') { continue; }
+        if (is_numeric($t) && (float) $t == 0) { continue; }
+        $fuera[$clave] = true;
+    }
+    return array_keys($fuera);
+}
+
+/**
  * Saca las operaciones de un inmueble de Mobilia, ya aplanadas.
  *
  * Mobilia no deja la operacion y el precio sueltos en el inmueble: los
@@ -679,7 +759,7 @@ function operacionesMobilia($p) {
  * u operacion: una ficha con el precio en blanco es peor que una ficha
  * que no esta. Lo descartado se cuenta y sale en el diagnostico.
  */
-function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPOS, $PROPIOS, &$informe) {
+function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPOS, $EXTRAS_MOBILIA, $PROPIOS, &$informe) {
     $lista = localizarLista($crudo);
     $forzados = isset($cfg['campos']) && is_array($cfg['campos']) ? $cfg['campos'] : array();
     $porDefecto = isset($cfg['operacion']) ? strtolower((string) $cfg['operacion']) : '';
@@ -839,7 +919,12 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPO
                 'm2'        => (int) numero($lee('m2')),
                 'hab'       => (int) numero($lee('hab')),
                 'banys'     => (int) numero($lee('banys')),
-                'extras'    => listaExtras($lee('extras')),
+                /* Primero la lista de extras si el CRM trae una -otros si lo
+                   hacen-, y despues las casillas sueltas de Mobilia. */
+                'extras'    => array_slice(array_values(array_unique(array_merge(
+                                   listaExtras($lee('extras')),
+                                   extrasMobilia($plano, $EXTRAS_MOBILIA)))), 0, 12),
+                'energia'   => texto($lee('energia')),
                 'foto'      => primeraFoto($lee('foto')),
                 /* La lista propia manda sobre la casilla de Mobilia: esa
                    es de los portales, no de esta web. */
@@ -866,12 +951,14 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPO
                 $suTipo   = texto(buscar($plano, array(normalizar('tipo' . $sufijo),
                                                        normalizar('familia' . $sufijo))));
                 $suTitulo = texto(buscar($plano, array(normalizar('titulo' . $sufijo))));
+                $suEnergia = texto(buscar($plano, array(normalizar('calificacionenergetica' . $sufijo))));
                 /* Si Mobilia no lo tiene en este idioma NO se compone aqui:
                    se manda vacio y lo compone la web, que es la que sabe
                    decir 'Pis' y no 'Pisos'. Mobilia guarda los tipos en
                    plural, y un titulo compuesto con ellos queda raro. */
                 $entrada = array();
                 if ($suTipo !== '')   { $entrada['tipo'] = $suTipo; }
+                if ($suEnergia !== '' && $suEnergia !== $ficha['energia']) { $entrada['energia'] = $suEnergia; }
                 if ($suTitulo !== '' && $suTitulo !== $ficha['titulo']) { $entrada['titulo'] = $suTitulo; }
                 if (count($entrada)) { $otros[$codigo] = $entrada; }
             }
@@ -915,7 +1002,7 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPO
 
 $informe = array();
 $PROPIOS = destacadosPropios($PRIVADO . '/destacados.txt');
-$limpio = traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPOS, $PROPIOS, $informe);
+$limpio = traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPOS, $EXTRAS_MOBILIA, $PROPIOS, $informe);
 
 /* ---------- 5. el modo diagnostico ---------- */
 /**
