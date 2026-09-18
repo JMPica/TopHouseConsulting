@@ -122,13 +122,41 @@ function responder($datos, $origen, $cachear = true) {
     exit;
 }
 
+/**
+ * Quita de la lista lo que solo necesita la ficha de un inmueble.
+ *
+ * La galeria entera y la descripcion se GUARDAN en la copia -de ahi las
+ * lee la pagina de cada inmueble- pero no se MANDAN a la pagina de la
+ * cartera, que ensena una foto por tarjeta y ninguna descripcion. Con
+ * treinta y cuatro inmuebles a treinta fotos cada uno, mandarlas seria
+ * cargarle al visitante cien kilobytes que no va a mirar, y la mayoria
+ * entra desde el movil.
+ */
+function aligerar($lista) {
+    $fuera = array();
+    foreach ($lista as $ficha) {
+        if (!is_array($ficha)) { continue; }
+        unset($ficha['fotos'], $ficha['descripcio']);
+        if (isset($ficha['i18n']) && is_array($ficha['i18n'])) {
+            foreach ($ficha['i18n'] as $idioma => $campos) {
+                unset($campos['descripcio']);
+                if (count($campos)) { $ficha['i18n'][$idioma] = $campos; }
+                else { unset($ficha['i18n'][$idioma]); }
+            }
+            if (!count($ficha['i18n'])) { unset($ficha['i18n']); }
+        }
+        $fuera[] = $ficha;
+    }
+    return $fuera;
+}
+
 function servir_copia($cache, $motivo) {
     apuntar($motivo);
     if (is_readable($cache)) {
         $viejo = json_decode(file_get_contents($cache), true);
         if (is_array($viejo) && count($viejo)) {
             /* Mejor una cartera de hace un rato que una pagina vacia. */
-            responder($viejo, 'copia guardada');
+            responder(aligerar($viejo), 'copia guardada');
         }
     }
     http_response_code(503);
@@ -166,7 +194,7 @@ $minutos = isset($cfg['minutos']) ? (int) $cfg['minutos'] : 15;
 if (!$DIAG && is_readable($CACHE) && (time() - filemtime($CACHE)) < $minutos * 60) {
     $viejo = json_decode(file_get_contents($CACHE), true);
     if (is_array($viejo) && count($viejo)) {
-        responder($viejo, 'copia reciente');
+        responder(aligerar($viejo), 'copia reciente');
     }
 }
 
@@ -371,6 +399,10 @@ $SINONIMOS = array(
        inmueble en venta o alquiler, y el propio manual de Mobilia la
        describe como 'a spanish mandatory value'. La web no la ensenaba. */
     'energia'   => array('calificacionenergetica', 'certificadoenergetico', 'eficienciaenergetica', 'energia'),
+    /* La ampliada primero: es la que escribe el agente. La corta la genera
+       Mobilia sola ('Piso en venta en Arenys, 4 habitaciones') y no aporta
+       nada que la ficha no ensene ya. */
+    'descripcio'=> array('descripcionampliada', 'descripcion', 'descripcio', 'description', 'observacionespublicas', 'textoweb'),
 );
 
 /* El precio del alquiler suele venir en su propio campo, y publicar un
@@ -570,6 +602,40 @@ function primeraFoto($valor, $hondo = 0) {
     return '';
 }
 
+/**
+ * TODAS las fotos, no solo la primera.
+ *
+ * La pagina de la cartera solo necesita una, pero la ficha de un inmueble
+ * necesita la galeria entera, y de Mobilia vienen las dos cosas en el
+ * mismo sitio. Se recogen aqui una vez y cada pagina coge lo que usa.
+ *
+ * Tope de 40: hay inmuebles con mas de treinta fotos y ninguna galeria
+ * ensena la numero cuarenta y uno.
+ */
+function todasLasFotos($valor, $hondo = 0, &$fuera = null) {
+    if ($fuera === null) { $fuera = array(); }
+    if ($hondo > 3 || count($fuera) >= 40) { return $fuera; }
+    foreach (is_array($valor) ? $valor : array($valor) as $c) {
+        if (count($fuera) >= 40) { break; }
+        if (is_array($c)) {
+            /* Un objeto de foto ({url:...}) o una lista dentro de la lista. */
+            if (!isset($c[0])) {
+                $plano = aplanar($c);
+                foreach (array('url', 'src', 'href', 'imagen', 'image', 'foto', 'ruta', 'file') as $k) {
+                    if (!empty($plano[$k]) && !is_array($plano[$k])) { $c = $plano[$k]; break; }
+                }
+            }
+            if (is_array($c)) { todasLasFotos($c, $hondo + 1, $fuera); continue; }
+        }
+        $t = trim((string) $c);
+        /* Solo http(s), por lo mismo que en primeraFoto: una direccion
+           rara del feed no puede acabar siendo un javascript: en el
+           navegador de un visitante. */
+        if (preg_match('#^https?://#i', $t) && !in_array($t, $fuera, true)) { $fuera[] = $t; }
+    }
+    return $fuera;
+}
+
 /** Los extras como lista de textos, sin objetos ni vacios. */
 function listaExtras($valor, $hondo = 0) {
     if ($hondo > 3) { return array(); }
@@ -599,16 +665,42 @@ function localizarLista($crudo, $profundidad = 0) {
     if (!is_array($crudo)) { return array(); }
     if (isset($crudo[0]) && is_array($crudo[0])) { return $crudo; }
     if ($profundidad > 3) { return array(); }
+
+    /* UN INMUEBLE SUELTO SE RECONOCE ANTES DE BAJAR A SUS HIJOS.
+
+       Antes se bajaba primero y se preguntaba despues, y con un feed de UN
+       SOLO inmueble eso salia mal: el nodo Operaciones > Operacion de
+       Mobilia lleva un precio dentro, asi que se hacia pasar por el
+       inmueble y la cartera entera acababa siendo una lista de precios
+       sueltos sin referencia ni poblacion.
+
+       Con treinta y cuatro inmuebles no se nota, porque entonces vienen ya
+       en lista y se cogen por el primer camino. Se notaria el dia que Top
+       House tuviese un unico inmueble publicado, que es justo el dia en
+       que menos falta hace que la web falle.
+
+       La senal es la REFERENCIA, no el precio: un precio lo tiene tambien
+       un nodo hijo, una referencia solo la tiene el inmueble. Se mira a un
+       nivel (aplanar desde 1) para que cuente igual si el CRM la manda
+       como atributo, que es como la mandan algunos. */
+    if ($profundidad >= 1) {
+        $propio = aplanar($crudo, 1);
+        if (isset($propio['referencia']) || isset($propio['ref'])) {
+            return array($crudo);
+        }
+    }
+
     foreach ($crudo as $valor) {
         if (!is_array($valor)) { continue; }
         $hallado = localizarLista($valor, $profundidad + 1);
         if (count($hallado)) { return $hallado; }
     }
-    /* Un solo inmueble sin envolver en lista tambien es una lista de uno. */
+
+    /* Sin referencia por ningun lado, el precio vale de senal; pero solo
+       DESPUES de haber mirado dentro, para que gane el inmueble de verdad
+       y no el primer nodo hijo que lleve una cifra. */
     $plano = aplanar($crudo);
-    if (isset($plano['precio']) || isset($plano['referencia']) || isset($plano['ref'])) {
-        return array($crudo);
-    }
+    if (isset($plano['precio'])) { return array($crudo); }
     return array();
 }
 
@@ -926,6 +1018,11 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPO
                                    extrasMobilia($plano, $EXTRAS_MOBILIA)))), 0, 12),
                 'energia'   => texto($lee('energia')),
                 'foto'      => primeraFoto($lee('foto')),
+                /* La galeria entera y la descripcion no viajan a la pagina
+                   de la cartera -abultan y no se usan-, pero si se guardan
+                   en la copia, que es de donde bebe la ficha del inmueble. */
+                'fotos'     => todasLasFotos($lee('foto')),
+                'descripcio'=> texto($lee('descripcio')),
                 /* La lista propia manda sobre la casilla de Mobilia: esa
                    es de los portales, no de esta web. */
                 'destacado' => count($PROPIOS)
@@ -952,6 +1049,8 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPO
                                                        normalizar('familia' . $sufijo))));
                 $suTitulo = texto(buscar($plano, array(normalizar('titulo' . $sufijo))));
                 $suEnergia = texto(buscar($plano, array(normalizar('calificacionenergetica' . $sufijo))));
+                $suDesc = texto(buscar($plano, array(normalizar('descripcionampliada' . $sufijo),
+                                                     normalizar('descripcion' . $sufijo))));
                 /* Si Mobilia no lo tiene en este idioma NO se compone aqui:
                    se manda vacio y lo compone la web, que es la que sabe
                    decir 'Pis' y no 'Pisos'. Mobilia guarda los tipos en
@@ -959,6 +1058,7 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPO
                 $entrada = array();
                 if ($suTipo !== '')   { $entrada['tipo'] = $suTipo; }
                 if ($suEnergia !== '' && $suEnergia !== $ficha['energia']) { $entrada['energia'] = $suEnergia; }
+                if ($suDesc !== '' && $suDesc !== $ficha['descripcio']) { $entrada['descripcio'] = $suDesc; }
                 if ($suTitulo !== '' && $suTitulo !== $ficha['titulo']) { $entrada['titulo'] = $suTitulo; }
                 if (count($entrada)) { $otros[$codigo] = $entrada; }
             }
@@ -1123,4 +1223,4 @@ if (file_put_contents($tmp, json_encode($limpio, JSON_UNESCAPED_UNICODE)) !== fa
     @unlink($tmp);
 }
 
-responder($limpio, 'recien traido de Mobilia (' . $informe['publicados'] . ' de ' . $informe['registros'] . ')');
+responder(aligerar($limpio), 'recien traido de Mobilia (' . $informe['publicados'] . ' de ' . $informe['registros'] . ')');
