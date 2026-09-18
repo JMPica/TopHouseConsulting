@@ -1,0 +1,224 @@
+# =====================================================================
+# Top House Real Estate - configuracion del servidor
+# Para Hostinger (Apache / LiteSpeed). Se sube junto al index.html.
+#
+# Este fichero empieza por un punto, asi que el gestor de ficheros del
+# panel puede tenerlo OCULTO. Si no lo ves despues de subirlo, busca la
+# opcion "mostrar ficheros ocultos".
+# =====================================================================
+
+
+# ---------------------------------------------------------------------
+# 1. Siempre HTTPS y siempre con www
+#
+# La web declara como direccion buena https://www.tophouserealestate.es/
+# Si alguien entra sin https o sin www, Google lo cuenta como una web
+# distinta y reparte el posicionamiento entre las dos. Estas reglas
+# mandan a todo el mundo a la misma direccion.
+# ---------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # -------------------------------------------------------------------
+  # Lo primero de todo: tapar la carpeta .git
+  #
+  # Hostinger publica esta web clonando el repositorio, asi que dentro de
+  # public_html queda una carpeta .git. Si se puede leer desde fuera,
+  # cualquiera se descarga el repositorio entero con todo su historial
+  # entrando en /.git/. No es teorico: hay robots que rastrean justo eso.
+  #
+  # Va antes que cualquier otra regla para que no haya forma de colarse
+  # por una redireccion. Y de paso quedan tapados los demas ficheros que
+  # empiezan por punto, que nunca son contenido de la web.
+  # -------------------------------------------------------------------
+  RewriteRule (^|/)\.(?!well-known/) - [F,L]
+
+  # sin https -> con https
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^(.*)$ https://www.tophouserealestate.es/$1 [R=301,L]
+
+  # sin www -> con www
+  RewriteCond %{HTTP_HOST} !^www\. [NC]
+  RewriteRule ^(.*)$ https://www.tophouserealestate.es/$1 [R=301,L]
+
+
+  # -------------------------------------------------------------------
+  # 2. Direcciones de la web vieja
+  #
+  # Solo hacen algo si el dominio viejo (tophouseconsulting.com) se acaba
+  # apuntando aqui. Recogen las direcciones que ya estaban indexadas en
+  # Google y las mandan a la pagina equivalente de la nueva, en vez de
+  # dejar al visitante en un error.
+  #
+  # Si aparecen mas direcciones viejas en Google Search Console, se
+  # anaden aqui con el mismo formato.
+  # -------------------------------------------------------------------
+  # CUIDADO AL TOCAR ESTO. /es/ y /en/ NO son direcciones viejas: son las
+  # versiones castellana e inglesa de esta web. Habia aqui tres reglas
+  # que las mandaban a la portada, heredadas de cuando la web era solo
+  # castellana y vivia entera en la raiz. Resultado: el selector de
+  # idioma llevaba a /es/, /es/ redirigia a /, y el visitante volvia al
+  # catalan. El selector estaba bien; lo roto era esto.
+  #
+  # Las direcciones viejas que si hay que recoger eran todas en
+  # castellano, asi que van a la version castellana, no a la portada.
+  RewriteRule ^es/venta/?$        /es/comprar.html   [R=301,L]
+  RewriteRule ^es/alquiler/?$     /es/alquilar.html  [R=301,L]
+  RewriteRule ^es/alquileres/?$   /es/alquilar.html  [R=301,L]
+  RewriteRule ^es/servicios/?$    /es/#servicios     [R=301,NE,L]
+  RewriteRule ^es/contacto/?$     /es/#contacto      [R=301,NE,L]
+  # /ca/ si es una direccion vieja: el catalan vive en la raiz.
+  RewriteRule ^ca/?$              /                  [R=301,L]
+</IfModule>
+
+
+# ---------------------------------------------------------------------
+# 3. Si alguien pide una pagina que no existe
+#
+# En vez de la pantalla de error del servidor, se le ensena la portada.
+# El servidor sigue respondiendo "no existe" por dentro, que es lo que
+# Google necesita saber.
+# ---------------------------------------------------------------------
+ErrorDocument 404 /index.html
+
+
+# ---------------------------------------------------------------------
+# 4. Cuanto tiempo guarda el navegador cada cosa
+#
+# El video pesa 7,8 MB. Sin esto se lo baja entero cada vez que alguien
+# vuelve a entrar. Con esto se lo baja una vez y ya.
+#
+# El html, el css, el js y las imagenes que salen en el html llevan la
+# huella del fichero en la URL, asi que se pueden cachear un ano sin
+# miedo: al cambiar el fichero cambia la URL.
+#
+# QUEDAN DOS FUERA de ese mecanismo, porque el javascript los pide por su
+# cuenta y no pasan por el generador: el video de cabecera
+# (hero-scrub.mp4) y las tipografias que fonts.css llama por ruta
+# relativa. Si alguna vez cambias uno de esos DOS y lo subes con el mismo
+# nombre, quien ya haya entrado seguira viendo el viejo hasta un ano. La
+# solucion ahi si es subirlo con otro nombre.
+# ---------------------------------------------------------------------
+<IfModule mod_expires.c>
+  ExpiresActive On
+
+  ExpiresByType video/mp4          "access plus 1 year"
+  ExpiresByType image/jpeg         "access plus 1 year"
+  ExpiresByType image/png          "access plus 1 year"
+  ExpiresByType image/webp         "access plus 1 year"
+  ExpiresByType image/svg+xml      "access plus 1 year"
+  ExpiresByType font/woff2         "access plus 1 year"
+
+  # Un ano, no un dia, porque cada referencia lleva la huella del fichero
+  # en la URL (?v=...). Si el fichero cambia, cambia la URL y el navegador
+  # se lo baja de nuevo. Antes estaban a un dia justo para poder retocar,
+  # y aun asi Top House llego a ver el html nuevo con los estilos viejos.
+  ExpiresByType text/css           "access plus 1 year"
+  ExpiresByType text/javascript    "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+
+  ExpiresByType text/html          "access plus 0 seconds"
+</IfModule>
+
+
+# ---------------------------------------------------------------------
+# 5. Comprimir el texto al enviarlo
+#
+# El html, el css y el js viajan comprimidos. Ahorra bastante y no
+# cuesta nada. Las imagenes y el video NO se tocan: ya vienen
+# comprimidos y volver a comprimirlos solo gasta tiempo.
+# ---------------------------------------------------------------------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml
+  AddOutputFilterByType DEFLATE text/javascript application/javascript
+  AddOutputFilterByType DEFLATE application/json image/svg+xml
+</IfModule>
+
+
+# ---------------------------------------------------------------------
+# 6. Que el servidor sepa que es cada fichero
+#
+# Algunos hostings no reconocen el .mp4 o el .webp y el navegador se
+# queda esperando. Se lo decimos nosotros.
+# ---------------------------------------------------------------------
+<IfModule mod_mime.c>
+  AddType video/mp4   .mp4
+  AddType image/webp  .webp
+  AddType font/woff2  .woff2
+</IfModule>
+
+
+# ---------------------------------------------------------------------
+# 7. Seguridad basica
+#
+# Nada de esto afecta a como se ve la web. Son cabeceras que el
+# navegador lee y obedece.
+# ---------------------------------------------------------------------
+<IfModule mod_headers.c>
+  # no dejar que otras webs metan la nuestra dentro de un marco
+  Header always set X-Frame-Options "DENY"
+
+  # no adivinar el tipo de fichero por el contenido
+  Header always set X-Content-Type-Options "nosniff"
+
+  # no enviar la direccion completa al salir hacia otra web
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+  # -------------------------------------------------------------------
+  # De donde puede cargar cosas esta web
+  #
+  # Esta es la defensa de fondo. Aunque algun dia se colase texto con
+  # codigo dentro (por ejemplo desde una ficha de Mobilia), el navegador
+  # se negaria a ejecutarlo, porque aqui se dice que los scripts solo
+  # pueden venir de este mismo dominio y nunca escritos dentro del html.
+  #
+  # Linea por linea, y por que:
+  #
+  #   default-src 'self'   por defecto, solo lo nuestro
+  #   script-src  'self'   ningun script escrito dentro del html
+  #   style-src   'self'   ningun estilo escrito dentro del html
+  #   img-src     ademas https: y data:, porque las fotos de los
+  #               inmuebles vendran de Mobilia, que es otro servidor
+  #   media-src   ademas blob:, porque el video de cabecera se descarga
+  #               entero y se le pasa al reproductor como blob. Sin esto
+  #               el video de la portada no se ve
+  #   connect-src ademas https:, porque hay que poder leer el feed
+  #   form-action 'self'   un formulario no puede enviar a otro sitio
+  #   frame-ancestors      nadie puede meter esta web dentro de la suya
+  #   base-uri             nadie puede cambiar la base de las direcciones
+  #   object-src 'none'    ni flash ni objetos incrustados
+  #
+  # SI ALGUN DIA SE ANADE algo de fuera (Google Analytics, un chat, un
+  # mapa, una fuente): hay que anadirlo aqui o NO CARGARA, sin aviso
+  # visible. Se ve en la consola del navegador.
+  # -------------------------------------------------------------------
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https: data:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https:; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"
+
+  # Esta web no usa camara, ni microfono, ni sabe donde esta el visitante.
+  # Decirlo explicitamente evita que se lo pida nada que se cuele.
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+
+  # -------------------------------------------------------------------
+  # El html no se guarda en ninguna cache. Nunca.
+  #
+  # Ya habia una regla de Expires a cero segundos, pero no bastaba: este
+  # alojamiento tiene el CDN activado, y muchos CDN se rigen por
+  # Cache-Control y no por Expires. Resultado real: Top House vio la
+  # portada antigua durante horas despues de publicar, con el dibujo que
+  # ya habiamos quitado y los botones sin alinear.
+  #
+  # Los recursos si se guardan un ano, porque llevan la huella del
+  # fichero en la URL. El html es el unico que no puede guardarse: es el
+  # que dice que huella toca.
+  # -------------------------------------------------------------------
+  <FilesMatch "\.html$">
+    Header always set Cache-Control "no-cache, no-store, must-revalidate, max-age=0"
+    Header always set Pragma "no-cache"
+    Header always unset Expires
+    Header always set Expires "0"
+  </FilesMatch>
+</IfModule>
+
+# no ensenar la lista de ficheros si alguien entra en /assets/
+Options -Indexes
