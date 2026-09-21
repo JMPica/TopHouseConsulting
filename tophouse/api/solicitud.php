@@ -113,23 +113,227 @@ function asunto($t) {
 /* Las cabeceras del correo. En una funcion a proposito: la prueba de mas
    abajo y el aviso de verdad tienen que salir EXACTAMENTE iguales, o la
    prueba dejaria de probar lo que se cree que prueba. */
-function cabeceras($de) {
-    return array(
-        'From: ' . asunto('Web Top House') . ' <' . $de . '>',
-        'Reply-To: ' . $de,
-        'MIME-Version: 1.0',
-        'Content-Type: text/plain; charset=UTF-8',
-        'Content-Transfer-Encoding: 8bit',
-        'X-Mailer: tophouserealestate.es',
-    );
+function cabeceras($de, $para = null, $titulo = null) {
+    $h = array();
+
+    /* Por SMTP el mensaje se manda entero, asi que el destinatario y el
+       asunto tienen que ir DENTRO. Con mail() no: esos dos los pone ella
+       a partir de sus argumentos, y repetirlos daria dos veces cada uno. */
+    if ($para !== null)   { $h[] = 'To: ' . $para; }
+    if ($titulo !== null) { $h[] = 'Subject: ' . asunto($titulo); }
+
+    $h[] = 'From: ' . asunto('Web Top House') . ' <' . $de . '>';
+    $h[] = 'Reply-To: ' . $de;
+
+    /* La fecha y el identificador, solo en el camino de SMTP. Por mail()
+       los pone el servidor de correo al recogerlo, y si los pusiesemos
+       aqui tambien saldrian dos veces, que es justo de las cosas que
+       miran los filtros de spam. */
+    if ($para !== null) {
+        $dominio = substr(strrchr($de, '@'), 1);
+        if ($dominio === false || $dominio === '') { $dominio = 'tophouserealestate.es'; }
+        $h[] = 'Date: ' . date('r');
+        $h[] = 'Message-ID: <' . bin2hex(function_exists('random_bytes')
+            ? random_bytes(8)
+            : pack('N*', mt_rand(), mt_rand())) . '.' . time() . '@' . $dominio . '>';
+    }
+
+    $h[] = 'MIME-Version: 1.0';
+    $h[] = 'Content-Type: text/plain; charset=UTF-8';
+    $h[] = 'Content-Transfer-Encoding: 8bit';
+    $h[] = 'X-Mailer: tophouserealestate.es';
+    return $h;
 }
 
-/* Manda el correo. El quinto argumento de mail() pone el remitente del
-   SOBRE, que es el que mira el servidor que recibe para comprobar el
-   SPF. Sin el, algunos alojamientos ponen el usuario del sistema y el
-   correo entra directo en spam. */
+/* =================================================================
+   COMO SALE EL CORREO
+   =================================================================
+
+   Hay dos caminos y se usan en este orden:
+
+     1. SMTP, hablando con el servidor de correo como lo haria un cliente
+        de correo cualquiera, con usuario y contrasena.
+     2. mail(), la funcion de php, que es como salia antes.
+
+   POR QUE NO BASTA CON mail()
+
+   Porque el correo salia SIN FIRMAR. Se comprobo en la cabecera de un
+   correo recibido: 'dkim=none'. El DKIM del dominio firma lo que sale
+   del servicio de correo (el webmail, el movil, el Outlook), y mail() no
+   pasa por ahi: va por un relay aparte. Ese relay si cumple el SPF, por
+   eso los avisos llegaban a la bandeja de entrada y no a spam, pero la
+   firma no se la pone nadie.
+
+   Entrando por SMTP como un cliente mas, el correo sale por donde sale
+   el vuestro y lo firma el servidor.
+
+   POR QUE SE DEJA mail() DETRAS
+
+   Porque esto son solicitudes de clientes. Si el servidor de correo esta
+   caido, si cambia la contrasena o si el alojamiento cierra el puerto,
+   la solicitud NO SE PUEDE PERDER por una mejora de reputacion. Si el
+   SMTP falla por lo que sea, se cae a mail() y el aviso sale igual, sin
+   firmar pero sale. El motivo del fallo queda en el registro.
+
+   Sin configuracion de smtp, esto se comporta exactamente como antes.
+
+   QUE HAY QUE PONER EN LA CONFIGURACION
+
+   En el fichero de fuera de public_html, junto a lo demas:
+
+       'smtp' => array(
+         'host'     => 'smtp.hostinger.com',
+         'puerto'   => 465,
+         'seguridad'=> 'ssl',      // 'ssl' en el 465, 'tls' en el 587
+         'usuario'  => 'jordi@tophouserealestate.es',
+         'clave'    => 'LA CONTRASENA DEL BUZON',
+       );
+
+   El usuario es un BUZON de verdad. 'no-reply@' es un alias y los alias
+   no tienen contrasena propia: se entra como el buzon y se manda DESDE
+   el alias, que es lo que hace este codigo.
+   ================================================================= */
+
+/** Lee una respuesta del servidor, que puede venir en varias lineas. */
+function smtpLeer($f) {
+    $texto = '';
+    while (($linea = fgets($f, 1024)) !== false) {
+        $texto .= $linea;
+        /* En una respuesta de varias lineas el codigo va seguido de '-';
+           la ultima lleva un espacio. Sin esto se lee media respuesta y
+           todo lo siguiente va desfasado una orden. */
+        if (strlen($linea) >= 4 && $linea[3] === ' ') { break; }
+        if (strlen($linea) < 4) { break; }
+    }
+    return $texto;
+}
+
+/** Manda una orden y comprueba que el servidor conteste lo esperado. */
+function smtpDecir($f, $orden, $esperado, &$fallo, $secreto = false) {
+    if ($orden !== null) {
+        if (fwrite($f, $orden . "\r\n") === false) {
+            $fallo = 'no se ha podido escribir en la conexion';
+            return false;
+        }
+    }
+    $r = smtpLeer($f);
+    $codigo = (int) substr($r, 0, 3);
+    if (!in_array($codigo, (array) $esperado, true)) {
+        /* La contrasena NO va al registro ni aunque falle: si el error se
+           apunta con la orden entera, una clave acaba en un fichero de
+           log que no la tendria que ver nadie. */
+        $que = $secreto ? '(orden con credenciales)' : (string) $orden;
+        $fallo = 'el servidor ha contestado ' . $codigo . ' a ' . $que;
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Manda el correo por SMTP. Devuelve true si el servidor lo ha aceptado.
+ * El motivo del fallo se devuelve por $fallo para que quede en el
+ * registro; al visitante no se le cuenta nunca.
+ */
+function porSmtp($cfg, $para, $titulo, $cuerpo, $de, &$fallo) {
+    $fallo = '';
+    $host = isset($cfg['host']) ? (string) $cfg['host'] : '';
+    $usuario = isset($cfg['usuario']) ? (string) $cfg['usuario'] : '';
+    $clave = isset($cfg['clave']) ? (string) $cfg['clave'] : '';
+    if ($host === '' || $usuario === '' || $clave === '') {
+        $fallo = 'configuracion de smtp incompleta';
+        return false;
+    }
+    $seg = isset($cfg['seguridad']) ? strtolower((string) $cfg['seguridad']) : 'ssl';
+    $puerto = isset($cfg['puerto']) ? (int) $cfg['puerto'] : ($seg === 'tls' ? 587 : 465);
+    $espera = isset($cfg['espera']) ? (int) $cfg['espera'] : 12;
+
+    /* Se comprueba el certificado del servidor. Si no se comprobase,
+       cualquiera que se metiese en medio de la conexion se llevaria la
+       contrasena del buzon. 'ca' solo hace falta para probar en local. */
+    $ssl = array('verify_peer' => true, 'verify_peer_name' => true, 'SNI_enabled' => true);
+    if (!empty($cfg['ca'])) { $ssl['cafile'] = $cfg['ca']; }
+    $ctx = stream_context_create(array('ssl' => $ssl));
+
+    $destino = ($seg === 'ssl' ? 'ssl://' : 'tcp://') . $host . ':' . $puerto;
+    $f = @stream_socket_client($destino, $errno, $errstr, $espera, STREAM_CLIENT_CONNECT, $ctx);
+    if (!$f) {
+        $fallo = 'no se ha podido conectar con ' . $host . ':' . $puerto . ' (' . $errstr . ')';
+        return false;
+    }
+    stream_set_timeout($f, $espera);
+
+    $yo = isset($cfg['saludo']) ? (string) $cfg['saludo'] : 'tophouserealestate.es';
+    $ok = smtpDecir($f, null, 220, $fallo)
+       && smtpDecir($f, 'EHLO ' . $yo, 250, $fallo);
+
+    if ($ok && $seg === 'tls') {
+        $ok = smtpDecir($f, 'STARTTLS', 220, $fallo);
+        if ($ok) {
+            $metodo = STREAM_CRYPTO_METHOD_TLS_CLIENT;
+            if (defined('STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT')) {
+                $metodo |= STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT;
+            }
+            if (!@stream_socket_enable_crypto($f, true, $metodo)) {
+                $fallo = 'el cifrado starttls ha fallado';
+                $ok = false;
+            }
+        }
+        /* Despues de STARTTLS hay que volver a saludar: lo de antes se
+           dijo en claro y el servidor lo descarta. */
+        if ($ok) { $ok = smtpDecir($f, 'EHLO ' . $yo, 250, $fallo); }
+    }
+
+    if ($ok) {
+        $ok = smtpDecir($f, 'AUTH LOGIN', 334, $fallo)
+           && smtpDecir($f, base64_encode($usuario), 334, $fallo, true)
+           && smtpDecir($f, base64_encode($clave), 235, $fallo, true);
+    }
+
+    if ($ok) {
+        $ok = smtpDecir($f, 'MAIL FROM:<' . $de . '>', 250, $fallo)
+           && smtpDecir($f, 'RCPT TO:<' . $para . '>', array(250, 251), $fallo)
+           && smtpDecir($f, 'DATA', 354, $fallo);
+    }
+
+    if ($ok) {
+        $mensaje = implode("\r\n", cabeceras($de, $para, $titulo)) . "\r\n\r\n" . $cuerpo;
+        /* Una linea que empiece por un punto marca el final del mensaje.
+           Si el visitante escribe una linea que empieza por un punto, el
+           correo se corta ahi. Se dobla el punto, que es lo que manda la
+           norma y lo que el otro lado deshace. */
+        $mensaje = preg_replace('/^\./m', '..', $mensaje);
+        fwrite($f, $mensaje . "\r\n.\r\n");
+        $ok = smtpDecir($f, null, 250, $fallo);
+    }
+
+    @smtpDecir($f, 'QUIT', array(221, 250), $sinUsar);
+    @fclose($f);
+    return $ok;
+}
+
+/**
+ * Manda el correo por el mejor camino disponible.
+ * Devuelve 'smtp', 'mail', o '' si no ha salido por ninguno.
+ */
 function enviar($para, $titulo, $cuerpo, $de) {
-    return @mail($para, asunto($titulo), $cuerpo, implode("\r\n", cabeceras($de)), '-f' . $de);
+    global $PRIVADO;
+    $cfg = configuracion($PRIVADO);
+
+    if (!empty($cfg['smtp']) && is_array($cfg['smtp'])) {
+        $fallo = '';
+        if (porSmtp($cfg['smtp'], $para, $titulo, $cuerpo, $de, $fallo)) {
+            return 'smtp';
+        }
+        /* No se corta aqui: se apunta y se prueba el otro camino. Una
+           solicitud de un cliente no se pierde por esto. */
+        apuntar('smtp ha fallado (' . $fallo . '); se prueba con mail()');
+    }
+
+    /* El quinto argumento de mail() pone el remitente del SOBRE, que es el
+       que mira el servidor que recibe para comprobar el SPF. Sin el,
+       algunos alojamientos ponen el usuario del sistema. */
+    $ok = @mail($para, asunto($titulo), $cuerpo, implode("\r\n", cabeceras($de)), '-f' . $de);
+    return $ok ? 'mail' : '';
 }
 
 /* A quien mas se le manda una copia, aparte del buzon de la oficina.
@@ -196,7 +400,7 @@ function direcciones($privado) {
        https://www.tophouserealestate.es/api/solicitud.php?version
    --------------------------------------------------------------- */
 
-define('VERSION_SOLICITUD', '2026-09-21.4');
+define('VERSION_SOLICITUD', '2026-09-21.5');
 define('CLAVE_MINIMA', 16);
 
 if (isset($_GET['version'])) {
@@ -277,7 +481,8 @@ if (isset($_GET['prueba'])) {
         . "Si lee esto, los avisos del formulario de la web llegan bien.\r\n"
         . 'Enviada el ' . date('d/m/Y H:i') . " (hora de aqui).\r\n";
 
-    $aceptado = enviar($para, 'Prueba de los avisos de la web', $cuerpo, $de);
+    $camino = enviar($para, 'Prueba de los avisos de la web', $cuerpo, $de);
+    $aceptado = ($camino !== '');
 
     /* Las copias tambien se prueban: si no, se pondria una direccion de
        CRM en la configuracion y no se sabria si funciona hasta que
@@ -290,6 +495,10 @@ if (isset($_GET['prueba'])) {
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode(array(
         'aceptado'     => (bool) $aceptado,
+        'camino'       => $camino !== '' ? $camino : 'ninguno',
+        'firmado'      => $camino === 'smtp'
+            ? 'si: ha salido por el servidor de correo, que lo firma con el DKIM del dominio'
+            : 'no: ha salido por mail(), que no firma. Mire el registro de errores para ver por que ha fallado el smtp.',
         'enviado_a'    => $para,
         'copias'       => empty($copias) ? 'ninguna configurada' : $copias,
         'enviado_desde'=> $de,

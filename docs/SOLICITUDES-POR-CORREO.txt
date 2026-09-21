@@ -188,6 +188,48 @@ autoritativos del dominio, no al panel:
   - DMARC v=DMARC1; p=none
           En modo de solo observar, que es lo prudente al principio.
 
+PARA QUE EL AVISO DE LA WEB SALGA FIRMADO HAY QUE PONER EL SMTP
+
+Cuidado, que esto se presta a confusion. Tener el DKIM publicado NO hace
+que los avisos de la web salgan firmados. Se comprobo en la cabecera de
+un correo recibido DESPUES de publicar la clave, y seguia diciendo
+'dkim=none', o sea sin firma ninguna.
+
+El motivo: el DKIM firma lo que sale del SERVICIO DE CORREO (el webmail,
+el movil, el Outlook). Los avisos de la web salian por la funcion mail()
+de php, que va por un relay aparte. Ese relay cumple el SPF, y por eso
+los avisos llegaban a la bandeja de entrada y no a spam, pero la firma no
+se la pone nadie.
+
+La solucion es que la web entre por SMTP como un cliente de correo mas.
+Se pone en el fichero de configuracion de fuera de public_html:
+
+    'smtp' => array(
+      'host'     => 'smtp.hostinger.com',
+      'puerto'   => 465,
+      'seguridad'=> 'ssl',      // 'ssl' en el 465, 'tls' en el 587
+      'usuario'  => 'jordi@tophouserealestate.es',
+      'clave'    => 'LA CONTRASENA DEL BUZON',
+    ),
+
+El usuario es un BUZON de verdad. 'no-reply@' es un alias y los alias no
+tienen contrasena propia: se entra como el buzon y se manda DESDE el
+alias, que es lo que hace el codigo.
+
+SI EL SMTP FALLA, EL AVISO SALE IGUAL. Estas son solicitudes de clientes:
+no se pueden perder por una mejora de reputacion. Si el servidor de
+correo esta caido, si cambia la contrasena o si el alojamiento cierra el
+puerto, se cae solo a mail() y el aviso sale sin firmar, pero sale. El
+motivo queda en el registro de errores.
+
+PARA SABER POR DONDE HA SALIDO, la prueba lo dice:
+
+    /api/solicitud.php?prueba=CLAVE   ->   "camino": "smtp"   o   "mail"
+
+'smtp' quiere decir que ha salido firmado. 'mail' quiere decir que el
+smtp ha fallado y hay que mirar el registro.
+
+
 COMO SE PUSO EL DKIM, PORQUE COSTO ENCONTRARLO
 
 En la zona DNS aparecen tres CNAME (hostingermail-a, -b y -c apuntando a
