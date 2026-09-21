@@ -132,6 +132,38 @@ letras, esta prueba no existe: contesta igual que cualquier otra peticion
 mal hecha, sin decir que hay algo ahi.
 
 
+UNA COSA PENDIENTE DEL CORREO: EL DKIM
+
+Comprobado el 21/09/2026 preguntando al DNS publico, no desde el panel.
+
+Hay tres cosas que hacen que un correo no acabe en spam. Dos estan bien:
+
+  - SPF: v=spf1 include:_spf.mail.hostinger.com ~all   -> correcto.
+    Autoriza el relay por el que Hostinger manda el correo de php, que es
+    justo por donde sale el aviso del formulario.
+  - DMARC: v=DMARC1; p=none                            -> correcto, y
+    en modo de solo observar, que es lo prudente al principio.
+
+La tercera, el DKIM (la firma del correo), NO esta puesta:
+
+  - hostingermail-a._domainkey.tophouserealestate.es   NO EXISTE.
+    Es la que lleva la clave buena.
+  - hostingermail-b._domainkey.tophouserealestate.es   existe pero apunta
+    a una clave ANULADA (v=DKIM1;p= , sin clave detras).
+
+Hoy no molesta: el correo de prueba llego a la bandeja de entrada, no a
+spam, porque el SPF ya lo sostiene. Conviene arreglarlo igualmente:
+
+  - Gmail y Outlook valoran cada vez mas la firma DKIM para decidir si un
+    remitente es de fiar, y esto son avisos que no se pueden perder.
+  - El dia que el DMARC pase de 'p=none' a algo mas estricto, sin DKIM
+    el correo se vuelve fragil.
+
+Se arregla en el panel de Hostinger, en la parte de correo del dominio,
+buscando la configuracion o la comprobacion del DKIM. Suele ser un boton
+que vuelve a publicar el registro que falta.
+
+
 SI ALGUN DIA NO LLEGAN LOS CORREOS
 
 Lo primero, mirar la carpeta de spam del buzon.
