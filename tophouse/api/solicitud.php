@@ -38,6 +38,12 @@
        'aviso_a'  => 'info@tophouserealestate.es',
        'aviso_de' => 'no-reply@tophouserealestate.es',
 
+       // Copia a mas destinatarios, uno o varios separados por comas.
+       // Esta puesto pensando en el CRM: si Mobilia recoge solicitudes
+       // de una direccion de correo, como hacen casi todos, se pone
+       // aqui y entran solas, sin tocar codigo.
+       'aviso_copia' => '',
+
    El remitente TIENE que ser una direccion de este mismo dominio. Si se
    pone la del visitante, el correo lo firma un dominio que no es el
    nuestro, el SPF del servidor no cuadra y acaba en la carpeta de spam
@@ -118,6 +124,40 @@ function cabeceras($de) {
     );
 }
 
+/* Manda el correo. El quinto argumento de mail() pone el remitente del
+   SOBRE, que es el que mira el servidor que recibe para comprobar el
+   SPF. Sin el, algunos alojamientos ponen el usuario del sistema y el
+   correo entra directo en spam. */
+function enviar($para, $titulo, $cuerpo, $de) {
+    return @mail($para, asunto($titulo), $cuerpo, implode("\r\n", cabeceras($de)), '-f' . $de);
+}
+
+/* A quien mas se le manda una copia, aparte del buzon de la oficina.
+
+   Existe para el CRM. Los portales meten sus solicitudes en Mobilia y
+   hay que averiguar por donde entran; si resulta que Mobilia las recoge
+   de una direccion de correo, como hacen casi todos los CRM, esto ya
+   esta hecho y solo hay que poner esa direccion aqui:
+
+       'aviso_copia' => 'loquesea@tophouseconsulting.mobiliagestion.es',
+
+   Vale una direccion o varias separadas por comas. Va como envio
+   APARTE, no como Cc: los que recogen correo automaticamente suelen
+   mirar solo el destinatario directo, y ademas asi una direccion que
+   falle no se lleva por delante el aviso a la oficina. */
+function copias($privado) {
+    $cfg = configuracion($privado);
+    $v = isset($cfg['aviso_copia']) ? $cfg['aviso_copia'] : array();
+    if (is_string($v)) { $v = preg_split('/[\s,;]+/', $v); }
+    if (!is_array($v)) { return array(); }
+    $fuera = array();
+    foreach ($v as $d) {
+        $d = trim((string) $d);
+        if ($d !== '' && filter_var($d, FILTER_VALIDATE_EMAIL)) { $fuera[] = $d; }
+    }
+    return array_slice(array_values(array_unique($fuera)), 0, 5);
+}
+
 /** Lo que haya en el fichero de configuracion de fuera de public_html. */
 function configuracion($privado) {
     $ruta = $privado . '/mobilia-config.php';
@@ -156,7 +196,7 @@ function direcciones($privado) {
        https://www.tophouserealestate.es/api/solicitud.php?version
    --------------------------------------------------------------- */
 
-define('VERSION_SOLICITUD', '2026-09-21.3');
+define('VERSION_SOLICITUD', '2026-09-21.4');
 define('CLAVE_MINIMA', 16);
 
 if (isset($_GET['version'])) {
@@ -237,18 +277,21 @@ if (isset($_GET['prueba'])) {
         . "Si lee esto, los avisos del formulario de la web llegan bien.\r\n"
         . 'Enviada el ' . date('d/m/Y H:i') . " (hora de aqui).\r\n";
 
-    $aceptado = @mail(
-        $para,
-        asunto('Prueba de los avisos de la web'),
-        $cuerpo,
-        implode("\r\n", cabeceras($de)),
-        '-f' . $de
-    );
+    $aceptado = enviar($para, 'Prueba de los avisos de la web', $cuerpo, $de);
+
+    /* Las copias tambien se prueban: si no, se pondria una direccion de
+       CRM en la configuracion y no se sabria si funciona hasta que
+       llegase una solicitud de verdad, que es el peor momento. */
+    $copias = array();
+    foreach (copias($PRIVADO) as $otro) {
+        $copias[$otro] = (bool) enviar($otro, 'Prueba de los avisos de la web', $cuerpo, $de);
+    }
 
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode(array(
         'aceptado'     => (bool) $aceptado,
         'enviado_a'    => $para,
+        'copias'       => empty($copias) ? 'ninguna configurada' : $copias,
         'enviado_desde'=> $de,
         'hay_mail'     => function_exists('mail'),
         'hora'         => date('d/m/Y H:i'),
@@ -485,16 +528,17 @@ function plegar($texto) {
 $cuerpo = plegar(implode("\n", $lineas));
 
 
-/* El quinto argumento pone el remitente del SOBRE, que es el que mira el
-   servidor que recibe para comprobar el SPF. Sin el, algunos alojamientos
-   ponen el usuario del sistema y el correo entra directo en spam. */
-$enviado = @mail(
-    $para,
-    asunto($titLinea),
-    $cuerpo,
-    implode("\r\n", cabeceras($de)),
-    '-f' . $de
-);
+$enviado = enviar($para, $titLinea, $cuerpo, $de);
+
+/* Las copias van despues y no deciden nada: si el CRM no las coge, la
+   solicitud NO se pierde, que ya esta en el buzon de la oficina. Al
+   visitante no se le hace esperar por ellas ni se le cuenta un error
+   que no es suyo. */
+foreach (copias($PRIVADO) as $otro) {
+    if (!enviar($otro, $titLinea, $cuerpo, $de)) {
+        apuntar('la copia a ' . $otro . ' no ha salido');
+    }
+}
 
 if (!$enviado) {
     apuntar('mail() ha devuelto falso; la solicitud no ha salido por correo');

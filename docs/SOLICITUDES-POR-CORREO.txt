@@ -132,6 +132,46 @@ letras, esta prueba no existe: contesta igual que cualquier otra peticion
 mal hecha, sin decir que hay algo ahi.
 
 
+LO QUE FALTA: QUE LA SOLICITUD ENTRE TAMBIEN EN MOBILIA
+
+Hoy la solicitud llega por correo y por WhatsApp. En Mobilia, en
+'Solicitudes Pendientes', NO entra. Eso no se ha hecho todavia y conviene
+decir por que, para no darle vueltas dos veces:
+
+  - El manual del XML de Mobilia (InterfazExportacionMobilia.pdf, 44
+    paginas) es SOLO DE EXPORTACION. Se ha buscado entero: no aparece
+    'solicitud', ni 'peticion', ni 'lead', ni 'formulario'. Por ahi no
+    entra nada.
+  - Los servidores de Mobilia no se pueden consultar desde donde se
+    desarrolla esto (bloqueo de red), asi que la via de entrada no se
+    puede averiguar leyendo su API. Tiene que mirarlo alguien con la
+    cuenta de Mobilia delante.
+
+HAY TRES SITIOS DONDE MIRAR, y cualquiera de los tres resuelve:
+
+  1. UNA DIRECCION DE CORREO DE ENTRADA. Es lo mas probable, porque es
+     como entran las solicitudes de Idealista y Fotocasa: el portal manda
+     un correo y el CRM lo lee. En Mobilia, buscar en Configuracion >
+     Portales, o Integraciones, o en la propia pantalla de Solicitudes,
+     una direccion del tipo algo@tophouseconsulting.mobiliagestion.es.
+     SI APARECE, ESTO YA ESTA HECHO: se pone en la configuracion del
+     servidor y funciona el mismo dia, sin tocar codigo:
+
+         'aviso_copia' => 'esa@direccion',
+
+  2. UN FORMULARIO WEB DE MOBILIA. Mobilia publica las fichas en
+     tophouseconsulting.mobiliagestion.es, o sea que ya tiene formularios
+     propios que acaban en Solicitudes. Si dan la direccion a la que
+     envian, se manda ahi lo mismo.
+
+  3. LA API. En api.mobiliagestion.es/swagger/index.html, con la sesion
+     de Mobilia iniciada, sale la lista de lo que la API permite hacer.
+     Si hay algo de crear solicitudes, se usa eso, que es lo mas limpio.
+
+MIENTRAS TANTO NO SE PIERDE NADA: la solicitud esta en el correo y en
+WhatsApp. Lo que falta es que ademas se apunte sola en el CRM.
+
+
 UNA COSA PENDIENTE DEL CORREO: EL DKIM
 
 Comprobado el 21/09/2026 preguntando al DNS publico, no desde el panel.
