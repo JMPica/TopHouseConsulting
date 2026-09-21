@@ -172,36 +172,35 @@ MIENTRAS TANTO NO SE PIERDE NADA: la solicitud esta en el correo y en
 WhatsApp. Lo que falta es que ademas se apunte sola en el CRM.
 
 
-UNA COSA PENDIENTE DEL CORREO: EL DKIM
+EL CORREO DEL DOMINIO: SPF, DKIM Y DMARC
 
-Comprobado el 21/09/2026 preguntando al DNS publico, no desde el panel.
+Las tres cosas que deciden si un correo acaba en spam estan puestas.
+Comprobado el 21/09/2026 preguntando al DNS publico y a los servidores
+autoritativos del dominio, no al panel:
 
-Hay tres cosas que hacen que un correo no acabe en spam. Dos estan bien:
+  - SPF   v=spf1 include:_spf.mail.hostinger.com ~all
+          Autoriza el relay por el que Hostinger manda el correo de php,
+          que es por donde sale el aviso del formulario.
 
-  - SPF: v=spf1 include:_spf.mail.hostinger.com ~all   -> correcto.
-    Autoriza el relay por el que Hostinger manda el correo de php, que es
-    justo por donde sale el aviso del formulario.
-  - DMARC: v=DMARC1; p=none                            -> correcto, y
-    en modo de solo observar, que es lo prudente al principio.
+  - DKIM  hostingermail1._domainkey.tophouserealestate.es
+          v=DKIM1; k=rsa; p=...  (RSA de 2048 bits, entera)
 
-La tercera, el DKIM (la firma del correo), NO esta puesta:
+  - DMARC v=DMARC1; p=none
+          En modo de solo observar, que es lo prudente al principio.
 
-  - hostingermail-a._domainkey.tophouserealestate.es   NO EXISTE.
-    Es la que lleva la clave buena.
-  - hostingermail-b._domainkey.tophouserealestate.es   existe pero apunta
-    a una clave ANULADA (v=DKIM1;p= , sin clave detras).
+COMO SE PUSO EL DKIM, PORQUE COSTO ENCONTRARLO
 
-Hoy no molesta: el correo de prueba llego a la bandeja de entrada, no a
-spam, porque el SPF ya lo sostiene. Conviene arreglarlo igualmente:
+En la zona DNS aparecen tres CNAME (hostingermail-a, -b y -c apuntando a
+dkim.mail.hostinger.com) que PARECEN el DKIM y no lo son: son ranuras de
+plantilla, vacias. Se perdio un rato intentando arreglar la '-a' a mano,
+que ni siquiera llegaba a publicarse.
 
-  - Gmail y Outlook valoran cada vez mas la firma DKIM para decidir si un
-    remitente es de fiar, y esto son avisos que no se pueden perder.
-  - El dia que el DMARC pase de 'p=none' a algo mas estricto, sin DKIM
-    el correo se vuelve fragil.
+El sitio bueno es otro: Emails > el dominio > DKIM PERSONALIZADO, y un
+boton 'Generar registro DKIM'. Eso publica el selector de verdad, que es
+'hostingermail1' y no ninguno de los tres anteriores. Avisa de que puede
+tardar 8 horas; tardo minutos.
 
-Se arregla en el panel de Hostinger, en la parte de correo del dominio,
-buscando la configuracion o la comprobacion del DKIM. Suele ser un boton
-que vuelve a publicar el registro que falta.
+Si algun dia hay que rehacerlo, es ahi, y no tocando la zona DNS a mano.
 
 
 SI ALGUN DIA NO LLEGAN LOS CORREOS
