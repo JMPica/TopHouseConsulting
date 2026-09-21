@@ -1,0 +1,111 @@
+=======================================================================
+LAS SOLICITUDES DE LA WEB, TAMBIEN POR CORREO
+Que ya no se pierda ninguna
+=======================================================================
+
+EL PROBLEMA QUE RESUELVE
+
+Hasta ahora, los dos formularios de la web (el de la portada y el de la
+ficha de cada inmueble) solo abrian WhatsApp con el mensaje ya escrito.
+El visitante tenia que darle a enviar.
+
+Ahi habia un agujero que no se veia: si no le daba a enviar, si lo abria
+en un ordenador sin la sesion de WhatsApp iniciada, o si se lo pensaba
+medio segundo, esa solicitud NO LLEGABA A NADIE. Ni siquiera se sabia
+que habia existido. Se perdia un cliente sin enterarse.
+
+Ahora pasan las dos cosas a la vez, en el mismo clic:
+
+  - La solicitud sale por correo a info@tophouserealestate.es desde
+    vuestro propio servidor. Eso es lo que garantiza que llega.
+  - Y se abre WhatsApp igual que antes, con el mensaje escrito, que es
+    lo que arranca la conversacion en caliente.
+
+Si el visitante cierra WhatsApp sin enviar nada, el correo ya ha salido.
+
+
+QUE HAY QUE HACER PARA QUE FUNCIONE
+
+Nada. Ya esta configurado con la direccion correcta. Se publica y va.
+
+Lo unico que hace falta es que el buzon info@tophouserealestate.es
+exista y se lea. Mientras no exista, los correos rebotan.
+
+Si algun dia hay que cambiar la direccion que recibe los avisos, se pone
+en el mismo fichero de configuracion que ya usa la cartera, FUERA de
+public_html, y sin tocar el codigo:
+
+    /home/<usuario>/domains/tophouserealestate.es/mobilia-config.php
+
+    'aviso_a'  => 'info@tophouserealestate.es',
+    'aviso_de' => 'no-reply@tophouserealestate.es',
+
+CUIDADO CON 'aviso_de'. Tiene que ser una direccion DE ESTE MISMO
+DOMINIO. Si se pone la del visitante (que es la tentacion, para poder
+responderle directamente), el correo lo firma un dominio que no es el
+nuestro, la comprobacion antifraude del servidor que recibe no cuadra, y
+acaba en la carpeta de spam justo el dia que llega la solicitud buena.
+
+
+QUE LLEGA EN EL CORREO
+
+El asunto ya dice de que va sin abrirlo:
+
+    Visita: ref 1418 · Jordi Pica          (desde la ficha de un inmueble)
+    Valoracion · Laura Serra               (desde la portada)
+
+Y dentro: el nombre, el telefono, el mensaje, la referencia y el titulo
+del inmueble, la direccion exacta de la pagina que estaba mirando, el
+idioma en el que navegaba (util para saber en que lengua devolver la
+llamada) y la hora, en hora de aqui.
+
+
+QUE NO GUARDA, Y POR QUE IMPORTA
+
+Las solicitudes no se guardan en ningun sitio. Ni base de datos, ni
+fichero, ni registro. Se convierten en un correo y se olvidan. El correo
+es el archivo.
+
+Lo unico que queda en disco es un contador de cuantas solicitudes llegan
+por hora, con la direccion IP convertida en un codigo que no se puede
+deshacer. Sirve para frenar el envio automatico de basura y para nada
+mas: de ese fichero no se puede sacar quien entro.
+
+Esto no es un detalle tecnico, es lo que dice la politica de privacidad
+de la web. Si algun dia se decide guardar las solicitudes en algun sitio,
+HAY QUE ACTUALIZAR LA POLITICA ANTES, en los tres idiomas.
+
+
+LO QUE PARA A LOS ROBOTS
+
+Un formulario abierto en internet recibe basura automatica desde el
+primer dia. Van tres cosas puestas:
+
+  - Un campo trampa que nadie ve. Los robots rellenan todo lo que
+    encuentran; si ese campo viene lleno, no se envia nada. Y se contesta
+    que si, no que no: si se contestase que no, el robot lo reintentaria
+    cambiando cosas hasta acertar.
+  - Un limite de cinco solicitudes por hora y visitante, y ochenta en
+    total. Al que se pasa se le contesta que si y no se manda nada, asi
+    que nunca sabe que hay un limite. El visitante de verdad que le da
+    dos veces al boton tampoco ve ningun error.
+  - Se rechaza lo que no venga de la propia web.
+
+Ademas, el nombre y el telefono se limpian de saltos de linea antes de
+componer el correo. Sin eso, escribir un salto de linea dentro del
+nombre deja meter cabeceras nuevas en el correo (un Bcc, por ejemplo) y
+el formulario se convierte en una maquina de mandar correo a quien sea.
+Es el fallo clasico de los formularios de contacto y esta cerrado.
+
+
+SI ALGUN DIA NO LLEGAN LOS CORREOS
+
+Lo primero, mirar la carpeta de spam del buzon.
+
+Si no estan ahi tampoco, el motivo queda apuntado en el registro de
+errores del alojamiento (en Hostinger: hPanel > Avanzado > Registros de
+error de PHP), buscando las lineas que empiezan por 'solicitud.php:'.
+
+Mientras se arregla, la web NO se rompe ni deja de funcionar: el
+visitante sigue viendo su WhatsApp abrirse exactamente igual, porque la
+pagina no espera respuesta del servidor para nada.

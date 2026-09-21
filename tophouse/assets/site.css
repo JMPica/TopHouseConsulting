@@ -1558,6 +1558,11 @@ body.paused *,body.paused *::before,body.paused *::after{
 /* La casilla de consentimiento del formulario. Va discreta pero legible:
    si no se lee, no es consentimiento informado, es una casilla. */
 .field--consent{margin-top:.4rem}
+/* El campo trampa. No lo ve nadie, pero los robots que rellenan todo lo
+   que encuentran si lo rellenan, y eso los delata en el servidor. Se
+   esconde fuera de pantalla y no con display:none porque hay robots que
+   saltan lo que esta oculto de la forma evidente. */
+.field--trampa{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none}
 .consent{
   display:flex;gap:.7rem;align-items:flex-start;cursor:pointer;
   font-size:.82rem;line-height:1.55;color:var(--text-secondary);

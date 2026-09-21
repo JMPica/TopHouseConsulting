@@ -301,12 +301,15 @@ if ($n) {
         <div class="field field--wide field--consent">
           <label class="consent" for="f-ok">
             <input id="f-ok" name="consentimiento" type="checkbox" required>
-            <span>He leído y acepto la política de privacidad. Al enviar, se abre WhatsApp: mis datos viajan por ese servicio, que es de Meta.</span>
+            <span>He leído y acepto la política de privacidad. Al enviar, mis datos llegan a Top House por correo y se abre WhatsApp, que es un servicio de Meta.</span>
           </label>
+        </div>
+        <div class="field field--trampa" aria-hidden="true">
+          <input id="f-empresa" name="empresa" type="text" tabindex="-1" autocomplete="off">
         </div>
         <p class="form__err" id="form-err" role="alert" hidden></p>
         <button class="btn btn--solid btn--lg form__go" type="submit">Pedir visita</button>
-        <p class="form__note mono">Se abre WhatsApp con su mensaje ya escrito. Nada se guarda en esta web.</p>
+        <p class="form__note mono">Su solicitud nos llega por correo y se abre WhatsApp con el mensaje ya escrito.</p>
         <p class="form__ok" id="form-ok" role="status" hidden>Recibido. Se abre WhatsApp con su mensaje ya escrito para que solo tenga que darle a enviar.</p>
       </form>
 
@@ -355,6 +358,7 @@ if ($n) {
 <script src="/assets/idioma.js" defer></script>
 <script src="/assets/base.js" defer></script>
 <script src="/assets/extras.js" defer></script>
+<script src="/assets/aviso.js" defer></script>
 <script src="/assets/fitxa.js" defer></script>
 </body>
 </html>

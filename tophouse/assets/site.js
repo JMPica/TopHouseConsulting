@@ -838,6 +838,23 @@
       var msg = String(d.get('mensaje') || '').trim();
       if (msg) lines.push('', msg);
 
+      /* La copia por correo, igual que en la ficha de cada inmueble: si
+         el visitante no llega a enviar el WhatsApp, la solicitud llega
+         de todos modos. Ver assets/aviso.js. */
+      if (window.avisar) {
+        window.avisar({
+          origen: 'portada',
+          nombre: nombre,
+          telefono: tel,
+          zona: zona,
+          necesita: String(d.get('necesita') || ''),
+          extra: res ? res.linea + ' — ' + res.horquilla : '',
+          mensaje: msg,
+          consentimiento: true,
+          empresa: String(d.get('empresa') || '')
+        });
+      }
+
       formOk.hidden = false;
       window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(lines.join('\n')), '_blank', 'noopener');
     });

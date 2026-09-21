@@ -89,6 +89,23 @@
     var msg = String(d.get('mensaje') || '').trim();
     if (msg) lineas.push('', msg);
 
+    /* La copia por correo. Va antes de abrir WhatsApp para que salga
+       aunque el movil deje esta pagina atras, y no se espera respuesta:
+       si el servidor falla, el visitante no se entera y sigue teniendo
+       su WhatsApp. Ver assets/aviso.js. */
+    if (window.avisar) {
+      window.avisar({
+        origen: 'ficha',
+        nombre: nombre,
+        telefono: tel,
+        mensaje: msg,
+        ref: ref,
+        titulo: titulo.trim(),
+        consentimiento: true,
+        empresa: String(d.get('empresa') || '')
+      });
+    }
+
     ok.hidden = false;
     window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(lineas.join('\n')), '_blank', 'noopener');
   });
