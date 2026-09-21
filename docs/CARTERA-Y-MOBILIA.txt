@@ -412,3 +412,42 @@ primero en la web: se haria donde Top House ya trabaja cada dia, sin
 tocar ficheros del servidor y sin afectar a Idealista ni Fotocasa.
 
 =======================================================================
+
+=======================================================================
+LO QUE EL MANUAL PERMITE PEDIR EN LA PROPIA DIRECCION
+=======================================================================
+
+La direccion de la exportacion admite parametros. Estan en el PDF, y hay
+uno que resuelve solo un problema que parecia de Mobilia:
+
+  marcaAgua=0   Las fotos llegan SIN la marca de agua.
+
+Las fotos venian con el logotipo de TOP HOUSE CONSULTING incrustado, que
+es la marca vieja, encima de cada foto de cada ficha. Parecia que habia
+que pedirle a Mobilia que cambiase su plantilla de marca de agua. No hace
+falta: el parametro afecta SOLO a esta descarga, asi que lo que Mobilia
+publica en Idealista y en Fotocasa sigue saliendo igual.
+
+El puente lo anade solo. Si algun dia se quieren con marca -por ejemplo
+con el logotipo nuevo, cuando Mobilia lo cambie- basta con poner en
+mobilia-config.php:
+
+      'marca_agua' => true,
+
+OTROS PARAMETROS QUE HAY Y NO SE USAN
+
+  fecha=...              solo lo cambiado desde una fecha
+  precioVentaDesde=...   filtra por precio
+  precioVentaHasta=...
+  descripcionesHtml=1    las descripciones con formato html
+  mostrarAlias=1
+  fotosAmpliada=1        cambia la forma de exportar las fotos: en vez de
+                         una direccion suelta, un nodo por foto con su
+                         direccion y sus pies en varios idiomas.
+
+fotosAmpliada es el unico que vale la pena mirar mas adelante: daria pies
+de foto, que son buenos para accesibilidad y para Google. Cambia la
+estructura del XML, asi que hay que probarlo con calma y no el mismo dia
+que se toca otra cosa.
+
+=======================================================================

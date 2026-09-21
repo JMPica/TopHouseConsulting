@@ -318,7 +318,26 @@ if ($oauth && !empty($oauth['url_token'])) {
     $cabeceras[] = 'Authorization: Bearer ' . $token;
     $cabeceras[] = 'Accept: application/json';
 }
-list($cuerpo, $codigo, $fallo) = pedir($cfg['url'], array(CURLOPT_HTTPHEADER => $cabeceras));
+/* LA MARCA DE AGUA.
+
+   Las fotos de Mobilia salen con el logotipo de TOP HOUSE CONSULTING
+   incrustado, que es la marca vieja. En la web nueva eso es una marca que
+   ya no existe, puesta encima de cada foto de cada ficha.
+
+   El manual de la exportacion documenta un parametro para pedirlas sin
+   marca: marcaAgua=0. Afecta solo a ESTA descarga, asi que lo que Mobilia
+   publica en Idealista o en Fotocasa sigue saliendo como saliera. No hay
+   que pedirle nada a nadie ni tocar nada del lado de Mobilia.
+
+   Se anade solo si la direccion no lo trae ya, para que quien escriba la
+   configuracion pueda decidir otra cosa: con 'marca_agua' => true en
+   mobilia-config.php vuelven a venir con marca. */
+$url = $cfg['url'];
+if (strpos($url, 'marcaAgua=') === false && stripos($url, 'ExportarInmuebles') !== false) {
+    $url .= (strpos($url, '?') === false ? '?' : '&') . 'marcaAgua=' . (!empty($cfg['marca_agua']) ? '1' : '0');
+}
+
+list($cuerpo, $codigo, $fallo) = pedir($url, array(CURLOPT_HTTPHEADER => $cabeceras));
 
 /* Un 401 con token casi siempre significa que el guardado ya no vale
    aunque la fecha dijera que si. Se tira y se pide uno nuevo, una vez. */
@@ -335,7 +354,7 @@ if ($oauth && $codigo == 401) {
         }
         $limpias[] = 'Authorization: Bearer ' . $token;
         $cabeceras = $limpias;
-        list($cuerpo, $codigo, $fallo) = pedir($cfg['url'], array(CURLOPT_HTTPHEADER => $cabeceras));
+        list($cuerpo, $codigo, $fallo) = pedir($url, array(CURLOPT_HTTPHEADER => $cabeceras));
         $notaOAuth .= ' (tras un 401)';
     }
 }
