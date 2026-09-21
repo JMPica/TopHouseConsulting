@@ -104,6 +104,114 @@ function asunto($t) {
         : $t;
 }
 
+/* Las cabeceras del correo. En una funcion a proposito: la prueba de mas
+   abajo y el aviso de verdad tienen que salir EXACTAMENTE iguales, o la
+   prueba dejaria de probar lo que se cree que prueba. */
+function cabeceras($de) {
+    return array(
+        'From: ' . asunto('Web Top House') . ' <' . $de . '>',
+        'Reply-To: ' . $de,
+        'MIME-Version: 1.0',
+        'Content-Type: text/plain; charset=UTF-8',
+        'Content-Transfer-Encoding: 8bit',
+        'X-Mailer: tophouserealestate.es',
+    );
+}
+
+/** Lo que haya en el fichero de configuracion de fuera de public_html. */
+function configuracion($privado) {
+    $ruta = $privado . '/mobilia-config.php';
+    if (is_readable($ruta)) {
+        $leido = include $ruta;
+        if (is_array($leido)) { return $leido; }
+    }
+    return array();
+}
+
+/** A donde va el aviso y desde donde sale. Vacias si estan mal puestas. */
+function direcciones($privado) {
+    $cfg  = configuracion($privado);
+    $para = !empty($cfg['aviso_a'])  ? $cfg['aviso_a']  : 'info@tophouserealestate.es';
+    $de   = !empty($cfg['aviso_de']) ? $cfg['aviso_de'] : 'no-reply@tophouserealestate.es';
+    if (!filter_var($para, FILTER_VALIDATE_EMAIL) || !filter_var($de, FILTER_VALIDATE_EMAIL)) {
+        return array('', '');
+    }
+    return array($para, $de);
+}
+
+/* ---------------------------------------------------------------
+   0. La prueba
+   ---------------------------------------------------------------
+   Para comprobar que los correos llegan SIN tener que rellenar el
+   formulario y sin dejar una solicitud falsa en el buzon cada vez que se
+   quiere mirar algo. Se abre en el navegador:
+
+       https://www.tophouserealestate.es/api/solicitud.php?prueba=CLAVE
+
+   La CLAVE es la misma que ya usa el diagnostico de cartera.php, la del
+   fichero de configuracion de fuera de public_html. Sin clave puesta, o
+   con una clave corta, esto no existe: contesta como cualquier otra
+   peticion mal hecha.
+
+   Dice dos cosas distintas que conviene no confundir:
+
+     - 'aceptado': el servidor ha cogido el correo. Eso es todo lo que
+       puede saber este fichero.
+     - Si llega al buzon o no, eso ya depende del correo, y por eso la
+       respuesta trae las direcciones: para poder mirar si existen.
+   --------------------------------------------------------------- */
+
+if (isset($_GET['prueba'])) {
+    $cfg   = configuracion($PRIVADO);
+    $clave = isset($cfg['clave']) ? (string) $cfg['clave'] : '';
+
+    /* Sin clave larga no se responde nada distinto de lo normal: si esto
+       contestase 'clave incorrecta' ya estaria diciendo que existe. */
+    if (strlen($clave) < 16 || !hash_equals($clave, (string) $_GET['prueba'])) {
+        fin(false, 405);
+    }
+
+    list($para, $de) = direcciones($PRIVADO);
+    if ($para === '' || $de === '') {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(array('error' => 'las direcciones de aviso estan mal puestas'));
+        exit;
+    }
+
+    /* Tambien cuenta para el limite: si la clave se escapase, esto no
+       puede convertirse en una manera de mandar correo sin freno. */
+    if (!ritmoOk($PRIVADO, 5, 80)) {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(array('error' => 'demasiadas pruebas seguidas, espere un rato'));
+        exit;
+    }
+
+    $cuerpo = "Esto es una prueba.\r\n\r\n"
+        . "Si lee esto, los avisos del formulario de la web llegan bien.\r\n"
+        . 'Enviada el ' . date('d/m/Y H:i') . " (hora de aqui).\r\n";
+
+    $aceptado = @mail(
+        $para,
+        asunto('Prueba de los avisos de la web'),
+        $cuerpo,
+        implode("\r\n", cabeceras($de)),
+        '-f' . $de
+    );
+
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(array(
+        'aceptado'     => (bool) $aceptado,
+        'enviado_a'    => $para,
+        'enviado_desde'=> $de,
+        'hay_mail'     => function_exists('mail'),
+        'hora'         => date('d/m/Y H:i'),
+        'nota'         => $aceptado
+            ? 'El servidor ha cogido el correo. Mire el buzon, y la carpeta de spam.'
+            : 'El servidor NO ha podido enviarlo. El motivo esta en el registro de errores de php.',
+    ), JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 /* ---------------------------------------------------------------
    1. De donde viene
    --------------------------------------------------------------- */
@@ -267,16 +375,8 @@ if (!ritmoOk($PRIVADO, 5, 80)) {
    4. El correo
    --------------------------------------------------------------- */
 
-$cfg = array();
-$ruta = $PRIVADO . '/mobilia-config.php';
-if (is_readable($ruta)) {
-    $leido = include $ruta;
-    if (is_array($leido)) { $cfg = $leido; }
-}
-
-$para = !empty($cfg['aviso_a']) ? $cfg['aviso_a'] : 'info@tophouserealestate.es';
-$de   = !empty($cfg['aviso_de']) ? $cfg['aviso_de'] : 'no-reply@tophouserealestate.es';
-if (!filter_var($para, FILTER_VALIDATE_EMAIL) || !filter_var($de, FILTER_VALIDATE_EMAIL)) {
+list($para, $de) = direcciones($PRIVADO);
+if ($para === '' || $de === '') {
     apuntar('direcciones de aviso mal puestas en la configuracion');
     fin(false, 500);
 }
@@ -337,14 +437,6 @@ function plegar($texto) {
 
 $cuerpo = plegar(implode("\n", $lineas));
 
-$cabeceras = array(
-    'From: ' . asunto('Web Top House') . ' <' . $de . '>',
-    'Reply-To: ' . $de,
-    'MIME-Version: 1.0',
-    'Content-Type: text/plain; charset=UTF-8',
-    'Content-Transfer-Encoding: 8bit',
-    'X-Mailer: tophouserealestate.es',
-);
 
 /* El quinto argumento pone el remitente del SOBRE, que es el que mira el
    servidor que recibe para comprobar el SPF. Sin el, algunos alojamientos
@@ -353,7 +445,7 @@ $enviado = @mail(
     $para,
     asunto($titLinea),
     $cuerpo,
-    implode("\r\n", $cabeceras),
+    implode("\r\n", cabeceras($de)),
     '-f' . $de
 );
 

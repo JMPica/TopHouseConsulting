@@ -98,6 +98,26 @@ el formulario se convierte en una maquina de mandar correo a quien sea.
 Es el fallo clasico de los formularios de contacto y esta cerrado.
 
 
+COMO COMPROBAR QUE LLEGAN, SIN RELLENAR EL FORMULARIO
+
+Se abre esto en el navegador:
+
+    https://www.tophouserealestate.es/api/solicitud.php?prueba=CLAVE
+
+La CLAVE es la misma que ya esta en el fichero de configuracion para el
+diagnostico de la cartera. Manda un correo de prueba y contesta diciendo
+si el servidor lo ha cogido, y a que direccion y desde cual ha salido.
+
+Ojo con lo que significa 'aceptado: true'. Quiere decir que el servidor
+ha cogido el correo, que es todo lo que la web puede llegar a saber. Que
+llegue al buzon ya depende del correo: por eso la respuesta trae las dos
+direcciones, para poder comprobar si existen de verdad.
+
+Sin clave puesta en la configuracion, o con una clave de menos de 16
+letras, esta prueba no existe: contesta igual que cualquier otra peticion
+mal hecha, sin decir que hay algo ahi.
+
+
 SI ALGUN DIA NO LLEGAN LOS CORREOS
 
 Lo primero, mirar la carpeta de spam del buzon.
