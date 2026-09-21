@@ -36,14 +36,14 @@ FUENTE  = os.path.join(RAIZ, 'tophouse')
 SALIDA  = os.path.join(RAIZ, 'web')
 TABLAS  = os.path.join(RAIZ, 'idiomas')
 
-PAGINAS = ['index.html', 'comprar.html', 'alquilar.html', 'legal.html']
+PAGINAS = ['index.html', 'comprar.html', 'alquilar.html', 'legal.html', 'immoble.php']
 
 # Como se llama cada pagina en cada idioma. La clave es el nombre en la
 # fuente. Los enlaces entre paginas se reescriben con esto.
 NOMBRES = {
-    'ca': {'index.html':'index.html', 'comprar.html':'comprar.html', 'alquilar.html':'llogar.html',  'legal.html':'legal.html'},
-    'es': {'index.html':'index.html', 'comprar.html':'comprar.html', 'alquilar.html':'alquilar.html', 'legal.html':'legal.html'},
-    'en': {'index.html':'index.html', 'comprar.html':'buy.html',     'alquilar.html':'rent.html',     'legal.html':'legal.html'},
+    'ca': {'index.html':'index.html', 'comprar.html':'comprar.html', 'alquilar.html':'llogar.html',  'legal.html':'legal.html', 'immoble.php':'immoble.php'},
+    'es': {'index.html':'index.html', 'comprar.html':'comprar.html', 'alquilar.html':'alquilar.html', 'legal.html':'legal.html', 'immoble.php':'inmueble.php'},
+    'en': {'index.html':'index.html', 'comprar.html':'buy.html',     'alquilar.html':'rent.html',     'legal.html':'legal.html', 'immoble.php':'property.php'},
 }
 CARPETA = {'ca':'', 'es':'es', 'en':'en'}
 CODIGO  = {'ca':'ca', 'es':'es', 'en':'en'}
@@ -87,7 +87,12 @@ def traducir(texto, tabla):
 def visibles(html_texto):
     """Las frases que un visitante llega a leer: texto entre etiquetas y los
     atributos que se ven o se oyen."""
-    x = re.sub(r'<(script|style|svg)\b.*?</\1>', '', html_texto, flags=re.S)
+    # El codigo php no es texto que nadie lea, pero lleva '<' y '>' dentro
+    # y sin quitarlo antes el buscador de frases lo trocea y pide traducir
+    # trozos de programa. Fuera lo primero.
+    x = re.sub(r'<\?php.*?\?>', '', html_texto, flags=re.S)
+    x = re.sub(r'<\?=.*?\?>', '', x, flags=re.S)
+    x = re.sub(r'<(script|style|svg)\b.*?</\1>', '', x, flags=re.S)
     x = re.sub(r'<!--.*?-->', '', x, flags=re.S)
     fuera = set()
     for m in re.finditer(r'>([^<>]+)<', x):
@@ -267,11 +272,26 @@ def construir():
             t = t.replace('<html lang="es">', '<html lang="%s">' % CODIGO[idioma])
             t = re.sub(r'<meta property="og:locale" content="[^"]*">',
                        '<meta property="og:locale" content="%s">' % LOCALE[idioma], t)
-            t = re.sub(r'<link rel="canonical" href="[^"]*">',
-                       '<link rel="canonical" href="%s">\n%s' % (canonica(pagina, idioma),
-                                                                 cabecera_idiomas(pagina, idioma)), t)
-            t = re.sub(r'<meta property="og:url" content="[^"]*">',
-                       '<meta property="og:url" content="%s">' % canonica(pagina, idioma), t)
+            # La direccion de una pagina php NO la pone el generador.
+            #
+            # Una ficha de inmueble no tiene una direccion fija: tiene una
+            # por inmueble, y solo el php sabe cual, porque depende de la
+            # referencia que le pidan. Si el generador escribiese aqui su
+            # direccion estatica, las treinta y cuatro fichas le dirian a
+            # Google que la buena es /immoble.php, y Google no indexaria
+            # ninguna. El php pone su canonica y sus hreflang por inmueble.
+            if pagina.endswith('.html'):
+                t = re.sub(r'<link rel="canonical" href="[^"]*">',
+                           '<link rel="canonical" href="%s">\n%s' % (canonica(pagina, idioma),
+                                                                     cabecera_idiomas(pagina, idioma)), t)
+                t = re.sub(r'<meta property="og:url" content="[^"]*">',
+                           '<meta property="og:url" content="%s">' % canonica(pagina, idioma), t)
+            # Marcas para las paginas php: necesitan saber en que idioma se
+            # han generado para elegir los textos de Mobilia que tocan y
+            # para componer sus propias direcciones.
+            t = t.replace('{{IDIOMA}}', CODIGO[idioma])
+            t = t.replace('{{CARPETA}}', CARPETA[idioma])
+
             # el selector va justo antes del telefono de la barra
             # dentro de nav__actions, no suelto en la barra: como cuarto hijo
             # de un flex con space-between quedaba flotando en medio, sin
@@ -311,7 +331,7 @@ def construir():
     if os.path.isdir(api):
         shutil.copytree(api, os.path.join(SALIDA, 'api'))
 
-    for suelto in ('.htaccess', 'robots.txt'):
+    for suelto in ('.htaccess', 'robots.txt', 'sitemap-immobles.php'):
         origen = os.path.join(FUENTE, suelto)
         if os.path.exists(origen):
             shutil.copy2(origen, os.path.join(SALIDA, suelto))
@@ -327,6 +347,12 @@ def escribir_sitemap():
              '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"',
              '        xmlns:xhtml="http://www.w3.org/1999/xhtml">']
     for pagina in PAGINAS:
+        # Las paginas php no son UNA direccion: son una plantilla que sirve
+        # una direccion por inmueble. Listar aqui /immoble.php mandaria a
+        # Google a una pagina que sin referencia no existe. Las fichas de
+        # verdad las lista sitemap-immobles.php, que si sabe cuales hay.
+        if not pagina.endswith('.html'):
+            continue
         for idioma in ('ca', 'es', 'en'):
             filas.append('  <url>')
             filas.append('    <loc>%s</loc>' % canonica(pagina, idioma))

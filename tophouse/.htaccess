@@ -63,6 +63,20 @@
   #
   # Las direcciones viejas que si hay que recoger eran todas en
   # castellano, asi que van a la version castellana, no a la portada.
+  # LAS FICHAS DE INMUEBLE
+  #
+  # Cada inmueble tiene su propia direccion, una por idioma, y las tres van
+  # al mismo fichero php con la referencia por delante. Se escriben asi -y
+  # no con ?ref=1418 a la vista- porque es una direccion que la gente
+  # comparte por WhatsApp y que Google indexa: /immoble/1418 se entiende y
+  # se puede leer en voz alta.
+  #
+  # Van ANTES que las redirecciones viejas: si no, una referencia que se
+  # llamase 'venta' se colaria por la regla de abajo.
+  RewriteRule ^immoble/([A-Za-z0-9._-]+)/?$      /immoble.php?ref=$1      [L,QSA]
+  RewriteRule ^es/inmueble/([A-Za-z0-9._-]+)/?$  /es/inmueble.php?ref=$1  [L,QSA]
+  RewriteRule ^en/property/([A-Za-z0-9._-]+)/?$  /en/property.php?ref=$1  [L,QSA]
+
   RewriteRule ^es/venta/?$        /es/comprar.html   [R=301,L]
   RewriteRule ^es/alquiler/?$     /es/alquilar.html  [R=301,L]
   RewriteRule ^es/alquileres/?$   /es/alquilar.html  [R=301,L]

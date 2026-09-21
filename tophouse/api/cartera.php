@@ -413,6 +413,28 @@ $SINONIMOS_ALQUILER = array('precioalquiler', 'preualquiler', 'preulloguer', 'pr
    El castellano es el campo sin sufijo, asi que no esta en la tabla. */
 $IDIOMAS = array('ca' => 'Ca', 'en' => 'En');
 
+/* El nombre de cada tipo en cada idioma.
+
+   Hace falta AQUI, y no solo en la web, porque Mobilia rellena el titulo
+   en castellano y deja el catalan y el ingles vacios casi siempre. Ese
+   titulo hay que componerlo, y tiene que salir igual en la tarjeta de la
+   cartera y en la ficha del inmueble: una se pinta en el navegador y la
+   otra sale hecha del servidor, asi que si cada una lo compusiera por su
+   cuenta acabarian diciendo cosas distintas del mismo piso.
+
+   No se usan los que manda Mobilia porque los manda en plural: saldria
+   'Pisos a Arenys de Mar' en vez de 'Pis a Arenys de Mar'. */
+$NOMBRE_TIPO = array(
+    'piso'     => array('ca' => 'Pis',            'es' => 'Piso',                 'en' => 'Flat'),
+    'atico'    => array('ca' => 'Àtic',           'es' => 'Ático',                'en' => 'Penthouse'),
+    'casa'     => array('ca' => 'Casa',           'es' => 'Casa',                 'en' => 'House'),
+    'bajo'     => array('ca' => 'Planta baixa',   'es' => 'Planta baja',          'en' => 'Ground floor'),
+    'local'    => array('ca' => 'Local',          'es' => 'Local',                'en' => 'Commercial unit'),
+    'terreno'  => array('ca' => 'Terreny',        'es' => 'Terreno',              'en' => 'Land'),
+    'garaje'   => array('ca' => 'Plaça d’aparcament', 'es' => 'Plaza de aparcamiento', 'en' => 'Parking space'),
+    'trastero' => array('ca' => 'Traster',        'es' => 'Trastero',             'en' => 'Storage room'),
+);
+
 /* LAS CARACTERISTICAS.
 
    Mobilia no manda una lista de extras: manda un centenar de casillas
@@ -851,7 +873,7 @@ function operacionesMobilia($p) {
  * u operacion: una ficha con el precio en blanco es peor que una ficha
  * que no esta. Lo descartado se cuenta y sale en el diagnostico.
  */
-function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPOS, $EXTRAS_MOBILIA, $PROPIOS, &$informe) {
+function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPOS, $NOMBRE_TIPO, $EXTRAS_MOBILIA, $PROPIOS, &$informe) {
     $lista = localizarLista($crudo);
     $forzados = isset($cfg['campos']) && is_array($cfg['campos']) ? $cfg['campos'] : array();
     $porDefecto = isset($cfg['operacion']) ? strtolower((string) $cfg['operacion']) : '';
@@ -1034,7 +1056,8 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPO
             /* Sin titulo la ficha sigue siendo util: se compone uno con lo
                que si se sabe, que es lo que hace el propio portal. */
             if ($ficha['titulo'] === '') {
-                $ficha['titulo'] = componerTitulo($tipoCru, $poblacio, 'es');
+                $nombreEs = isset($NOMBRE_TIPO[$tipoClave]['es']) ? $NOMBRE_TIPO[$tipoClave]['es'] : $tipoCru;
+                $ficha['titulo'] = componerTitulo($nombreEs, $poblacio, 'es');
                 if ($ficha['titulo'] === '') { $ficha['titulo'] = $ficha['ref']; }
             }
 
@@ -1051,10 +1074,11 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPO
                 $suEnergia = texto(buscar($plano, array(normalizar('calificacionenergetica' . $sufijo))));
                 $suDesc = texto(buscar($plano, array(normalizar('descripcionampliada' . $sufijo),
                                                      normalizar('descripcion' . $sufijo))));
-                /* Si Mobilia no lo tiene en este idioma NO se compone aqui:
-                   se manda vacio y lo compone la web, que es la que sabe
-                   decir 'Pis' y no 'Pisos'. Mobilia guarda los tipos en
-                   plural, y un titulo compuesto con ellos queda raro. */
+                /* Si Mobilia no lo trae en este idioma, se compone con el
+                   nombre nuestro del tipo, que esta en singular. */
+                if ($suTitulo === '' && isset($NOMBRE_TIPO[$tipoClave][$codigo])) {
+                    $suTitulo = componerTitulo($NOMBRE_TIPO[$tipoClave][$codigo], $poblacio, $codigo);
+                }
                 $entrada = array();
                 if ($suTipo !== '')   { $entrada['tipo'] = $suTipo; }
                 if ($suEnergia !== '' && $suEnergia !== $ficha['energia']) { $entrada['energia'] = $suEnergia; }
@@ -1102,7 +1126,7 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPO
 
 $informe = array();
 $PROPIOS = destacadosPropios($PRIVADO . '/destacados.txt');
-$limpio = traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPOS, $EXTRAS_MOBILIA, $PROPIOS, $informe);
+$limpio = traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPOS, $NOMBRE_TIPO, $EXTRAS_MOBILIA, $PROPIOS, $informe);
 
 /* ---------- 5. el modo diagnostico ---------- */
 /**

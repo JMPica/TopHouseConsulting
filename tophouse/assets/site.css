@@ -1644,3 +1644,111 @@ body.paused *,body.paused *::before,body.paused *::after{
   content:"";position:absolute;
   left:-2px;right:-2px;top:-11px;bottom:-11px;
 }
+
+
+/* =====================================================================
+   LA FICHA DE UN INMUEBLE
+   =====================================================================
+   Dos columnas en pantalla ancha: a la izquierda lo que se mira -fotos,
+   datos, descripcion- y a la derecha, quieta mientras se baja, la
+   peticion de visita. En movil se apilan y el formulario queda al final,
+   que es donde se llega despues de haberlo visto todo.
+   ===================================================================== */
+.fitxa{max-width:var(--maxw);margin:0 auto;padding:clamp(96px,14vh,150px) var(--gut) clamp(60px,9vh,110px)}
+
+.fitxa__volver{margin:0 0 1.4rem}
+.fitxa__volver a{
+  font-family:var(--m);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--text-secondary);text-decoration:none;
+}
+.fitxa__volver a:hover{color:var(--accent-ink)}
+.fitxa__volver a::before{content:"\2190";margin-right:.5rem}
+
+.fitxa__cap{margin:0 0 1.8rem}
+.fitxa__cap h1{margin:.3rem 0 .6rem}
+.fitxa__precio{
+  font-family:var(--d);font-size:clamp(1.6rem,3vw,2.4rem);
+  color:var(--text-primary);margin:0;line-height:1.1;
+}
+.fitxa__mes{font-family:var(--b);font-size:.9rem;color:var(--text-secondary);margin-left:.35rem}
+
+/* Las dos partes de la ficha son <section>, y en esta web 'section' ya
+   lleva su propio ancho y un padding de ciento treinta pixeles arriba y
+   abajo: es lo que separa las franjas de la portada. Dentro de la ficha
+   eso sobra -la columna ya la pone .fitxa- y abria un agujero enorme
+   entre el precio y las fotos, ademas de dejar la imagen desalineada
+   respecto al titulo. Se desactiva aqui y no se toca la regla general,
+   que la portada si la necesita. */
+.fitxa__galeria,
+.fitxa__cos{padding:0;max-width:none;margin-inline:0}
+
+/* ---------- galeria ---------- */
+.fitxa__galeria{margin:0 0 2.2rem}
+.fitxa__grande{
+  width:100%;aspect-ratio:3/2;object-fit:cover;display:block;
+  /* Con 3/2 a todo el ancho la foto medía setecientos cuarenta pixeles de
+     alto: en un portatil llenaba la pantalla entera y el precio quedaba
+     por debajo, que es justo el dato por el que se ha entrado. Se recorta
+     en vez de encogerse, asi que sigue llenando el ancho. */
+  max-height:58vh;
+  background:var(--panel-2);border-radius:3px;
+}
+.fitxa__tiras{
+  list-style:none;margin:.6rem 0 0;padding:0;
+  display:flex;gap:.5rem;overflow-x:auto;scrollbar-width:thin;
+}
+.fitxa__tira{
+  border:0;padding:0;background:none;cursor:pointer;display:block;
+  width:104px;flex:none;border-radius:2px;overflow:hidden;
+  opacity:.55;transition:opacity .2s;outline-offset:2px;
+}
+.fitxa__tira img{width:100%;aspect-ratio:3/2;object-fit:cover;display:block}
+.fitxa__tira:hover,.fitxa__tira.is-on{opacity:1}
+.fitxa__tira.is-on{box-shadow:0 0 0 2px var(--accent)}
+
+/* ---------- cuerpo ---------- */
+.fitxa__cos{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:clamp(28px,4vw,56px);align-items:start}
+
+.fitxa__datos{
+  list-style:none;margin:0 0 1.6rem;padding:0;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0;
+  border-top:1px solid var(--line);
+}
+.fitxa__datos li{
+  border-bottom:1px solid var(--line);padding:.8rem 0;
+  display:flex;flex-direction:column;gap:.15rem;
+}
+.fitxa__datos span{
+  font-family:var(--m);font-size:.66rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--text-secondary);
+}
+.fitxa__datos b{font-weight:600;color:var(--text-primary)}
+
+.fitxa__tags{margin:0 0 1.8rem}
+.fitxa__tags:empty{display:none}
+
+.fitxa__desc h2{margin:0 0 .7rem}
+.fitxa__desc p{color:var(--text-secondary);line-height:1.75;margin:0 0 1rem;max-width:62ch}
+
+/* ---------- lateral ---------- */
+.fitxa__lateral{position:sticky;top:96px}
+.fitxa__form{
+  background:var(--panel);border:1px solid var(--line);border-radius:4px;
+  padding:clamp(20px,2.6vw,28px);display:grid;gap:.7rem;
+}
+.fitxa__form h2{margin:.2rem 0 .3rem}
+.fitxa__formnota{color:var(--text-secondary);font-size:.9rem;margin:0 0 .4rem}
+.fitxa__tel{
+  margin:1rem 0 0;text-align:center;font-size:.9rem;color:var(--text-secondary);
+}
+.fitxa__acciones{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1.6rem}
+
+@media (max-width:900px){
+  .fitxa__cos{grid-template-columns:1fr}
+  /* Pegado arriba no tiene sentido cuando ya no hay dos columnas: el
+     formulario es el final del recorrido, no algo que persiga al lector. */
+  .fitxa__lateral{position:static}
+}
+@media (max-width:520px){
+  .fitxa__tira{width:82px}
+}
