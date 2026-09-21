@@ -140,7 +140,35 @@ function direcciones($privado) {
 }
 
 /* ---------------------------------------------------------------
-   0. La prueba
+   0. Que version esta publicada
+   ---------------------------------------------------------------
+   Hace falta por un fallo de diseno que se vio en la primera prueba de
+   verdad: cuando la prueba de mas abajo contesta {"ok":false} porque la
+   clave no vale, contesta EXACTAMENTE lo mismo que contestaba la version
+   anterior de este fichero, que no tenia prueba ninguna. Asi que ante un
+   {"ok":false} no habia forma de saber si la clave estaba mal o si el
+   despliegue todavia no habia llegado al servidor. Dos causas muy
+   distintas y la misma respuesta.
+
+   Esto lo corta: no lleva clave, no dice nada que no se pueda saber
+   mirando la web, y contesta la unica pregunta que no se podia contestar.
+
+       https://www.tophouserealestate.es/api/solicitud.php?version
+   --------------------------------------------------------------- */
+
+define('VERSION_SOLICITUD', '2026-09-21.2');
+
+if (isset($_GET['version'])) {
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(array(
+        'version'     => VERSION_SOLICITUD,
+        'tiene_prueba'=> true,
+    ));
+    exit;
+}
+
+/* ---------------------------------------------------------------
+   0 bis. La prueba
    ---------------------------------------------------------------
    Para comprobar que los correos llegan SIN tener que rellenar el
    formulario y sin dejar una solicitud falsa en el buzon cada vez que se

@@ -98,6 +98,20 @@ el formulario se convierte en una maquina de mandar correo a quien sea.
 Es el fallo clasico de los formularios de contacto y esta cerrado.
 
 
+ANTES DE NADA: QUE VERSION HAY PUBLICADA
+
+    https://www.tophouserealestate.es/api/solicitud.php?version
+
+Contesta la fecha de la version que esta corriendo en el servidor. No
+lleva clave y no dice nada reservado.
+
+Parece una tonteria y no lo es. La prueba de aqui abajo, cuando la clave
+no vale, contesta {"ok":false}, que es EXACTAMENTE lo mismo que contesta
+una version vieja del fichero que todavia no tenga la prueba. Sin esto,
+ante un {"ok":false} no hay manera de saber si la clave esta mal o si el
+despliegue no ha llegado. Se perdio un rato averiguandolo una vez.
+
+
 COMO COMPROBAR QUE LLEGAN, SIN RELLENAR EL FORMULARIO
 
 Se abre esto en el navegador:
