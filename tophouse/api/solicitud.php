@@ -156,14 +156,33 @@ function direcciones($privado) {
        https://www.tophouserealestate.es/api/solicitud.php?version
    --------------------------------------------------------------- */
 
-define('VERSION_SOLICITUD', '2026-09-21.2');
+define('VERSION_SOLICITUD', '2026-09-21.3');
+define('CLAVE_MINIMA', 16);
 
 if (isset($_GET['version'])) {
+    /* Tambien dice si la clave sirve, y por el mismo motivo que existe
+       todo esto. Una clave de menos de CLAVE_MINIMA letras hace que el
+       diagnostico se comporte como si no existiera, que es lo correcto,
+       pero contesta lo mismo que una clave equivocada: otra vez dos
+       causas y una sola respuesta. Paso de verdad, con una clave de 13.
+
+       Decir esto no regala nada: no sale la clave, ni su longitud, ni
+       nada que se pueda probar. Solo si el diagnostico esta utilizable.
+       La misma clave vale para cartera.php, asi que esto los cubre a los
+       dos. */
+    $c = configuracion($PRIVADO);
+    $clave = isset($c['clave']) ? (string) $c['clave'] : '';
+
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode(array(
-        'version'     => VERSION_SOLICITUD,
-        'tiene_prueba'=> true,
-    ));
+        'version'      => VERSION_SOLICITUD,
+        'tiene_prueba' => true,
+        'clave_util'   => (strlen($clave) >= CLAVE_MINIMA),
+        'clave_minimo' => CLAVE_MINIMA,
+        'nota'         => (strlen($clave) >= CLAVE_MINIMA)
+            ? 'La clave del fichero de configuracion sirve.'
+            : 'La clave del fichero de configuracion falta o es demasiado corta: ponga una de ' . CLAVE_MINIMA . ' letras o mas. Hasta entonces, ni esta prueba ni el diagnostico de la cartera responden.',
+    ), JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -195,7 +214,7 @@ if (isset($_GET['prueba'])) {
 
     /* Sin clave larga no se responde nada distinto de lo normal: si esto
        contestase 'clave incorrecta' ya estaria diciendo que existe. */
-    if (strlen($clave) < 16 || !hash_equals($clave, (string) $_GET['prueba'])) {
+    if (strlen($clave) < CLAVE_MINIMA || !hash_equals($clave, (string) $_GET['prueba'])) {
         fin(false, 405);
     }
 
