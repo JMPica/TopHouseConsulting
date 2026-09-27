@@ -277,18 +277,35 @@ a{color:inherit;text-decoration:none}
 }
 
 .nav__links{display:flex;gap:26px;font-size:.9rem;font-weight:500}
-.nav__links a{color:var(--text-secondary);position:relative;padding:4px 0;transition:color .3s var(--ease)}
-.nav__links a::after{
+/* Solo los enlaces de verdad de la barra, hijos directos. Dentro de la
+   lista viven tambien las copias del selector de idioma y del boton de
+   valoracion que usa el menu de movil, y estas reglas se les pegaban: el
+   boton salia con el texto gris sobre el dorado, y la capa invisible que
+   agranda los botones de idioma para el dedo cogia el subrayado dorado y
+   se pintaba como una raya encima de 'CA ES EN'. */
+.nav__links > a:not(.menu__cta){color:var(--text-secondary);position:relative;padding:4px 0;transition:color .3s var(--ease)}
+.nav__links > a:not(.menu__cta)::after{
   content:"";position:absolute;left:0;right:100%;bottom:0;height:1px;
   background:var(--accent);transition:right .4s var(--ease);
 }
-.nav__links a:hover{color:var(--text-primary)}
-.nav__links a:hover::after{right:0}
+.nav__links > a:not(.menu__cta):hover{color:var(--text-primary)}
+.nav__links > a:not(.menu__cta):hover::after{right:0}
 
 .nav__actions{display:flex;gap:10px;align-items:center}
 .nav__tel{font-family:var(--m);font-size:.78rem;letter-spacing:.08em}
 
 @media (max-width:1080px){.nav__links{display:none}}
+/* Entre 1081 y 1320px los enlaces SI se ensenan, pero no cabian con todo
+   lo demas: la barra saltaba a dos o tres lineas y crecia hasta 131px,
+   tapando el principio de cada pagina. Medido en los tres idiomas: el
+   catalan necesitaba 1281px para ir en una linea. Es el ancho de un iPad
+   tumbado (1180-1194) y de muchos portatiles con la ventana sin maximizar.
+
+   Sobra el boton de valoracion, que es lo que mas ocupa ("Demanar la
+   meva valoracio"): la valoracion sigue a un clic con el enlace
+   'Valoracion' de la propia barra. Con margen hasta 1320 porque la letra
+   no mide igual en todos los ordenadores. */
+@media (min-width:1081px) and (max-width:1320px){.nav__actions .btn--solid{display:none}}
 /* En movil la barra cambia de boton, y no por falta de sitio.
 
    En un telefono, el boton que mas convierte en una inmobiliaria de
@@ -314,6 +331,103 @@ a{color:inherit;text-decoration:none}
   .mark{width:32px;height:32px}
   .nav__name{font-size:.7rem;white-space:nowrap}
   .nav__kicker{font-size:.5rem;letter-spacing:.2em;white-space:nowrap}
+}
+
+/* ---------- El menu de movil y tableta (assets/menu.js) ----------
+
+   Por debajo de 1080px los enlaces no caben en la barra y se esconden
+   (la regla de arriba). Hasta el 27/09/2026 no habia nada en su lugar: en
+   un movil no se podia ir a la cartera sin bajar la portada entera.
+
+   TODO cuelga de .menu-js, que la pone el javascript al crear el boton.
+   Si el javascript no llega, esta seccion no hace nada y la barra queda
+   como estaba. Por eso el boton tampoco existe en el html.
+
+   Las copias del selector de idioma y del boton de valoracion que viven
+   dentro del menu se esconden siempre, salvo en el ancho en que su
+   original sale de la barra: asi en ningun ancho se ven (ni se leen en
+   voz alta) dos iguales. */
+.nav__menu{display:none}
+.nav__links .menu__lang,.nav__links .menu__cta{display:none}
+
+@media (max-width:1080px){
+  .menu-js .nav__menu{
+    display:inline-flex;align-items:center;justify-content:center;flex:none;
+    /* 44x44: el minimo para tocarlo con el dedo sin fallar. */
+    width:44px;height:44px;margin-right:-8px;padding:0;
+    border:0;border-radius:50%;background:transparent;
+    color:var(--text-primary);cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .nav__menu:hover{background:var(--accent-muted)}
+  .nav__menu:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+  /* Tres rayas que se cruzan en una X al abrir. */
+  .nav__menu-i{position:relative;display:block;width:22px;height:14px}
+  .nav__menu-i i{
+    position:absolute;left:0;right:0;height:1.6px;border-radius:2px;
+    background:currentColor;
+    transition:top .3s var(--ease),transform .3s var(--ease),opacity .2s var(--ease);
+  }
+  .nav__menu-i i:nth-child(1){top:0}
+  .nav__menu-i i:nth-child(2){top:6.2px}
+  .nav__menu-i i:nth-child(3){top:12.4px}
+  .nav.is-open .nav__menu-i i:nth-child(1){top:6.2px;transform:rotate(45deg)}
+  .nav.is-open .nav__menu-i i:nth-child(2){opacity:0}
+  .nav.is-open .nav__menu-i i:nth-child(3){top:6.2px;transform:rotate(-45deg)}
+
+  /* Con el menu abierto la barra se vuelve opaca: en la portada va por
+     encima del video y la lista no se leeria sobre el cielo. */
+  .menu-js .nav.is-open{
+    background:#F5F0E6;
+    border-bottom-color:var(--line);
+  }
+
+  /* El desplegable. Los mismos enlaces de la barra de escritorio, en
+     columna y con altura de dedo. */
+  .menu-js .nav.is-open .nav__links{
+    display:flex;flex-direction:column;align-items:stretch;gap:0;
+    position:absolute;top:100%;left:0;right:0;
+    padding:4px var(--gut) 22px;
+    /* Opaco del todo: con .98 se seguia viendo el titular del heroe
+       detras de la lista. */
+    background:#F5F0E6;
+    border-bottom:1px solid var(--line);
+    box-shadow:0 22px 40px -26px rgba(24,36,38,.45);
+    font-size:1.08rem;
+    /* Que no se salga por abajo en un movil tumbado. */
+    max-height:calc(100vh - 64px);max-height:calc(100dvh - 64px);
+    overflow-y:auto;overscroll-behavior:contain;
+  }
+  .menu-js .nav.is-open .nav__links > a:not(.menu__cta){
+    padding:15px 0;
+    border-bottom:1px solid var(--line);
+    color:var(--text-primary);
+  }
+  .menu-js .nav.is-open .nav__links > a:not(.menu__cta)::after{display:none}
+  .menu-js .nav.is-open .nav__links > a[aria-current="page"]{color:var(--accent-ink)}
+}
+
+/* En tableta el boton de valoracion ya no cabe junto al del menu: entra
+   dentro. (En movil ya estaba retirado de la barra.) */
+@media (max-width:860px){
+  .menu-js .nav__actions .btn--solid{display:none}
+  .menu-js .nav.is-open .nav__links .menu__cta{
+    display:inline-flex;justify-content:center;margin-top:20px;
+  }
+}
+
+/* En movil el selector de idioma entra en el menu: a 390px la barra
+   tenia 25 pixeles libres y el boton necesita unos 50. El telefono se
+   queda fuera, que es lo que mas llamadas trae. */
+@media (max-width:480px){
+  .menu-js .nav__actions .lang{display:none}
+  .menu-js .nav.is-open .nav__links .menu__lang{
+    display:inline-flex;align-self:flex-start;margin-top:20px;
+  }
+  /* Dentro del menu hay sitio: vuelve al tamano comodo. */
+  .menu-js .nav.is-open .menu__lang a,
+  .menu-js .nav.is-open .menu__lang .lang__on{padding:.55rem .85rem;font-size:.74rem;letter-spacing:.06em}
 }
 
 /* =========================================================

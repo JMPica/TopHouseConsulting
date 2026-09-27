@@ -363,6 +363,7 @@ if ($n) {
   </div>
 </footer>
 <script src="/assets/idioma.js" defer></script>
+<script src="/assets/menu.js" defer></script>
 <script src="/assets/base.js" defer></script>
 <script src="/assets/extras.js" defer></script>
 <script src="/assets/aviso.js" defer></script>

@@ -62,6 +62,9 @@ window.T = (function () {
       ' es una estimación nuestra, no un dato publicado. Llámenos y se lo afinamos.':
         ': el preu base és una estimació nostra, no una dada publicada. Truqui’ns i l’hi afinem.',
 
+      /* el menu de la barra en movil (lo lee el lector de pantalla) */
+      'Abrir el menú':'Obre el menú', 'Cerrar el menú':'Tanca el menú',
+
       /* el formulario */
       'Nos faltan su nombre y un teléfono para poder llamarle.':
         'Ens falta el seu nom i un telèfon per poder trucar-li.',
@@ -91,6 +94,7 @@ window.T = (function () {
     },
 
     en: {
+      'Abrir el menú':'Open the menu', 'Cerrar el menú':'Close the menu',
       'Piso':'Flat', 'Ático':'Penthouse', 'Planta baja':'Ground floor',
       'Casa':'House', 'Casa o torre':'House or villa',
       'Local':'Commercial unit', 'Terreno':'Land',
