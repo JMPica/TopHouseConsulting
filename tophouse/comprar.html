@@ -76,7 +76,14 @@
   <h2 class="sr-only" id="cart-h">Inmuebles en venta</h2>
 
   <div class="cart__filtros" role="search" aria-label="Buscar entre los inmuebles" hidden>
-    <div class="cart__campos">
+    <!-- En el movil los seis campos ocupaban mas de una pantalla antes del
+         primer inmueble. Se pliegan detras de este boton, que solo se ve
+         por debajo de 760px (ver cartera.js y site.css). -->
+    <button type="button" class="cart__plegar" aria-expanded="false" aria-controls="cart-campos">
+      <span class="cart__plegar-t">Filtrar los inmuebles</span>
+      <span class="cart__plegar-n" hidden></span>
+    </button>
+    <div class="cart__campos" id="cart-campos">
       <div class="cfield">
         <label><span class="cfield__t">Referencia</span>
           <input class="f-ref" type="search" autocomplete="off" placeholder="Ref.">

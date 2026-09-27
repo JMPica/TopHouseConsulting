@@ -64,6 +64,7 @@ window.T = (function () {
 
       /* el menu de la barra en movil (lo lee el lector de pantalla) */
       'Abrir el menú':'Obre el menú', 'Cerrar el menú':'Tanca el menú',
+      ' filtro activo':' filtre actiu', ' filtros activos':' filtres actius',
 
       /* el formulario */
       'Nos faltan su nombre y un teléfono para poder llamarle.':
@@ -95,6 +96,7 @@ window.T = (function () {
 
     en: {
       'Abrir el menú':'Open the menu', 'Cerrar el menú':'Close the menu',
+      ' filtro activo':' active filter', ' filtros activos':' active filters',
       'Piso':'Flat', 'Ático':'Penthouse', 'Planta baja':'Ground floor',
       'Casa':'House', 'Casa o torre':'House or villa',
       'Local':'Commercial unit', 'Terreno':'Land',

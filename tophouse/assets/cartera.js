@@ -142,6 +142,26 @@
      hace con los seis a la vez. */
   var MANDOS = [fRef, fTipo, fPob, fHab, fMin, fMax].filter(Boolean);
 
+  /* LOS FILTROS, PLEGADOS EN EL MOVIL. Solo se nota por debajo de 760px:
+     el css de .plegable vive dentro de ese @media, asi que en ordenador
+     esto no cambia nada. Ver site.css. */
+  var caja     = $('.cart__filtros', raiz);
+  var plegar   = $('.cart__plegar', raiz);
+  var plegarN  = $('.cart__plegar-n', raiz);
+  var campos   = $('.cart__campos', raiz);
+  if (caja && plegar && campos) {
+    caja.classList.add('plegable');
+    plegar.addEventListener('click', function () {
+      var abrir = !caja.classList.contains('is-obert');
+      caja.classList.toggle('is-obert', abrir);
+      plegar.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+    });
+  }
+  /* ¿Se ve el boton de plegar? Solo en movil. */
+  function plegado() {
+    return !!(plegar && plegar.offsetParent !== null && !caja.classList.contains('is-obert'));
+  }
+
   /* UN DISTINTIVO QUE LO LLEVA TODO EL MUNDO NO DISTINGUE A NADIE.
 
      La cartera de verdad venia entera marcada como destacada, asi que
@@ -450,6 +470,17 @@
 
     Array.prototype.forEach.call(limpiar, function (b) { b.hidden = !filtrando; });
 
+    /* Cuantos filtros hay puestos, en el boton de plegar. Con el panel
+       cerrado es lo unico que avisa de que la lista esta recortada. */
+    if (plegarN) {
+      var n = MANDOS.filter(function (m) { return m.value !== ''; }).length;
+      plegarN.hidden = !n;
+      plegarN.innerHTML = n
+        ? '<span aria-hidden="true">' + n + '</span><span class="sr-only">, ' + n
+          + (n === 1 ? T(' filtro activo') : T(' filtros activos')) + '</span>'
+        : '';
+    }
+
     /* Con la cartera entera vacia no tiene sentido enseñar un buscador que
        no busca nada, asi que se esconde y manda el aviso honesto.
 
@@ -472,7 +503,11 @@
     b.addEventListener('click', function () {
       MANDOS.forEach(function (m) { m.value = ''; });
       pintar();
-      if (fRef) fRef.focus();
+      /* Con los filtros plegados, la referencia esta escondida y no puede
+         recibir el foco: se perdia en el vacio, porque el propio boton de
+         quitar se acaba de esconder. Va al boton de plegar. */
+      if (plegado()) plegar.focus();
+      else if (fRef) fRef.focus();
     });
   });
   pintar();
