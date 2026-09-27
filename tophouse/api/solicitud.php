@@ -230,6 +230,38 @@ function smtpDecir($f, $orden, $esperado, &$fallo, $secreto = false) {
 }
 
 /**
+ * Ejecuta $fn recogiendo los avisos que php suelte mientras tanto, y
+ * devuelve el motivo en una linea.
+ *
+ * Hace falta porque, cuando falla una conexion cifrada, php no dice por
+ * que en el sitio donde se mira: $errstr sale vacio y el ultimo aviso es
+ * 'Unknown error'. El motivo de verdad ('certificate verify failed',
+ * 'Connection refused', un tiempo agotado) viene en un aviso ANTERIOR que
+ * se pierde. Paso probando: el registro decia literalmente '()', que no
+ * sirve para arreglar nada. En este punto de la conexion todavia no se
+ * ha mandado ninguna credencial, asi que no hay nada que tapar.
+ */
+function conAvisos($fn, &$motivo) {
+    $avisos = array();
+    set_error_handler(function ($n, $m) use (&$avisos) { $avisos[] = $m; return true; });
+    try {
+        $r = $fn();
+    } catch (\Throwable $e) {
+        $avisos[] = $e->getMessage();
+        $r = false;
+    }
+    restore_error_handler();
+
+    $partes = array();
+    foreach ($avisos as $m) {
+        $m = preg_replace('/^[a-z_]+\(\):\s*/i', '', trim(preg_replace('/\s+/', ' ', $m)));
+        if ($m !== '' && !in_array($m, $partes, true)) { $partes[] = $m; }
+    }
+    $motivo = substr(implode(' / ', $partes), 0, 300);
+    return $r;
+}
+
+/**
  * Manda el correo por SMTP. Devuelve true si el servidor lo ha aceptado.
  * El motivo del fallo se devuelve por $fallo para que quede en el
  * registro; al visitante no se le cuenta nunca.
@@ -255,9 +287,13 @@ function porSmtp($cfg, $para, $titulo, $cuerpo, $de, &$fallo) {
     $ctx = stream_context_create(array('ssl' => $ssl));
 
     $destino = ($seg === 'ssl' ? 'ssl://' : 'tcp://') . $host . ':' . $puerto;
-    $f = @stream_socket_client($destino, $errno, $errstr, $espera, STREAM_CLIENT_CONNECT, $ctx);
+    $errno = 0; $errstr = '';
+    $f = conAvisos(function () use ($destino, $espera, $ctx, &$errno, &$errstr) {
+        return stream_socket_client($destino, $errno, $errstr, $espera, STREAM_CLIENT_CONNECT, $ctx);
+    }, $motivo);
     if (!$f) {
-        $fallo = 'no se ha podido conectar con ' . $host . ':' . $puerto . ' (' . $errstr . ')';
+        $fallo = 'no se ha podido conectar con ' . $host . ':' . $puerto
+               . ' (' . ($motivo !== '' ? $motivo : ($errstr !== '' ? $errstr : 'sin detalle')) . ')';
         return false;
     }
     stream_set_timeout($f, $espera);
@@ -273,8 +309,11 @@ function porSmtp($cfg, $para, $titulo, $cuerpo, $de, &$fallo) {
             if (defined('STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT')) {
                 $metodo |= STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT;
             }
-            if (!@stream_socket_enable_crypto($f, true, $metodo)) {
-                $fallo = 'el cifrado starttls ha fallado';
+            $cifrado = conAvisos(function () use ($f, $metodo) {
+                return stream_socket_enable_crypto($f, true, $metodo);
+            }, $motivo);
+            if (!$cifrado) {
+                $fallo = 'el cifrado starttls ha fallado' . ($motivo !== '' ? ' (' . $motivo . ')' : '');
                 $ok = false;
             }
         }
@@ -362,14 +401,50 @@ function copias($privado) {
     return array_slice(array_values(array_unique($fuera)), 0, 5);
 }
 
-/** Lo que haya en el fichero de configuracion de fuera de public_html. */
-function configuracion($privado) {
+/**
+ * Lee el fichero de configuracion de fuera de public_html, UNA vez por
+ * peticion, y devuelve array(configuracion, estado).
+ *
+ * Si el fichero tiene un error de sintaxis (una coma, una comilla dentro
+ * de una contrasena), NO se cae: la configuracion sale vacia y todo sigue
+ * con los valores por defecto, que es mandar el aviso a info@ por mail().
+ * Una solicitud de un cliente no se pierde por una coma. El estado dice
+ * que ha pasado, para que ?version lo cuente.
+ */
+function leerConfiguracion($privado) {
+    static $memo = array();
+    if (isset($memo[$privado])) { return $memo[$privado]; }
+
+    $cfg = array();
+    $estado = 'bien';
     $ruta = $privado . '/mobilia-config.php';
-    if (is_readable($ruta)) {
-        $leido = include $ruta;
-        if (is_array($leido)) { return $leido; }
+    if (!is_readable($ruta)) {
+        $estado = 'no existe o no se puede leer';
+    } else {
+        try {
+            $leido = include $ruta;
+            if (is_array($leido)) { $cfg = $leido; }
+            else { $estado = 'no devuelve una lista: falta el return array(...) o el ; del final'; }
+        } catch (\Throwable $e) {
+            /* La linea y nada mas. El mensaje de php cita un trozo de la
+               linea rota, y esa linea puede ser la de una contrasena. */
+            $estado = 'error de sintaxis en la linea ' . $e->getLine();
+            apuntar('mobilia-config.php: ' . $estado . '; se sigue con los valores por defecto');
+        }
     }
-    return array();
+    return $memo[$privado] = array($cfg, $estado);
+}
+
+/** La configuracion. Vacia si el fichero falta o esta roto. */
+function configuracion($privado) {
+    $r = leerConfiguracion($privado);
+    return $r[0];
+}
+
+/** Como ha ido la lectura: 'bien', o que le pasa al fichero. */
+function estadoConfiguracion($privado) {
+    $r = leerConfiguracion($privado);
+    return $r[1];
 }
 
 /** A donde va el aviso y desde donde sale. Vacias si estan mal puestas. */
@@ -400,7 +475,7 @@ function direcciones($privado) {
        https://www.tophouserealestate.es/api/solicitud.php?version
    --------------------------------------------------------------- */
 
-define('VERSION_SOLICITUD', '2026-09-21.5');
+define('VERSION_SOLICITUD', '2026-09-27.1');
 define('CLAVE_MINIMA', 16);
 
 if (isset($_GET['version'])) {
@@ -416,16 +491,25 @@ if (isset($_GET['version'])) {
        dos. */
     $c = configuracion($PRIVADO);
     $clave = isset($c['clave']) ? (string) $c['clave'] : '';
+    $estadoCfg = estadoConfiguracion($PRIVADO);
 
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode(array(
         'version'      => VERSION_SOLICITUD,
+        /* Lo primero que hay que mirar cuando algo falla despues de tocar
+           el fichero de configuracion. Sale sin clave porque la clave
+           esta DENTRO de ese fichero: si esta roto, no hay clave que
+           pedir. Solo dice la linea, nunca el contenido. */
+        'configuracion'=> $estadoCfg,
+        'smtp'         => (!empty($c['smtp']) && is_array($c['smtp'])) ? 'configurado' : 'no configurado',
         'tiene_prueba' => true,
         'clave_util'   => (strlen($clave) >= CLAVE_MINIMA),
         'clave_minimo' => CLAVE_MINIMA,
-        'nota'         => (strlen($clave) >= CLAVE_MINIMA)
+        'nota'         => ($estadoCfg !== 'bien')
+            ? 'El fichero mobilia-config.php tiene un problema (' . $estadoCfg . '). Mire esa linea y la de ANTES: casi siempre es una coma que falta al final de la linea anterior, o una comilla simple dentro de una contrasena (escribala como \\\'). Mientras tanto la web sigue funcionando con la ultima copia de la cartera y los avisos salen sin firmar.'
+            : ((strlen($clave) >= CLAVE_MINIMA)
             ? 'La clave del fichero de configuracion sirve.'
-            : 'La clave del fichero de configuracion falta o es demasiado corta: ponga una de ' . CLAVE_MINIMA . ' letras o mas. Hasta entonces, ni esta prueba ni el diagnostico de la cartera responden.',
+            : 'La clave del fichero de configuracion falta o es demasiado corta: ponga una de ' . CLAVE_MINIMA . ' letras o mas. Hasta entonces, ni esta prueba ni el diagnostico de la cartera responden.'),
     ), JSON_UNESCAPED_UNICODE);
     exit;
 }

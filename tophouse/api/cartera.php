@@ -169,7 +169,22 @@ $rutaCfg = dirname(dirname(__DIR__)) . '/mobilia-config.php';
 if (!is_readable($rutaCfg)) {
     servir_copia($CACHE, 'falta mobilia-config.php');
 }
-$cfg = include $rutaCfg;
+/* Este fichero lo edita a mano quien no es programador, y una coma que
+   falta es un error de sintaxis. Sin este try, ese error mataba en seco
+   la cartera, las fichas y los avisos a la vez: pagina en blanco con un
+   500 y ni una pista de por que. Paso de verdad el 21/09/2026, al anadir
+   el bloque del smtp.
+
+   Ahora se sirve la ultima copia buena, que es lo mismo que se hace
+   cuando Mobilia no contesta. En el registro va la LINEA del error y no
+   el mensaje: si la coma rota esta en la linea de una contrasena, el
+   mensaje de php cita un trozo de esa linea. */
+try {
+    $cfg = include $rutaCfg;
+} catch (\Throwable $e) {
+    servir_copia($CACHE, 'mobilia-config.php tiene un error en la linea ' . $e->getLine()
+        . ' (se sirve la ultima copia buena; mirar /api/solicitud.php?version)');
+}
 if (!is_array($cfg) || empty($cfg['url'])) {
     servir_copia($CACHE, 'mobilia-config.php no trae url');
 }

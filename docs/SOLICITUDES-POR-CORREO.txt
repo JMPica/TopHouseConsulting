@@ -98,6 +98,36 @@ el formulario se convierte en una maquina de mandar correo a quien sea.
 Es el fallo clasico de los formularios de contacto y esta cerrado.
 
 
+SI DESPUES DE TOCAR LA CONFIGURACION ALGO DA ERROR
+
+Paso el 21/09/2026, al anadir el bloque del smtp: una coma que faltaba en
+mobilia-config.php y la prueba dio un 500. Peor: ese fichero lo leen la
+cartera, las fichas y los avisos, asi que cayeron los tres a la vez.
+
+Desde el 27/09/2026 eso ya no tumba la web. Si el fichero tiene un error:
+
+  - la cartera sirve la ultima copia buena, como cuando Mobilia no
+    contesta;
+  - las fichas se pintan igual;
+  - las solicitudes salen igual por correo, sin firmar;
+
+y lo que falla lo dice, SIN CLAVE (la clave esta dentro del fichero roto):
+
+    https://www.tophouserealestate.es/api/solicitud.php?version
+
+    "configuracion": "error de sintaxis en la linea 5"
+
+Hay que mirar ESA linea y LA DE ANTES. Casi siempre es una de dos:
+
+  - Falta la coma al final de la linea anterior. Cada entrada de la
+    lista acaba en coma:   'clave' => 'loquesea',   <- esta coma
+  - Una comilla simple dentro de una contrasena. Si la contrasena lleva
+    un ' hay que escribirlo \'   (por ejemplo 'l\'Hospitalet').
+
+Solo sale la linea, nunca el contenido: el mensaje de php cita un trozo
+de la linea rota, y podria ser la de una contrasena.
+
+
 ANTES DE NADA: QUE VERSION HAY PUBLICADA
 
     https://www.tophouserealestate.es/api/solicitud.php?version

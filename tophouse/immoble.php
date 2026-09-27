@@ -78,8 +78,15 @@ $vieja = true;
 if ($PRIVADO !== null && is_readable($PRIVADO . '/cartera-cache.json')) {
     $minutos = 15;
     if (is_readable($PRIVADO . '/mobilia-config.php')) {
-        $cfg = include $PRIVADO . '/mobilia-config.php';
-        if (is_array($cfg) && isset($cfg['minutos'])) { $minutos = (int) $cfg['minutos']; }
+        /* Si el fichero tiene un error de sintaxis, la ficha se pinta
+           igual con los 15 minutos de siempre. Solo se lee de aqui cada
+           cuanto refrescar: no vale una pagina en blanco. */
+        try {
+            $cfg = include $PRIVADO . '/mobilia-config.php';
+            if (is_array($cfg) && isset($cfg['minutos'])) { $minutos = (int) $cfg['minutos']; }
+        } catch (\Throwable $e) {
+            error_log('immoble.php: mobilia-config.php tiene un error en la linea ' . $e->getLine());
+        }
     }
     $vieja = (time() - filemtime($PRIVADO . '/cartera-cache.json')) > max(60, $minutos * 60);
 }
