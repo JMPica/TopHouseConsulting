@@ -534,6 +534,16 @@ a{color:inherit;text-decoration:none}
 
    Solo esta. Las otras tres mitades caben de sobra en una linea y no se
    tocan; el limite se aplica por banda a proposito. */
+/* SOLO EN ESCRITORIO. Estas tres reglas estan medidas contra la esquina
+   de la pared del video de ordenador, y en el movil no hay esquina: el
+   titular va centrado en una columna. Sin el @media se colaban en el
+   movil, donde el 15% del ancho son 58 pixeles. 'La' y 'seva' cabian por
+   separado, 'immobiliaria' no cabia y se salia por la derecha, y el
+   titular salia escalonado. En ingles, ademas, la letra se encogia a la
+   medida de escritorio y quedaba una palabra por linea. Lo vio Top House
+   en su movil el 27/09/2026. El corte es el mismo 820px en el que el
+   movil pasa a una columna. */
+@media (min-width:821px){
 .band[data-a="0"] .half--l{max-width:15vw}
 /* En ingles la frase es mas larga: "Your Real Estate agents" contra "La
    seva immobiliaria". Con el ancho del catalan partia en "Your Real /
@@ -551,6 +561,7 @@ a{color:inherit;text-decoration:none}
    juntos. */
 html[lang="en"] .band[data-a="0"] .ln{font-size:clamp(1.2rem,2.05vw,3.1rem)}
 html[lang="en"] .band[data-a="0"] .half--l{max-width:15.5vw}
+}
 .half--r{grid-column:3;justify-self:end;text-align:right;padding-inline:0}
 
 .sub{
@@ -1571,6 +1582,15 @@ body.paused *,body.paused *::before,body.paused *::after{
   flex:none;margin:.2em 0 0;width:1.05rem;height:1.05rem;
   accent-color:var(--accent);cursor:pointer;
 }
+/* El consentimiento es un <label> dentro de un .field, y '.field label'
+   (la etiqueta de los campos: NOMBRE, TELEFONO) le ganaba en
+   especificidad. Salian treinta palabras de aviso legal en mayusculas,
+   letra de maquina y espaciado ancho, justo el texto que hay que poder
+   leer antes de aceptar. Se le devuelve la letra del cuerpo. */
+.field label.consent{
+  font-family:var(--b);font-size:.82rem;line-height:1.55;
+  letter-spacing:0;text-transform:none;color:var(--text-secondary);
+}
 .consent a{color:var(--text-primary);text-underline-offset:.2em}
 .consent input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
@@ -1737,9 +1757,16 @@ body.paused *,body.paused *::before,body.paused *::after{
 
 /* ---------- lateral ---------- */
 .fitxa__lateral{position:sticky;top:96px}
+/* Una sola columna. Lleva tambien la clase .form, que es la de la
+   portada y tiene dos (nombre y telefono lado a lado). En el lateral de
+   la ficha no caben dos, y el titulo y la nota, que no ocupan todo el
+   ancho, caian en casillas distintas: 'PEDIR VISITA' a un lado, '¿Quiere
+   verlo?' al otro, y la nota apretada en media columna. En el movil no
+   se veia porque alli .form ya es de una columna. */
 .fitxa__form{
   background:var(--panel);border:1px solid var(--line);border-radius:4px;
   padding:clamp(20px,2.6vw,28px);display:grid;gap:.7rem;
+  grid-template-columns:1fr;
 }
 .fitxa__form h2{margin:.2rem 0 .3rem}
 .fitxa__formnota{color:var(--text-secondary);font-size:.9rem;margin:0 0 .4rem}
