@@ -252,6 +252,11 @@ correo esta caido, si cambia la contrasena o si el alojamiento cierra el
 puerto, se cae solo a mail() y el aviso sale sin firmar, pero sale. El
 motivo queda en el registro de errores.
 
+ESTADO: FUNCIONANDO Y COMPROBADO el 27/09/2026. La prueba dijo
+"camino": "smtp" y el correo recibido lleva dkim=pass en la cabecera.
+Se entra como jordi@ y se manda desde el alias no-reply@: el servidor lo
+acepta.
+
 PARA SABER POR DONDE HA SALIDO, la prueba lo dice:
 
     /api/solicitud.php?prueba=CLAVE   ->   "camino": "smtp"   o   "mail"
