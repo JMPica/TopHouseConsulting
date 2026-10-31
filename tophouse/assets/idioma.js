@@ -72,6 +72,11 @@ window.T = (function () {
       'Necesitamos que acepte la política de privacidad antes de enviarnos sus datos.':
         'Necessitem que accepti la política de privacitat abans d’enviar-nos les seves dades.',
       'Hola, soy ':'Hola, sóc ',
+      'Embarcación: ':'Embarcació: ', 'Puerto: ':'Port: ',
+      'Barco a motor':'Vaixell a motor', 'Velero':'Veler', 'Semirrígida':'Semirígida',
+      'Amarre':'Amarrament', 'Otro':'Altre',
+      'Vender':'Vendre', 'Comprar':'Comprar', 'Alquilar':'Llogar',
+      'Solo saber lo que vale':'Només saber què val',
       'Quiero ver este inmueble: ':'Vull veure aquest immoble: ',
       'referencia ':'referència ',
       'Teléfono: ':'Telèfon: ',
@@ -137,6 +142,11 @@ window.T = (function () {
       'Necesitamos que acepte la política de privacidad antes de enviarnos sus datos.':
         'Please accept the privacy policy before sending us your details.',
       'Hola, soy ':'Hello, I am ',
+      'Embarcación: ':'Boat: ', 'Puerto: ':'Marina: ',
+      'Barco a motor':'Motor boat', 'Velero':'Sailing boat', 'Semirrígida':'RIB',
+      'Amarre':'Mooring', 'Otro':'Other',
+      'Vender':'Sell', 'Comprar':'Buy', 'Alquilar':'Rent',
+      'Solo saber lo que vale':'Just find out what it is worth',
       'Quiero ver este inmueble: ':'I would like to view this property: ',
       'referencia ':'reference ',
       'Teléfono: ':'Phone: ',

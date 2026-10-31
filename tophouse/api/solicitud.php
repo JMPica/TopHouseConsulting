@@ -764,22 +764,30 @@ if ($para === '' || $de === '') {
     fin(false, 500);
 }
 
-$esFicha = ($ref !== '' || $origen === 'ficha');
-$titLinea = $esFicha
-    ? 'Visita: ' . ($ref !== '' ? 'ref ' . $ref : 'inmueble') . ' · ' . $nombre
-    : 'Valoración · ' . $nombre;
+$esFicha   = ($ref !== '' || $origen === 'ficha');
+/* Top House Marine (nautica.html). Va con su propio asunto para que en el
+   buzon se distinga de un vistazo y se puedan contar las de la prueba. */
+$esNautica = ($origen === 'nautica');
+if ($esNautica) {
+    $titLinea = 'Náutica · ' . ($necesita !== '' ? $necesita . ' · ' : '') . $nombre;
+} else {
+    $titLinea = $esFicha
+        ? 'Visita: ' . ($ref !== '' ? 'ref ' . $ref : 'inmueble') . ' · ' . $nombre
+        : 'Valoración · ' . $nombre;
+}
 
 $lineas = array();
-$lineas[] = $esFicha ? 'PETICIÓN DE VISITA' : 'PETICIÓN DESDE LA WEB';
+$lineas[] = $esNautica ? 'PETICIÓN NÁUTICA (TOP HOUSE MARINE)'
+          : ($esFicha ? 'PETICIÓN DE VISITA' : 'PETICIÓN DESDE LA WEB');
 $lineas[] = str_repeat('=', 40);
 $lineas[] = '';
 $lineas[] = 'Nombre:    ' . $nombre;
 $lineas[] = 'Teléfono:  ' . $tel;
 if ($ref !== '')      { $lineas[] = 'Referencia: ' . $ref; }
 if ($titulo !== '')   { $lineas[] = 'Inmueble:  ' . $titulo; }
-if ($zona !== '')     { $lineas[] = 'Zona:      ' . $zona; }
+if ($zona !== '')     { $lineas[] = ($esNautica ? 'Puerto:    ' : 'Zona:      ') . $zona; }
 if ($necesita !== '') { $lineas[] = 'Necesita:  ' . $necesita; }
-if ($extra !== '')    { $lineas[] = 'Valoración web: ' . $extra; }
+if ($extra !== '')    { $lineas[] = ($esNautica ? 'Barco:     ' : 'Valoración web: ') . $extra; }
 if ($mensaje !== '') {
     $lineas[] = '';
     $lineas[] = 'Mensaje:';

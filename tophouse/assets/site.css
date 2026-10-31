@@ -1274,10 +1274,13 @@ section{
 .svc__item:hover{background:var(--panel)}
 /* Siete servicios no llenan cuatro columnas, asi que el primero ocupa dos.
    No es relleno: la valoracion es a donde empuja toda la pagina, y ese peso
-   extra la senala como la puerta de entrada. */
+   extra la senala como la puerta de entrada.
+   Solo con SIETE exactos (nth-last-child): con ocho, que es lo que hay
+   desde que entro Top House Marine, cuatro y cuatro llenan dos filas
+   justas, y el primero ancho dejaba tres huecos al final. */
 @media (min-width:1180px){
-  .svc__item:first-child{grid-column:span 2}
-  .svc__item:first-child h3{font-size:clamp(1.2rem,1.8vw,1.5rem)}
+  .svc__item:first-child:nth-last-child(7){grid-column:span 2}
+  .svc__item:first-child:nth-last-child(7) h3{font-size:clamp(1.2rem,1.8vw,1.5rem)}
 }
 .svc__item h3{
   font-family:var(--d);font-weight:500;
@@ -1943,3 +1946,31 @@ body.paused *,body.paused *::before,body.paused *::after{
 @media (max-width:520px){
   .fitxa__tira{width:82px}
 }
+
+/* =========================================================
+   Top House Marine (nautica.html)
+   Solo lo que la pagina no puede sacar de las piezas de siempre: los
+   dos botones bajo el titular y la foto del puerto. El espacio entre
+   secciones ya lo pone la regla general de section.
+   ========================================================= */
+.mar__btns{display:flex;flex-wrap:wrap;gap:12px;margin-top:1.8rem}
+.mar__foto{
+  margin:0 auto;padding:clamp(8px,2vh,20px) var(--gut) 0;
+  max-width:calc(var(--maxw) + 2*var(--gut));
+}
+.mar__foto img{
+  display:block;width:100%;height:clamp(220px,38vw,520px);
+  object-fit:cover;object-position:78% 50%;
+  border-radius:22px;box-shadow:var(--lift);
+}
+.mar__foto figcaption{margin-top:.8rem;color:var(--text-secondary);font-size:.78rem}
+.mar__puente .kicker{text-align:center}
+/* Seis servicios: dos filas de tres, sin huecos. */
+@media (min-width:900px){
+  .mar__svc .svc__list{grid-template-columns:repeat(3,1fr)}
+}
+.svc__link{
+  display:inline-block;margin-top:.5rem;
+  color:var(--accent-ink);border-bottom:1px solid var(--accent-muted);
+}
+.svc__link:hover{border-color:var(--accent-ink)}

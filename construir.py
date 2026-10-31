@@ -36,14 +36,14 @@ FUENTE  = os.path.join(RAIZ, 'tophouse')
 SALIDA  = os.path.join(RAIZ, 'web')
 TABLAS  = os.path.join(RAIZ, 'idiomas')
 
-PAGINAS = ['index.html', 'comprar.html', 'alquilar.html', 'legal.html', 'immoble.php']
+PAGINAS = ['index.html', 'comprar.html', 'alquilar.html', 'nautica.html', 'legal.html', 'immoble.php']
 
 # Como se llama cada pagina en cada idioma. La clave es el nombre en la
 # fuente. Los enlaces entre paginas se reescriben con esto.
 NOMBRES = {
-    'ca': {'index.html':'index.html', 'comprar.html':'comprar.html', 'alquilar.html':'llogar.html',  'legal.html':'legal.html', 'immoble.php':'immoble.php'},
-    'es': {'index.html':'index.html', 'comprar.html':'comprar.html', 'alquilar.html':'alquilar.html', 'legal.html':'legal.html', 'immoble.php':'inmueble.php'},
-    'en': {'index.html':'index.html', 'comprar.html':'buy.html',     'alquilar.html':'rent.html',     'legal.html':'legal.html', 'immoble.php':'property.php'},
+    'ca': {'index.html':'index.html', 'comprar.html':'comprar.html', 'alquilar.html':'llogar.html',  'nautica.html':'nautica.html', 'legal.html':'legal.html', 'immoble.php':'immoble.php'},
+    'es': {'index.html':'index.html', 'comprar.html':'comprar.html', 'alquilar.html':'alquilar.html', 'nautica.html':'nautica.html', 'legal.html':'legal.html', 'immoble.php':'inmueble.php'},
+    'en': {'index.html':'index.html', 'comprar.html':'buy.html',     'alquilar.html':'rent.html',     'nautica.html':'boats.html', 'legal.html':'legal.html', 'immoble.php':'property.php'},
 }
 CARPETA = {'ca':'', 'es':'es', 'en':'en'}
 CODIGO  = {'ca':'ca', 'es':'es', 'en':'en'}
