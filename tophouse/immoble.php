@@ -225,7 +225,7 @@ if ($n) {
 <section class="cart__head">
   <p class="kicker">Inmueble</p>
   <h1 class="d1">Este inmueble ya no está publicado</h1>
-  <p class="lede">Puede que se haya vendido o que lo hayamos retirado. Buena parte de lo que vendemos se cierra antes de llegar a publicarse, así que llámenos y le decimos qué tenemos parecido.</p>
+  <p class="lede">Puede que se haya vendido o que lo hayamos retirado. La gran mayoría de lo que vendemos se cierra antes de publicarse, así que llámenos y le decimos qué tenemos parecido.</p>
   <p class="fitxa__acciones">
     <a class="btn btn--solid btn--lg" href="<?php echo h($volver); ?>">Ver lo que tenemos</a>
     <a class="btn btn--ghost btn--lg" href="tel:+34605273150">605 27 31 50</a>
