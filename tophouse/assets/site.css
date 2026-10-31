@@ -1974,3 +1974,50 @@ body.paused *,body.paused *::before,body.paused *::after{
   color:var(--accent-ink);border-bottom:1px solid var(--accent-muted);
 }
 .svc__link:hover{border-color:var(--accent-ink)}
+
+/* =========================================================
+   Top House Marine: la paleta del mar
+   ---------------------------------------------------------
+   La pagina nautica es la misma casa con otra luz. No cambia ninguna
+   pieza, solo los colores, y por eso basta con volver a definir los
+   tokens dentro de body.mar: todo lo que cuelga de ella los hereda.
+
+   Bruma de mar en vez de marfil, tinta de marino en vez de tinta de
+   piedra, y el azul de agua profunda donde la casa pone el oro. El
+   logo se queda dorado: es la marca, y el oro sobre azul es el latón
+   de un barco.
+
+   Contrastes medidos: tinta 14.4, texto secundario 6.0 (5.5 sobre el
+   pie), rotulos azules 7.6 (6.9 sobre el pie), texto del boton 7.0.
+   ========================================================= */
+body.mar{
+  --canvas:#EDF2F5;
+  --canvas-deep:#DFE8EE;
+  --panel:#F7FAFC;
+  --panel-2:#E4ECF2;
+  --accent:#1C5A86;
+  --accent-hover:#154769;
+  --accent-muted:rgba(28,90,134,.18);
+  --accent-ink:#17507A;
+  --on-accent:#F5F9FC;
+  --text-primary:#0F2233;
+  --text-secondary:#475E70;
+  --line:rgba(15,34,51,.14);
+  --line-strong:rgba(15,34,51,.30);
+  --card-a:rgba(255,255,255,.94);
+  --card-b:rgba(223,232,238,.6);
+  --lift:0 1px 2px rgba(15,34,51,.05),0 14px 34px rgba(15,34,51,.09);
+}
+/* Lo poco que la hoja general escribe a pelo en oro o en marfil. */
+body.mar .btn--solid{box-shadow:0 8px 30px rgba(28,90,134,.18)}
+body.mar .btn--solid:hover{box-shadow:0 12px 38px rgba(28,90,134,.28)}
+body.mar .env__glow{
+  background:
+    radial-gradient(58% 44% at 22% 14%,rgba(255,255,255,.8),transparent 62%),
+    radial-gradient(46% 40% at 82% 78%,rgba(28,90,134,.10),transparent 66%),
+    radial-gradient(70% 60% at 50% 110%,rgba(190,212,226,.55),transparent 70%);
+}
+body.mar .lang__on{color:var(--on-accent)}
+/* menu-js va en <html>, no en <body>: lo pone assets/menu.js. */
+.menu-js body.mar .nav.is-open,
+.menu-js body.mar .nav.is-open .nav__links{background:var(--canvas)}
