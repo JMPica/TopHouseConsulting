@@ -33,10 +33,16 @@
   var navEl    = $('#nav');
   var statichero = $('#statichero');
 
-  var VIDEO_URL   = '/assets/hero-scrub.mp4';
-  var POSTER_URL  = '/assets/hero-poster.jpg';
-  var ENDING_URL  = '/assets/hero-ending.jpg';
-  var VIDEO_BYTES = 8155401;   /* tamaño real, respaldo cuando falta Content-Length */
+  /* Las rutas del plano. Por defecto, las de la portada; una pagina con
+     su propio video (Top House Marine) las pone como atributos del heroe
+     (data-video, data-poster, data-ending, data-bytes y, para el movil,
+     data-seq-base, data-seq-primer y data-seq-n). Asi las dos paginas
+     comparten este motor en vez de tener dos copias que se desincronizan. */
+  var CFG = (hero && hero.dataset) || {};
+  var VIDEO_URL   = CFG.video  || '/assets/hero-scrub.mp4';
+  var POSTER_URL  = CFG.poster || '/assets/hero-poster.jpg';
+  var ENDING_URL  = CFG.ending || '/assets/hero-ending.jpg';
+  var VIDEO_BYTES = parseInt(CFG.bytes, 10) || 8155401;   /* tamaño real, respaldo cuando falta Content-Length */
 
   /* La variable se consume desde assets/site.css, y ahi una ruta relativa se
      resolveria contra la hoja de estilos (assets/assets/...). Se absolutiza
@@ -359,10 +365,11 @@
   var modeSeq = window.matchMedia('(max-width: 820px)').matches ||
                 window.matchMedia('(orientation: portrait) and (pointer: coarse)').matches;
 
-  var SEQ_N = 97;
-  var SEQ_BASE = '/assets/hero-mobil/';
-  /* esta cadena la sella el generador; de ahi se saca la version */
-  var SEQ_PRIMER = '/assets/hero-mobil/f-001.webp';
+  var SEQ_N = parseInt(CFG.seqN, 10) || 97;
+  var SEQ_BASE = CFG.seqBase || '/assets/hero-mobil/';
+  /* esta cadena la sella el generador (aqui o en el atributo del heroe);
+     de ahi se saca la version */
+  var SEQ_PRIMER = CFG.seqPrimer || '/assets/hero-mobil/f-001.webp';
   var seqVersio = (function () {
     var i = SEQ_PRIMER.indexOf('?');
     return i === -1 ? '' : SEQ_PRIMER.slice(i);
@@ -794,7 +801,9 @@
   var formOk = $('#form-ok');
   var formErr = $('#form-err');
 
-  if (form) {
+  /* data-propio: el formulario lo lleva otro fichero (el de Top House
+     Marine, assets/nautica.js). Sin esto se enviaria dos veces. */
+  if (form && !form.hasAttribute('data-propio')) {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var d = new FormData(form);
