@@ -33,13 +33,43 @@
   # -------------------------------------------------------------------
   RewriteRule (^|/)\.(?!well-known/) - [F,L]
 
+  # -------------------------------------------------------------------
+  # Las fichas que enlaza Mobilia
+  #
+  # Mobilia manda cada inmueble a los portales y a los clientes con una
+  # direccion de la web vieja, con la referencia dentro:
+  #
+  #     https://www.tophouseconsulting.com/es/ref-1423
+  #
+  # (formato confirmado por su soporte el 3/11/2026). Aqui cada una salta a
+  # la ficha del mismo inmueble en la web nueva y en su idioma. La
+  # referencia es la misma: las fichas de esta web se nombran con la
+  # 'Referencia' que viene en el XML de Mobilia.
+  #
+  # Van ANTES que las reglas del dominio para que el salto sea uno solo y
+  # directo al sitio final, sin pasar antes por la portada.
+  # Si el inmueble ya no esta publicado, la ficha lo dice y ofrece
+  # llamar: no se pierde el visitante.
+  # -------------------------------------------------------------------
+  RewriteRule ^es/ref-([A-Za-z0-9._-]+)/?$      https://www.tophouserealestate.es/es/inmueble/$1 [R=301,NC,L]
+  RewriteRule ^en/ref-([A-Za-z0-9._-]+)/?$      https://www.tophouserealestate.es/en/property/$1 [R=301,NC,L]
+  RewriteRule ^(?:ca/)?ref-([A-Za-z0-9._-]+)/?$ https://www.tophouserealestate.es/immoble/$1     [R=301,NC,L]
+
   # sin https -> con https
   RewriteCond %{HTTPS} !=on
   RewriteCond %{HTTP:X-Forwarded-Proto} !https
   RewriteRule ^(.*)$ https://www.tophouserealestate.es/$1 [R=301,L]
 
-  # sin www -> con www
-  RewriteCond %{HTTP_HOST} !^www\. [NC]
+  # Cualquier otro nombre -> www.tophouserealestate.es
+  #
+  # Antes solo miraba si faltaba el www. Eso dejaba pasar
+  # www.tophouseconsulting.com tal cual: el dia que el dominio viejo
+  # apunte aqui, serviria la web entera con otro nombre, y Google la
+  # tomaria por un duplicado. Ahora todo lo que no sea el nombre bueno
+  # (sin www, el .com, con www o sin el) se va al nombre bueno, con la
+  # misma ruta. Las direcciones viejas de la seccion 2 saltan despues a
+  # su pagina nueva.
+  RewriteCond %{HTTP_HOST} !^www\.tophouserealestate\.es$ [NC]
   RewriteRule ^(.*)$ https://www.tophouserealestate.es/$1 [R=301,L]
 
 
