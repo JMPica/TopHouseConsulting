@@ -2029,3 +2029,7 @@ body.mar .lang__on{color:var(--on-accent)}
 /* menu-js va en <html>, no en <body>: lo pone assets/menu.js. */
 .menu-js body.mar .nav.is-open,
 .menu-js body.mar .nav.is-open .nav__links{background:var(--canvas)}
+/* El velo de la tercera banda, un poco mas fino en Marine: el plano acaba
+   en la bocana con el faro, y con el velo de la portada quedaba en
+   bruma. Contraste medido sobre el fotograma final: ver el commit. */
+body.mar .band--center::before{opacity:.7}
