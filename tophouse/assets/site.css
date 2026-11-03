@@ -20,6 +20,12 @@
   --text-primary:#1B2A2E;
   --line:rgba(27,42,46,.14);
   --line-strong:rgba(27,42,46,.30);
+  /* El color del velo que aclara el video detras de los textos y de la
+     barra al bajar, en canales sueltos para poder darle transparencia
+     (rgba(var(--wash),.5)). Marfil aqui; Top House Marine lo pone en
+     bruma azul sin repetir ni una regla del heroe. */
+  --wash:245,240,230;
+  --wash-2:248,244,236;
 
   /* El oro de la marca sobre marfil da 1.93 de contraste: como texto no
      se lee. Como RELLENO de boton, con tinta encima, da 7.65 y es de lo
@@ -249,7 +255,7 @@ a{color:inherit;text-decoration:none}
   border-bottom:1px solid transparent;
 }
 .nav.solid{
-  background:rgba(245,240,230,.88);
+  background:rgba(var(--wash),.88);
   backdrop-filter:blur(16px);
   border-bottom-color:var(--line);
   padding-top:11px;padding-bottom:11px;
@@ -497,18 +503,18 @@ a{color:inherit;text-decoration:none}
   background:
     /* los dos lados, que es donde se apoya el texto */
     linear-gradient(90deg,
-      rgba(245,240,230,.56) 0%,
-      rgba(245,240,230,.44) 24%,
-      rgba(245,240,230,0)   40%,
-      rgba(245,240,230,0)   60%,
-      rgba(245,240,230,.44) 76%,
-      rgba(245,240,230,.56) 100%),
+      rgba(var(--wash),.56) 0%,
+      rgba(var(--wash),.44) 24%,
+      rgba(var(--wash),0)   40%,
+      rgba(var(--wash),0)   60%,
+      rgba(var(--wash),.44) 76%,
+      rgba(var(--wash),.56) 100%),
     /* y un roce arriba y abajo, para que el plano no corte a hueso */
     linear-gradient(180deg,
-      rgba(245,240,230,.55) 0%,
-      rgba(245,240,230,0) 22%,
-      rgba(245,240,230,0) 78%,
-      rgba(245,240,230,.45) 100%);
+      rgba(var(--wash),.55) 0%,
+      rgba(var(--wash),0) 22%,
+      rgba(var(--wash),0) 78%,
+      rgba(var(--wash),.45) 100%);
 }
 
 /* anillo de carga */
@@ -721,8 +727,8 @@ html[lang="en"] .band[data-a="0"] .half--l{max-width:15.5vw}
 .band--center::before{
   content:"";position:absolute;inset:-4%;pointer-events:none;z-index:0;
   background:radial-gradient(ellipse 90% 60% at 50% 48%,
-    rgba(248,244,236,.88) 0%,rgba(248,244,236,.82) 62%,
-    rgba(248,244,236,.30) 86%,rgba(248,244,236,0) 100%);
+    rgba(var(--wash-2),.88) 0%,rgba(var(--wash-2),.82) 62%,
+    rgba(var(--wash-2),.30) 86%,rgba(var(--wash-2),0) 100%);
 }
 .band__cta{position:relative;z-index:1;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:2rem}
 
@@ -828,10 +834,10 @@ html[lang="en"] .band[data-a="0"] .half--l{max-width:15.5vw}
   .scrim{
     background:
       radial-gradient(ellipse 150% 50% at 50% 49%,
-        rgba(248,244,236,.62) 0%, rgba(248,244,236,.45) 52%, rgba(248,244,236,0) 82%),
+        rgba(var(--wash-2),.62) 0%, rgba(var(--wash-2),.45) 52%, rgba(var(--wash-2),0) 82%),
       linear-gradient(180deg,
-        rgba(245,240,230,.46) 0%, rgba(245,240,230,.05) 26%,
-        rgba(245,240,230,.04) 74%, rgba(245,240,230,.46) 100%);
+        rgba(var(--wash),.46) 0%, rgba(var(--wash),.05) 26%,
+        rgba(var(--wash),.04) 74%, rgba(var(--wash),.46) 100%);
   }
 
   /* Las bolsas de las bandas estan colocadas para la maqueta de
@@ -877,7 +883,7 @@ html[lang="en"] .band[data-a="0"] .half--l{max-width:15.5vw}
      de contraste sobre el mar, por debajo del 4,5 que necesita el texto
      pequeno para leerse bien. Si algun dia se cambia la imagen de fondo,
      hay que volver a medirlo: el mar claro es el caso peor. */
-  background-image:linear-gradient(180deg,rgba(245,240,230,.30) 0%,rgba(245,240,230,.70) 42%,rgba(245,240,230,.88) 66%,rgba(245,240,230,.97) 100%),
+  background-image:linear-gradient(180deg,rgba(var(--wash),.30) 0%,rgba(var(--wash),.70) 42%,rgba(var(--wash),.88) 66%,rgba(var(--wash),.97) 100%),
                    var(--hero-still,linear-gradient(160deg,#f1e9da,#e6dcc9 70%));
   background-size:cover;background-position:center;
 }
@@ -900,7 +906,7 @@ html[lang="en"] .band[data-a="0"] .half--l{max-width:15.5vw}
    ahi hasta abajo. */
 @media (max-width:720px){
   .statichero__art{
-    background-image:linear-gradient(180deg,rgba(245,240,230,.20) 0%,rgba(245,240,230,.40) 9%,rgba(245,240,230,.93) 17%,rgba(245,240,230,.94) 62%,rgba(245,240,230,.98) 100%),
+    background-image:linear-gradient(180deg,rgba(var(--wash),.20) 0%,rgba(var(--wash),.40) 9%,rgba(var(--wash),.93) 17%,rgba(var(--wash),.94) 62%,rgba(var(--wash),.98) 100%),
                      var(--hero-still,linear-gradient(160deg,#f1e9da,#e6dcc9 70%));
   }
 }
@@ -2007,6 +2013,8 @@ body.mar{
   --card-a:rgba(255,255,255,.94);
   --card-b:rgba(223,232,238,.6);
   --lift:0 1px 2px rgba(15,34,51,.05),0 14px 34px rgba(15,34,51,.09);
+  --wash:237,242,245;
+  --wash-2:242,246,249;
 }
 /* Lo poco que la hoja general escribe a pelo en oro o en marfil. */
 body.mar .btn--solid{box-shadow:0 8px 30px rgba(28,90,134,.18)}

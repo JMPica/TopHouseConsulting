@@ -3,12 +3,21 @@
 Paquete de diseno del heroe de `nautica.html`. Todo lo que hay aqui se decidio
 antes de gastar un credito. El copy de las bandas va literal a la web.
 
-## Estado (31/10/2026)
+## Estado (3/11/2026)
 
-- Paleta azul: HECHA y en la rama (body.mar en site.css).
-- Video: PENDIENTE. La cuenta de Higgsfield tiene 0 creditos (plan gratuito).
-- Mientras tanto la pagina abre con el titular y la foto real del puerto, que
-  es tambien lo que vera el movil si el video no carga.
+- Paleta azul: HECHA (body.mar en site.css), velo del heroe incluido.
+- Video: HECHO y aprobado por Top House. Generado en Runway (la cuenta de
+  Higgsfield estaba a 0):
+  - Fotograma inicial: Nano Banana Pro, 2K, dos variantes (40 creditos).
+    Elegida la B: proa centrada, canal libre hasta el faro.
+  - Video: Kling 3.0 Pro, image-to-video. Pedido a 8 s, Runway lo dio a
+    5 s (60 creditos). Recortado a 3,79 s: el ultimo segundo rozaba el
+    espigon, desenfocado y sin pararse. El final elegido es la proa
+    saliendo por la bocana, faro a la izquierda y mar abierto delante.
+  - Bruto y copias de revision en previsualitzacio/marine/ (fuera del repo).
+- Procesado: marine-scrub.mp4 (1600x900, 24 fps, keyframe cada 8, crf 24,
+  2,9 MB), marine-poster.jpg, marine-ending.jpg y marine-mobil/ (97
+  fotogramas 540x1174 en webp, 1,9 MB). El mismo motor que la portada.
 
 ## El concepto, y por que
 
@@ -92,7 +101,7 @@ filling the lower half, the horizon a little below the middle, the low golden
 sun just above the horizon at the center, a clear pale sky above. No text, no
 logos, no lettering, no people anywhere.
 
-## Lo que queda cuando haya video
+## Lo que se hizo cuando hubo video (hecho)
 
 1. Fotograma, revisarlo (marcas, nombres de barco, composicion) y ensenarlo.
 2. Video, revisar inicio, medio y final, y PUERTA: lo aprueba Top House antes
