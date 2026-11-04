@@ -153,8 +153,150 @@ function textoLlano($v) {
     return trim($t);
 }
 
+/* =====================================================================
+   LA DESCRIPCION, LEGIBLE
+   =====================================================================
+   En Mobilia la descripcion se escribe de una tirada: un bloque de veinte
+   lineas sin un punto y aparte, con frases pegadas ("pasos.Este"),
+   exclamaciones en serie y, al final, la letra legal (gastos, zona
+   tensionada, gran tenedor, Ley 3/2017) mezclada con el texto comercial.
+   En pantalla salia un muro gris que nadie lee, y Google tampoco le saca
+   nada.
+
+   Aqui se pule y se ordena SIN reescribir: no se inventa ni se quita una
+   sola afirmacion del texto de la agencia. Solo:
+     - puntuacion: espacio tras punto, signos repetidos, m2 -> m²;
+     - parrafos cortos (dos o tres frases), el primero como entradilla;
+     - las listas que ya vengan con guiones, como lista;
+     - la letra legal, aparte y en pequeno, con los "Dato: valor" en lista.
+   ===================================================================== */
+function pulirTexto($t) {
+    $t = preg_replace('/(?<!\b\p{Lu})([.!?…])(?=[¡¿"«(\p{Lu}])/u', '$1 ', $t);
+    $t = preg_replace(array('/!{2,}/u', '/\?{2,}/u', '/¡{2,}/u', '/¿{2,}/u', '/\.{4,}/u'),
+                      array('!', '?', '¡', '¿', '…'), $t);
+    $t = preg_replace('/(\d)\s*m2\b/u', '$1 m²', $t);
+    $t = preg_replace('/[ \t]+([,.;:!?])/u', '$1', $t);
+    $t = preg_replace('/([,;])(?=\p{L})/u', '$1 ', $t);
+    return $t;
+}
+
+function frases($t) {
+    $t = trim(preg_replace('/\s+/u', ' ', $t));
+    if ($t === '') { return array(); }
+    return preg_split('/(?<=[.!?…])\s+(?=[¡¿"«(\p{Lu}\d])/u', $t);
+}
+
+/* Frases de dos o tres en dos o tres: un parrafo se lee de un vistazo. */
+function agrupar($frases, $max = 260) {
+    $fuera = array(); $actual = ''; $n = 0;
+    foreach ($frases as $f) {
+        $actual = $actual === '' ? $f : $actual . ' ' . $f;
+        $n++;
+        $largo = function_exists('mb_strlen') ? mb_strlen($actual, 'UTF-8') : strlen($actual);
+        if ($largo >= $max || $n >= 3) { $fuera[] = $actual; $actual = ''; $n = 0; }
+    }
+    if ($actual !== '') { $fuera[] = $actual; }
+    return $fuera;
+}
+
+function partesDescripcion($texto) {
+    $legalRx = '/gastos\s+(de\s+)?(notar|registr|compraventa|de\s+la\s+compra)|no\s+est[aá]n\s+incluid|honorarios'
+             . '|impuestos\s+aplicables|zona\s+tensionada|gran\s+tenedor|informaci[oó]n\s+precontractual'
+             . '|ley\s+3\/2017|decreto\s+515|c[oó]digo\s+civil|derecho\s+a\s+recibir/iu';
+    $t = pulirTexto($texto);
+
+    /* Los bloques que ya trae el texto, y dentro las listas con guiones. */
+    $piezas = array();   // cada pieza: array('lista', items) o array('frases', frases)
+    foreach (preg_split('/\n\s*\n/u', $t) as $bloque) {
+        $lineas = array_values(array_filter(array_map('trim', explode("\n", $bloque)), 'strlen'));
+        $items = array(); $suelto = array();
+        foreach ($lineas as $l) {
+            if (preg_match('/^[-•*·–]\s*(.+)$/u', $l, $m)) { $items[] = $m[1]; }
+            else { $suelto[] = $l; }
+        }
+        if ($suelto) { $piezas[] = array('frases', frases(implode(' ', $suelto))); }
+        if (count($items) >= 2) { $piezas[] = array('lista', $items); }
+        elseif ($items) { $piezas[] = array('frases', frases($items[0])); }
+    }
+
+    /* Donde empieza la letra legal: la primera frase que la nombra. Si la
+       primerisima frase ya es legal, no se separa nada (raro, y mejor un
+       texto entero que una ficha sin descripcion). */
+    $todas = array();
+    foreach ($piezas as $i => $p) {
+        if ($p[0] === 'frases') { foreach ($p[1] as $j => $f) { $todas[] = array($i, $j, $f); } }
+    }
+    $corte = null;
+    foreach ($todas as $k => $x) {
+        if ($k > 0 && preg_match($legalRx, $x[2])) { $corte = array($x[0], $x[1]); break; }
+    }
+
+    $cuerpo = array(); $legal = array();
+    foreach ($piezas as $i => $p) {
+        if ($p[0] === 'lista') {
+            if ($corte !== null && $i > $corte[0]) { continue; }   // una lista despues de lo legal se queda fuera del texto comercial
+            $cuerpo[] = $p; continue;
+        }
+        $antes = $p[1]; $despues = array();
+        if ($corte !== null && $i >= $corte[0]) {
+            $antes   = $i === $corte[0] ? array_slice($p[1], 0, $corte[1]) : array();
+            $despues = $i === $corte[0] ? array_slice($p[1], $corte[1]) : $p[1];
+        }
+        foreach (agrupar($antes) as $par) { $cuerpo[] = array('p', $par); }
+        foreach ($despues as $f) { $legal[] = $f; }
+    }
+
+    /* La entradilla, corta: si el primer parrafo pasa de unas dos lineas,
+       se queda con su primera frase y el resto baja al parrafo siguiente.
+       Una entradilla de cinco lineas en letra grande pesa mas que ayuda. */
+    if (isset($cuerpo[0]) && $cuerpo[0][0] === 'p') {
+        $fs = frases($cuerpo[0][1]);
+        $l0 = function_exists('mb_strlen') ? mb_strlen($cuerpo[0][1], 'UTF-8') : strlen($cuerpo[0][1]);
+        if ($l0 > 200 && count($fs) > 1) {
+            array_splice($cuerpo, 0, 1, array(array('p', array_shift($fs)), array('p', implode(' ', $fs))));
+        }
+    }
+
+    /* La letra legal: los "Zona tensionada: Si." como dato, el resto en
+       parrafos. "Si" pasa a "Sí", que es lo que quiere decir. */
+    $datos = array(); $resto = array();
+    foreach ($legal as $f) {
+        if (preg_match('/^([^:.]{3,40}):\s*([^.:]{1,40})\.?$/u', trim($f), $m)) {
+            $v = trim($m[2]);
+            if (preg_match('/^si$/iu', $v)) { $v = 'Sí'; }
+            $datos[] = array(trim($m[1]), $v);
+        } else {
+            $resto[] = $f;
+        }
+    }
+    return array('cuerpo' => $cuerpo, 'datos' => $datos, 'legal' => agrupar($resto, 400));
+}
+
+/* La primera frase o dos, para Google y para la vista previa. */
+function entradilla($partes, $max = 155) {
+    $len = function ($s) { return function_exists('mb_strlen') ? mb_strlen($s, 'UTF-8') : strlen($s); };
+    foreach ($partes['cuerpo'] as $p) {
+        if ($p[0] !== 'p') { continue; }
+        /* Frases enteras mientras quepan: un corte a media frase se lee peor
+           en Google que una frase corta y completa. */
+        $t = '';
+        foreach (frases($p[1]) as $f) {
+            $prueba = $t === '' ? $f : $t . ' ' . $f;
+            if ($len($prueba) > $max) { break; }
+            $t = $prueba;
+        }
+        if ($t !== '') { return $t; }
+        $t = $p[1];
+        $corto = function_exists('mb_substr') ? mb_substr($t, 0, $max, 'UTF-8') : substr($t, 0, $max);
+        $corto = preg_replace('/\s+\S*$/u', '', $corto);
+        return rtrim($corto, ' ,;:') . '…';
+    }
+    return '';
+}
+
 $titulo = $n ? textoLlano(porIdioma($n, 'titulo', $L)) : '';
 $desc   = $n ? textoLlano(porIdioma($n, 'descripcio', $L)) : '';
+$partes = partesDescripcion($desc);
 $fotos  = $n && isset($n['fotos']) && is_array($n['fotos']) ? $n['fotos'] : array();
 if (!count($fotos) && $n && !empty($n['foto'])) { $fotos = array($n['foto']); }
 
@@ -174,6 +316,74 @@ $resumen = $n
     ? trim($sitio . ($n['m2'] ? ' · ' . $n['m2'] . ' m²' : '') . ($n['hab'] ? ' · ' . $n['hab'] . ' hab.' : ''))
     : '';
 $canonica = $n ? $DOMINIO . '/' . $RUTAS[$L] . '/' . rawurlencode($n['ref']) : $DOMINIO . '/';
+
+/* La descripcion para Google y para la vista previa: primero los datos
+   (donde, metros, habitaciones), que es lo que se busca, y detras la
+   entradilla del texto en frases enteras, hasta unos 155 caracteres. */
+$metaDesc = $resumen;
+if ($n) {
+    $sitioLibre = 155 - (function_exists('mb_strlen') ? mb_strlen($resumen, 'UTF-8') : strlen($resumen)) - 2;
+    $ent = $sitioLibre > 40 ? entradilla($partes, $sitioLibre) : '';
+    if ($ent !== '') { $metaDesc = ($resumen !== '' ? rtrim($resumen, '.') . '. ' : '') . $ent; }
+}
+if ($metaDesc === '') { $metaDesc = 'Top House Real Estate'; }
+
+/* Datos estructurados (schema.org) para que Google entienda que la pagina
+   es un inmueble en venta o en alquiler, con su precio, su superficie y
+   quien lo vende. No es texto que vea nadie: es la ficha contada en el
+   idioma de los buscadores. JSON_HEX_TAG para que un "</script>" dentro de
+   una descripcion no pueda cerrar el bloque. */
+$jsonLd = '';
+if ($n) {
+    /* El tipo puede venir en castellano o en catalan, y con mayuscula
+       acentuada ("Ático"): por eso mb_strtolower y no strtolower, que deja
+       la "Á" como esta y el ático acababa sin reconocer. */
+    $tipoTxt = isset($n['tipo']) ? textoLlano($n['tipo']) : '';
+    $tipoTxt = function_exists('mb_strtolower') ? mb_strtolower($tipoTxt, 'UTF-8') : strtolower($tipoTxt);
+    $tipoLd = preg_match('/casa|chalet|torre|adosad|unifamiliar|mas[ií]a/u', $tipoTxt) ? 'SingleFamilyResidence'
+            : (preg_match('/piso|pis\b|[aàá]tic|apartament|d[uú]plex|estudi|planta baja|planta baixa|loft/u', $tipoTxt) ? 'Apartment' : 'Place');
+    $item = array('@type' => $tipoLd, 'name' => $titulo);
+    if ($tipoLd !== 'Place') {
+        if (!empty($n['m2']))    { $item['floorSize'] = array('@type' => 'QuantitativeValue', 'value' => (int) $n['m2'], 'unitCode' => 'MTK'); }
+        if (!empty($n['hab']))   { $item['numberOfRooms'] = (int) $n['hab']; }
+        if (!empty($n['banys'])) { $item['numberOfBathroomsTotal'] = (int) $n['banys']; }
+    }
+    if (!empty($n['poblacio'])) {
+        $item['address'] = array('@type' => 'PostalAddress', 'addressLocality' => $n['poblacio'], 'addressCountry' => 'ES');
+    }
+    $oferta = array(
+        '@type' => 'Offer',
+        'priceCurrency' => 'EUR',
+        'availability' => 'https://schema.org/InStock',
+        'businessFunction' => $operacio === 'alquiler' ? 'http://purl.org/goodrelations/v1#LeaseOut' : 'http://purl.org/goodrelations/v1#Sell',
+        'offeredBy' => array(
+            '@type' => 'RealEstateAgent',
+            'name' => 'Top House Real Estate',
+            'telephone' => '+34605273150',
+            'url' => $DOMINIO . '/',
+            'address' => array('@type' => 'PostalAddress', 'streetAddress' => 'Riera del Bisbe Pol, 56',
+                               'postalCode' => '08350', 'addressLocality' => 'Arenys de Mar', 'addressCountry' => 'ES'),
+        ),
+    );
+    if ($precio > 0) { $oferta['price'] = $precio; }
+    $ld = array(
+        '@context' => 'https://schema.org',
+        '@type' => 'RealEstateListing',
+        'name' => $titulo,
+        'url' => $canonica,
+        'description' => $metaDesc,
+        'mainEntity' => $item,
+        'offers' => $oferta,
+    );
+    if (count($fotos)) {
+        /* Google quiere direcciones completas: las de Mobilia ya lo son, las
+           del fichero local (/assets/...) se completan con el dominio. */
+        $ld['image'] = array_map(function ($f) use ($DOMINIO) {
+            return (strpos($f, '/') === 0 && strpos($f, '//') !== 0) ? $DOMINIO . $f : $f;
+        }, array_values(array_slice($fotos, 0, 6)));
+    }
+    $jsonLd = json_encode($ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP);
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -181,7 +391,7 @@ $canonica = $n ? $DOMINIO . '/' . $RUTAS[$L] . '/' . rawurlencode($n['ref']) : $
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?php echo h($tituloPagina); ?></title>
-<meta name="description" content="<?php echo h($resumen !== '' ? $resumen : 'Top House Real Estate'); ?>">
+<meta name="description" content="<?php echo h($metaDesc); ?>">
 <meta name="theme-color" content="#0B1417">
 <meta name="author" content="Top House Real Estate">
 <?php if ($n === null) { echo '<meta name="robots" content="noindex, follow">' . "\n"; } ?>
@@ -203,12 +413,13 @@ if ($n) {
 <meta property="og:locale" content="es_ES">
 <meta property="og:site_name" content="Top House Real Estate">
 <meta property="og:title" content="<?php echo h($tituloPagina); ?>">
-<meta property="og:description" content="<?php echo h($resumen); ?>">
+<meta property="og:description" content="<?php echo h($metaDesc); ?>">
 <?php if (count($fotos)) { ?>
 <meta property="og:image" content="<?php echo h($fotos[0]); ?>">
 <meta name="twitter:card" content="summary_large_image">
 <?php } ?>
 
+<?php if ($jsonLd !== '') { echo '<script type="application/ld+json">' . $jsonLd . '</script>' . "\n"; } ?>
 <link rel="icon" type="image/png" href="/assets/favicon.png">
 <link rel="preload" href="/assets/fonts/fraunces-var-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/manrope-var-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -303,9 +514,29 @@ if ($n) {
       <?php if ($desc !== '') { ?>
       <div class="fitxa__desc">
         <h2 class="d3">Descripción</h2>
-        <?php foreach (preg_split('/\n\s*\n/', trim($desc)) as $parrafo) {
-                  echo '<p>' . nl2br(h(trim($parrafo))) . '</p>';
-              } ?>
+        <?php
+        $primero = true;
+        foreach ($partes['cuerpo'] as $p) {
+            if ($p[0] === 'lista') {
+                echo '<ul class="fitxa__lista">';
+                foreach ($p[1] as $it) { echo '<li>' . h($it) . '</li>'; }
+                echo '</ul>';
+                continue;
+            }
+            echo '<p' . ($primero ? ' class="fitxa__lead"' : '') . '>' . h($p[1]) . '</p>';
+            $primero = false;
+        } ?>
+        <?php if ($partes['datos'] || $partes['legal']) { ?>
+        <div class="fitxa__legal">
+          <h3>Condiciones de la operación</h3>
+          <?php if ($partes['datos']) { ?>
+          <ul class="fitxa__kv">
+            <?php foreach ($partes['datos'] as $kv) { echo '<li><span>' . h($kv[0]) . '</span> <b>' . h($kv[1]) . '</b></li>'; } ?>
+          </ul>
+          <?php } ?>
+          <?php foreach ($partes['legal'] as $par) { echo '<p>' . h($par) . '</p>'; } ?>
+        </div>
+        <?php } ?>
       </div>
       <?php } ?>
     </div>

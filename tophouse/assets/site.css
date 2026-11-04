@@ -2033,3 +2033,27 @@ body.mar .lang__on{color:var(--on-accent)}
    en la bocana con el faro, y con el velo de la portada quedaba en
    bruma. Contraste medido sobre el fotograma final: ver el commit. */
 body.mar .band--center::before{opacity:.7}
+
+/* ---------- la descripcion de la ficha, en piezas ----------
+   Ver partesDescripcion() en immoble.php: entradilla, parrafos cortos,
+   listas, y la letra legal aparte y en pequeno. */
+.fitxa__desc .fitxa__lead{
+  font-family:var(--d);font-size:clamp(1.1rem,1.5vw,1.22rem);font-weight:300;
+  line-height:1.55;color:var(--text-primary);margin-bottom:1.2rem;
+}
+.fitxa__lista{margin:0 0 1.2rem;padding-left:1.1rem;color:var(--text-secondary);line-height:1.7;max-width:62ch}
+.fitxa__lista li{margin:.2rem 0}
+.fitxa__legal{
+  margin-top:2rem;padding-top:1.2rem;border-top:1px solid var(--line);max-width:62ch;
+}
+.fitxa__legal h3{
+  font-family:var(--m);font-size:.72rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent-ink);margin:0 0 .8rem;
+}
+.fitxa__legal p{font-size:.86rem;line-height:1.6;margin:0 0 .7rem}
+.fitxa__kv{list-style:none;margin:0 0 .9rem;padding:0;display:flex;flex-wrap:wrap;gap:.5rem}
+.fitxa__kv li{
+  font-size:.82rem;padding:.35rem .7rem;border:1px solid var(--line);border-radius:999px;
+  background:var(--panel);color:var(--text-secondary);
+}
+.fitxa__kv b{color:var(--text-primary);font-weight:600;margin-left:.25rem}
