@@ -131,6 +131,9 @@ $RUTAS = array('ca' => 'immoble', 'es' => 'es/inmueble', 'en' => 'en/property');
 $DOMINIO  = 'https://www.tophouserealestate.es';
 $operacio = $n && isset($n['operacion']) ? $n['operacion'] : 'venta';
 $volver   = isset($LISTAS[$L][$operacio]) ? $LISTAS[$L][$operacio] : $LISTAS[$L]['venta'];
+/* Con la ruta entera: la ficha vive en /immoble/1432, y "comprar.html" a
+   secas apuntaria a /immoble/comprar.html. */
+$volver   = '/' . ($CARPETA !== '' ? $CARPETA . '/' : '') . $volver;
 
 /* Los textos de Mobilia vienen a veces con restos del editor de su panel:
    "&nbsp;", "&amp;", alguna <br> o <p>. Como aqui se escapan para que nadie
@@ -542,7 +545,7 @@ if ($n) {
     </div>
 
     <aside class="fitxa__lateral">
-      <form class="form fitxa__form" id="form" novalidate>
+      <form class="form fitxa__form" id="form" novalidate data-gracias="gracias.html">
         <p class="kicker">Pedir visita</p>
         <h2 class="d3">¿Quiere verlo?</h2>
         <p class="fitxa__formnota">Déjenos su teléfono y le llamamos hoy para acordar el día.</p>
@@ -562,7 +565,7 @@ if ($n) {
         <div class="field field--wide field--consent">
           <label class="consent" for="f-ok">
             <input id="f-ok" name="consentimiento" type="checkbox" required>
-            <span>He leído y acepto la política de privacidad. Al enviar, mis datos llegan a Top House por correo y se abre WhatsApp, que es un servicio de Meta.</span>
+            <span>He leído y acepto la política de privacidad. Al enviar, mis datos llegan a Top House por correo.</span>
           </label>
         </div>
         <div class="field field--trampa" aria-hidden="true">
@@ -570,8 +573,7 @@ if ($n) {
         </div>
         <p class="form__err" id="form-err" role="alert" hidden></p>
         <button class="btn btn--solid btn--lg form__go" type="submit">Pedir visita</button>
-        <p class="form__note mono">Su solicitud nos llega por correo y se abre WhatsApp con el mensaje ya escrito.</p>
-        <p class="form__ok" id="form-ok" role="status" hidden>Recibido. Se abre WhatsApp con su mensaje ya escrito para que solo tenga que darle a enviar.</p>
+        <p class="form__note mono">Su solicitud nos llega por correo. Después, si lo prefiere, podrá escribirnos también por WhatsApp.</p>
       </form>
 
       <p class="fitxa__tel">

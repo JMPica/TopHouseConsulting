@@ -13,8 +13,7 @@
   var form = document.querySelector('#form');
   if (!form) return;
   var $ = function (s) { return document.querySelector(s); };
-  var WA = '34605273150';
-  var err = $('#form-err'), ok = $('#form-ok');
+  var err = $('#form-err');
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
@@ -53,8 +52,11 @@
     if (puerto) lineas.push(T('Puerto: ') + puerto);
     if (msg) lineas.push('', msg);
 
-    if (window.avisar) {
-      window.avisar({
+    window.enviarSolicitud({
+      form: form,
+      error: err,
+      whatsapp: lineas.join('\n'),
+      datos: {
         origen: 'nautica',
         nombre: nombre,
         telefono: tel,
@@ -64,10 +66,7 @@
         mensaje: msg,
         consentimiento: true,
         empresa: val('empresa')
-      });
-    }
-
-    ok.hidden = false;
-    window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(lineas.join('\n')), '_blank', 'noopener');
+      }
+    });
   });
 })();

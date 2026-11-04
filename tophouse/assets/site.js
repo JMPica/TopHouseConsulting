@@ -796,9 +796,7 @@
      10. El formulario abre WhatsApp con el mensaje escrito
      ========================================================= */
 
-  var WA = '34605273150';
   var form   = $('#form');
-  var formOk = $('#form-ok');
   var formErr = $('#form-err');
 
   /* data-propio: el formulario lo lleva otro fichero (el de Top House
@@ -847,11 +845,14 @@
       var msg = String(d.get('mensaje') || '').trim();
       if (msg) lines.push('', msg);
 
-      /* La copia por correo, igual que en la ficha de cada inmueble: si
-         el visitante no llega a enviar el WhatsApp, la solicitud llega
-         de todos modos. Ver assets/aviso.js. */
-      if (window.avisar) {
-        window.avisar({
+      /* Se manda, se espera la confirmacion del servidor y se va a la
+         pagina de gracias, que ofrece el WhatsApp con este mensaje ya
+         escrito. Ver assets/aviso.js. */
+      window.enviarSolicitud({
+        form: form,
+        error: formErr,
+        whatsapp: lines.join('\n'),
+        datos: {
           origen: 'portada',
           nombre: nombre,
           telefono: tel,
@@ -861,11 +862,8 @@
           mensaje: msg,
           consentimiento: true,
           empresa: String(d.get('empresa') || '')
-        });
-      }
-
-      formOk.hidden = false;
-      window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(lines.join('\n')), '_blank', 'noopener');
+        }
+      });
     });
   }
 

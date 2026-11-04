@@ -72,6 +72,9 @@ window.T = (function () {
       'Necesitamos que acepte la política de privacidad antes de enviarnos sus datos.':
         'Necessitem que accepti la política de privacitat abans d’enviar-nos les seves dades.',
       'Hola, soy ':'Hola, sóc ',
+      'Enviando…':'Enviant…', 'Escribir por WhatsApp':'Escriure per WhatsApp',
+      'No hemos podido enviar su solicitud. Llámenos al 605 27 31 50 o escríbanos por WhatsApp, y la atendemos igual.':
+        'No hem pogut enviar la seva sol·licitud. Truqui’ns al 605 27 31 50 o escrigui’ns per WhatsApp, i l’atendrem igualment.',
       'Embarcación: ':'Embarcació: ', 'Puerto: ':'Port: ',
       'Barco a motor':'Vaixell a motor', 'Velero':'Veler', 'Semirrígida':'Semirígida',
       'Amarre':'Amarrament', 'Otro':'Altre',
@@ -142,6 +145,9 @@ window.T = (function () {
       'Necesitamos que acepte la política de privacidad antes de enviarnos sus datos.':
         'Please accept the privacy policy before sending us your details.',
       'Hola, soy ':'Hello, I am ',
+      'Enviando…':'Sending…', 'Escribir por WhatsApp':'Message us on WhatsApp',
+      'No hemos podido enviar su solicitud. Llámenos al 605 27 31 50 o escríbanos por WhatsApp, y la atendemos igual.':
+        'We could not send your request. Call us on 605 27 31 50 or message us on WhatsApp, and we will deal with it just the same.',
       'Embarcación: ':'Boat: ', 'Puerto: ':'Marina: ',
       'Barco a motor':'Motor boat', 'Velero':'Sailing boat', 'Semirrígida':'RIB',
       'Amarre':'Mooring', 'Otro':'Other',

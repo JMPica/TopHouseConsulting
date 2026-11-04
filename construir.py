@@ -36,14 +36,14 @@ FUENTE  = os.path.join(RAIZ, 'tophouse')
 SALIDA  = os.path.join(RAIZ, 'web')
 TABLAS  = os.path.join(RAIZ, 'idiomas')
 
-PAGINAS = ['index.html', 'comprar.html', 'alquilar.html', 'nautica.html', 'legal.html', 'immoble.php']
+PAGINAS = ['index.html', 'comprar.html', 'alquilar.html', 'nautica.html', 'legal.html', 'gracias.html', 'immoble.php']
 
 # Como se llama cada pagina en cada idioma. La clave es el nombre en la
 # fuente. Los enlaces entre paginas se reescriben con esto.
 NOMBRES = {
-    'ca': {'index.html':'index.html', 'comprar.html':'comprar.html', 'alquilar.html':'llogar.html',  'nautica.html':'nautica.html', 'legal.html':'legal.html', 'immoble.php':'immoble.php'},
-    'es': {'index.html':'index.html', 'comprar.html':'comprar.html', 'alquilar.html':'alquilar.html', 'nautica.html':'nautica.html', 'legal.html':'legal.html', 'immoble.php':'inmueble.php'},
-    'en': {'index.html':'index.html', 'comprar.html':'buy.html',     'alquilar.html':'rent.html',     'nautica.html':'boats.html', 'legal.html':'legal.html', 'immoble.php':'property.php'},
+    'ca': {'index.html':'index.html', 'comprar.html':'comprar.html', 'alquilar.html':'llogar.html',  'nautica.html':'nautica.html', 'legal.html':'legal.html', 'gracias.html':'gracies.html', 'immoble.php':'immoble.php'},
+    'es': {'index.html':'index.html', 'comprar.html':'comprar.html', 'alquilar.html':'alquilar.html', 'nautica.html':'nautica.html', 'legal.html':'legal.html', 'gracias.html':'gracias.html', 'immoble.php':'inmueble.php'},
+    'en': {'index.html':'index.html', 'comprar.html':'buy.html',     'alquilar.html':'rent.html',     'nautica.html':'boats.html', 'legal.html':'legal.html', 'gracias.html':'thanks.html', 'immoble.php':'property.php'},
 }
 CARPETA = {'ca':'', 'es':'es', 'en':'en'}
 CODIGO  = {'ca':'ca', 'es':'es', 'en':'en'}
@@ -302,6 +302,18 @@ def construir():
             if idioma != 'es':
                 problemas += castellano_suelto(original, t, idioma, pagina)
 
+            # Las paginas php se sirven en direcciones con una carpeta de
+            # mas (/immoble/1432, /es/inmueble/1432), asi que un enlace
+            # relativo como "comprar.html" iba a /immoble/comprar.html, que
+            # no existe: el servidor ensenaba la portada en su lugar. Ahi
+            # todos los enlaces a paginas de la web van con la ruta entera.
+            # Los de ancla (#main), los de fuera y los que pone el php no
+            # se tocan.
+            if pagina.endswith('.php'):
+                base = '/' + (CARPETA[idioma] + '/' if CARPETA[idioma] else '')
+                t = re.sub(r'(href|data-gracias)="(?!https?:|/|#|tel:|mailto:|<\?|%)([^"]+)"',
+                           lambda m: '%s="%s%s"' % (m.group(1), base, m.group(2)), t)
+
             destino = os.path.join(SALIDA, CARPETA[idioma], NOMBRES[idioma][pagina])
             generado[destino] = t
 
@@ -352,6 +364,10 @@ def escribir_sitemap():
         # Google a una pagina que sin referencia no existe. Las fichas de
         # verdad las lista sitemap-immobles.php, que si sabe cuales hay.
         if not pagina.endswith('.html'):
+            continue
+        # La pagina de gracias no es para buscadores: lleva noindex y no
+        # tiene sentido ofrecersela a Google.
+        if pagina == 'gracias.html':
             continue
         for idioma in ('ca', 'es', 'en'):
             filas.append('  <url>')

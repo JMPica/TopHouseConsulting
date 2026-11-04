@@ -20,7 +20,6 @@
   if (!art) return;
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
-  var WA = '34605273150';
 
   /* ---------- 1. la galeria ---------- */
   var grande = $('#fitxa-grande');
@@ -50,7 +49,7 @@
   /* ---------- 3. la peticion de visita ---------- */
   var form = $('#form');
   if (!form) return;
-  var err = $('#form-err'), ok = $('#form-ok');
+  var err = $('#form-err');
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
@@ -93,8 +92,13 @@
        aunque el movil deje esta pagina atras, y no se espera respuesta:
        si el servidor falla, el visitante no se entera y sigue teniendo
        su WhatsApp. Ver assets/aviso.js. */
-    if (window.avisar) {
-      window.avisar({
+    /* Se manda, se espera la confirmacion y se va a la pagina de gracias,
+       que ofrece el WhatsApp con este mensaje ya escrito. */
+    window.enviarSolicitud({
+      form: form,
+      error: err,
+      whatsapp: lineas.join('\n'),
+      datos: {
         origen: 'ficha',
         nombre: nombre,
         telefono: tel,
@@ -105,10 +109,7 @@
         operacion: art.getAttribute('data-operacion') || '',
         consentimiento: true,
         empresa: String(d.get('empresa') || '')
-      });
-    }
-
-    ok.hidden = false;
-    window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(lineas.join('\n')), '_blank', 'noopener');
+      }
+    });
   });
 })();
