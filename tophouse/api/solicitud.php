@@ -548,7 +548,7 @@ function direcciones($privado) {
        https://www.tophouserealestate.es/api/solicitud.php?version
    --------------------------------------------------------------- */
 
-define('VERSION_SOLICITUD', '2026-11-04.1');
+define('VERSION_SOLICITUD', '2026-11-04.2');
 define('CLAVE_MINIMA', 16);
 
 if (isset($_GET['version'])) {
@@ -821,12 +821,11 @@ function ritmoOk($privado, $limitePorIp, $limiteTotal) {
 
 if (!ritmoOk($PRIVADO, 5, 80)) {
     apuntar('ritmo superado, solicitud descartada');
-    /* Se le contesta que si: el visitante de verdad que le ha dado dos
-       veces al boton no tiene que ver un error, y a quien esta abusando
-       no se le da la pista de que hay un limite. El WhatsApp se le abre
-       igual, asi que aunque esta se pierda, sigue teniendo por donde
-       escribir. */
-    fin(true);
+    /* Antes se contestaba que si, porque WhatsApp se abria igual. Desde
+       que el formulario ensena "Gracias, ya tenemos su solicitud" al
+       recibir un si, eso seria mentirle: la solicitud se descarta. Se le
+       dice que no, y el formulario le da el telefono y el WhatsApp. */
+    fin(false, 429);
 }
 
 /* ---------------------------------------------------------------
@@ -906,6 +905,33 @@ $cuerpo = plegar(implode("\n", $lineas));
 
 $enviado = enviar($para, $titLinea, $cuerpo, $de);
 
+/* Al visitante se le contesta YA, en cuanto el aviso a la oficina ha
+   salido: es lo unico que decide si su solicitud ha llegado. Las copias
+   (Mobilia, otras) se mandan despues, con la conexion ya cerrada.
+
+   Por que importa: desde el 4/11 el formulario espera esta respuesta para
+   ensenar la pagina de gracias, y deja de esperar a los 30 segundos. Cada
+   correo es una conexion SMTP nueva; con tres seguidas y un servidor de
+   correo lento, el visitante veia "no se ha podido enviar" de una
+   solicitud que si habia llegado. */
+if ($enviado) {
+    ignore_user_abort(true);
+    @set_time_limit(90);
+    $respuesta = json_encode(array('ok' => true));
+    http_response_code(200);
+    header('Content-Length: ' . strlen($respuesta));
+    header('Connection: close');
+    echo $respuesta;
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    } elseif (function_exists('litespeed_finish_request')) {
+        litespeed_finish_request();
+    } else {
+        while (ob_get_level() > 0) { @ob_end_flush(); }
+        flush();
+    }
+}
+
 /* Las copias van despues y no deciden nada: si el CRM no las coge, la
    solicitud NO se pierde, que ya esta en el buzon de la oficina. Al
    visitante no se le hace esperar por ellas ni se le cuenta un error
@@ -948,4 +974,5 @@ if (!$enviado) {
     fin(false, 502);
 }
 
-fin(true);
+/* La respuesta ya salio arriba. */
+exit;

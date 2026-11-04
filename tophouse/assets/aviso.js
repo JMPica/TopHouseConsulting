@@ -16,7 +16,7 @@
        gracias.html, thanks.html, segun el idioma), que lo confirma y
        ofrece, con un boton, escribir tambien por WhatsApp con el mensaje
        ya redactado;
-     - si no ha llegado (sin conexion, servidor caido, quince segundos sin
+     - si no ha llegado (sin conexion, servidor caido, treinta segundos sin
        respuesta), se le dice en el mismo formulario, con el telefono y el
        boton de WhatsApp a mano. Nunca se le dice "recibido" sin saberlo.
 
@@ -56,6 +56,12 @@ window.enviarSolicitud = (function () {
     datos.pagina = location.href;
     datos.idioma = (document.documentElement.getAttribute('lang') || '').slice(0, 2);
 
+    /* Por que ha fallado, en una palabra: el codigo que devolvio el
+       servidor (403, 429, 502...), "red" si no hubo conexion, "tiempo" si
+       no contesto. Sale pequeno bajo el aviso: al visitante no le dice
+       nada, pero a quien mantiene la web le dice exactamente que mirar. */
+    var motivo = '';
+
     function fallo() {
       form.removeAttribute('data-enviando');
       if (boton) { boton.disabled = false; boton.textContent = textoBoton; }
@@ -63,13 +69,21 @@ window.enviarSolicitud = (function () {
       err.textContent = t('No hemos podido enviar su solicitud. Llámenos al 605 27 31 50 o escríbanos por WhatsApp, y la atendemos igual.');
       err.appendChild(document.createElement('br'));
       err.appendChild(botonWhatsApp(o.whatsapp));
+      if (motivo) {
+        var ref = document.createElement('small');
+        ref.className = 'form__err-ref';
+        ref.textContent = 'ref. ' + motivo;
+        err.appendChild(ref);
+      }
       err.hidden = false;
     }
 
-    if (!window.fetch) { fallo(); return; }
+    if (!window.fetch) { motivo = 'navegador'; fallo(); return; }
 
     var ctrl = window.AbortController ? new AbortController() : null;
-    var reloj = setTimeout(function () { if (ctrl) ctrl.abort(); }, 15000);
+    /* 30 segundos: el servidor contesta en cuanto sale el aviso a la
+       oficina, pero un servidor de correo lento puede tardar. */
+    var reloj = setTimeout(function () { motivo = 'tiempo'; if (ctrl) ctrl.abort(); }, 30000);
 
     fetch('/api/solicitud.php', {
       method: 'POST',
@@ -78,9 +92,11 @@ window.enviarSolicitud = (function () {
       signal: ctrl ? ctrl.signal : undefined
     }).then(function (res) {
       return res.json()['catch'](function () { return null; }).then(function (j) {
-        return res.ok && j && j.ok === true;
+        var bien = res.ok && j && j.ok === true;
+        if (!bien) { motivo = String(res.status) + (j ? '' : '-sin-json'); }
+        return bien;
       });
-    })['catch'](function () { return false; })
+    })['catch'](function () { if (!motivo) motivo = 'red'; return false; })
       .then(function (llegado) {
         clearTimeout(reloj);
         if (!llegado) { fallo(); return; }

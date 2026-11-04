@@ -2078,3 +2078,4 @@ body.mar .band--center::before{opacity:.7}
 .gr__volver a{color:var(--accent-ink);border-bottom:1px solid var(--accent-muted)}
 /* el boton de WhatsApp que aparece en el error del formulario */
 .form__err .form__err-wa{margin-top:.7rem;display:inline-flex}
+.form__err .form__err-ref{display:block;margin-top:.5rem;font-family:var(--m);font-size:.7rem;color:var(--text-secondary);opacity:.8}
