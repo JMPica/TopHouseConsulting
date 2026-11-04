@@ -132,8 +132,29 @@ $DOMINIO  = 'https://www.tophouserealestate.es';
 $operacio = $n && isset($n['operacion']) ? $n['operacion'] : 'venta';
 $volver   = isset($LISTAS[$L][$operacio]) ? $LISTAS[$L][$operacio] : $LISTAS[$L]['venta'];
 
-$titulo = $n ? porIdioma($n, 'titulo', $L) : '';
-$desc   = $n ? porIdioma($n, 'descripcio', $L) : '';
+/* Los textos de Mobilia vienen a veces con restos del editor de su panel:
+   "&nbsp;", "&amp;", alguna <br> o <p>. Como aqui se escapan para que nadie
+   pueda colar codigo, esos restos salian tal cual en la ficha ("pasos.&nbsp;
+   Este inmueble"). Se convierten primero en texto llano: los saltos de
+   linea se quedan, las etiquetas se van y las entidades se traducen a su
+   letra. Dos pasadas, porque alguno llega escapado dos veces
+   ("&amp;nbsp;"). Despues h() lo escapa como siempre. */
+function textoLlano($v) {
+    $t = (string) $v;
+    $t = preg_replace('~<\s*br\s*/?\s*>~i', "\n", $t);
+    $t = preg_replace('~<\s*/?\s*p\b[^>]*>~i', "\n\n", $t);
+    $t = strip_tags($t);
+    for ($i = 0; $i < 2; $i++) {
+        $t = html_entity_decode($t, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    }
+    $t = str_replace("\xC2\xA0", ' ', $t);           /* el espacio duro, como espacio */
+    $t = preg_replace('/[ \t]+/', ' ', $t);
+    $t = preg_replace('/ *\n */', "\n", $t);
+    return trim($t);
+}
+
+$titulo = $n ? textoLlano(porIdioma($n, 'titulo', $L)) : '';
+$desc   = $n ? textoLlano(porIdioma($n, 'descripcio', $L)) : '';
 $fotos  = $n && isset($n['fotos']) && is_array($n['fotos']) ? $n['fotos'] : array();
 if (!count($fotos) && $n && !empty($n['foto'])) { $fotos = array($n['foto']); }
 
