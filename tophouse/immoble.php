@@ -236,6 +236,7 @@ if ($n) {
 <?php } else { ?>
 
 <article class="fitxa" data-ref="<?php echo h($n['ref']); ?>"
+         data-operacion="<?php echo h($operacio); ?>"
          data-extras="<?php echo h(implode(',', isset($n['extras']) ? $n['extras'] : array())); ?>">
 
   <p class="fitxa__volver"><a href="<?php echo h($volver); ?>">Volver a la lista</a></p>

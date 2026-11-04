@@ -101,6 +101,8 @@
         mensaje: msg,
         ref: ref,
         titulo: titulo.trim(),
+        /* venta o alquiler: Mobilia la exige para crear la solicitud */
+        operacion: art.getAttribute('data-operacion') || '',
         consentimiento: true,
         empresa: String(d.get('empresa') || '')
       });

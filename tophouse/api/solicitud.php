@@ -44,6 +44,14 @@
        // aqui y entran solas, sin tocar codigo.
        'aviso_copia' => '',
 
+       // La copia para Mobilia, en el formato que su lector entiende
+       // (LecturaCorreoMobilia.pdf): asunto con [SOLICITUD], HTML y cada
+       // dato en su <span id="...">. Mobilia lee este buzon y crea la
+       // solicitud sola. Por defecto info@tophouseconsulting.com, que es
+       // el que leen hoy (lo dijo su soporte el 4/11/2026). Cuando el
+       // correo se mude, se pone aqui el buzon nuevo que lean. '' apaga.
+       'aviso_crm' => 'info@tophouseconsulting.com',
+
    El remitente TIENE que ser una direccion de este mismo dominio. Si se
    pone la del visitante, el correo lo firma un dominio que no es el
    nuestro, el SPF del servidor no cuadra y acaba en la carpeta de spam
@@ -113,7 +121,7 @@ function asunto($t) {
 /* Las cabeceras del correo. En una funcion a proposito: la prueba de mas
    abajo y el aviso de verdad tienen que salir EXACTAMENTE iguales, o la
    prueba dejaria de probar lo que se cree que prueba. */
-function cabeceras($de, $para = null, $titulo = null) {
+function cabeceras($de, $para = null, $titulo = null, $html = false) {
     $h = array();
 
     /* Por SMTP el mensaje se manda entero, asi que el destinatario y el
@@ -139,8 +147,16 @@ function cabeceras($de, $para = null, $titulo = null) {
     }
 
     $h[] = 'MIME-Version: 1.0';
-    $h[] = 'Content-Type: text/plain; charset=UTF-8';
-    $h[] = 'Content-Transfer-Encoding: 8bit';
+    if ($html) {
+        /* El correo para Mobilia va en HTML (su lector lo exige) y en
+           base64: asi ninguna linea pasa de 76 caracteres y ningun
+           salto cae dentro de un <span>, que partiria el dato. */
+        $h[] = 'Content-Type: text/html; charset=UTF-8';
+        $h[] = 'Content-Transfer-Encoding: base64';
+    } else {
+        $h[] = 'Content-Type: text/plain; charset=UTF-8';
+        $h[] = 'Content-Transfer-Encoding: 8bit';
+    }
     $h[] = 'X-Mailer: tophouserealestate.es';
     return $h;
 }
@@ -266,7 +282,7 @@ function conAvisos($fn, &$motivo) {
  * El motivo del fallo se devuelve por $fallo para que quede en el
  * registro; al visitante no se le cuenta nunca.
  */
-function porSmtp($cfg, $para, $titulo, $cuerpo, $de, &$fallo) {
+function porSmtp($cfg, $para, $titulo, $cuerpo, $de, &$fallo, $html = false) {
     $fallo = '';
     $host = isset($cfg['host']) ? (string) $cfg['host'] : '';
     $usuario = isset($cfg['usuario']) ? (string) $cfg['usuario'] : '';
@@ -335,7 +351,7 @@ function porSmtp($cfg, $para, $titulo, $cuerpo, $de, &$fallo) {
     }
 
     if ($ok) {
-        $mensaje = implode("\r\n", cabeceras($de, $para, $titulo)) . "\r\n\r\n" . $cuerpo;
+        $mensaje = implode("\r\n", cabeceras($de, $para, $titulo, $html)) . "\r\n\r\n" . $cuerpo;
         /* Una linea que empiece por un punto marca el final del mensaje.
            Si el visitante escribe una linea que empieza por un punto, el
            correo se corta ahi. Se dobla el punto, que es lo que manda la
@@ -354,13 +370,13 @@ function porSmtp($cfg, $para, $titulo, $cuerpo, $de, &$fallo) {
  * Manda el correo por el mejor camino disponible.
  * Devuelve 'smtp', 'mail', o '' si no ha salido por ninguno.
  */
-function enviar($para, $titulo, $cuerpo, $de) {
+function enviar($para, $titulo, $cuerpo, $de, $html = false) {
     global $PRIVADO;
     $cfg = configuracion($PRIVADO);
 
     if (!empty($cfg['smtp']) && is_array($cfg['smtp'])) {
         $fallo = '';
-        if (porSmtp($cfg['smtp'], $para, $titulo, $cuerpo, $de, $fallo)) {
+        if (porSmtp($cfg['smtp'], $para, $titulo, $cuerpo, $de, $fallo, $html)) {
             return 'smtp';
         }
         /* No se corta aqui: se apunta y se prueba el otro camino. Una
@@ -371,7 +387,7 @@ function enviar($para, $titulo, $cuerpo, $de) {
     /* El quinto argumento de mail() pone el remitente del SOBRE, que es el
        que mira el servidor que recibe para comprobar el SPF. Sin el,
        algunos alojamientos ponen el usuario del sistema. */
-    $ok = @mail($para, asunto($titulo), $cuerpo, implode("\r\n", cabeceras($de)), '-f' . $de);
+    $ok = @mail($para, asunto($titulo), $cuerpo, implode("\r\n", cabeceras($de, null, null, $html)), '-f' . $de);
     return $ok ? 'mail' : '';
 }
 
@@ -399,6 +415,63 @@ function copias($privado) {
         if ($d !== '' && filter_var($d, FILTER_VALIDATE_EMAIL)) { $fuera[] = $d; }
     }
     return array_slice(array_values(array_unique($fuera)), 0, 5);
+}
+
+/* El buzon que lee Mobilia para crear solicitudes solas. Ver 'aviso_crm'
+   arriba. Si no esta en la configuracion, el de hoy; si esta vacio, no
+   se manda nada. */
+function buzonCrm($privado) {
+    $cfg = configuracion($privado);
+    $v = array_key_exists('aviso_crm', $cfg) ? trim((string) $cfg['aviso_crm']) : 'info@tophouseconsulting.com';
+    return ($v !== '' && filter_var($v, FILTER_VALIDATE_EMAIL)) ? $v : '';
+}
+
+/* Venta, Alquiler o Traspaso: lo unico que acepta Mobilia, y es
+   obligatorio (sin el, descarta el correo). La ficha manda la del
+   inmueble. Los formularios mandan lo que eligio el visitante, que puede
+   llegar en catalan, castellano o ingles. Comprar, vender o preguntar el
+   precio son operaciones de venta; ante la duda, Venta, para que la
+   solicitud entre igual y alguien la mire. */
+function operacionCrm($operacion, $necesita) {
+    $o = strtolower(trim((string) $operacion));
+    if ($o === 'alquiler') { return 'Alquiler'; }
+    if ($o === 'venta')    { return 'Venta'; }
+    if ($o === 'traspaso') { return 'Traspaso'; }
+    $n = function_exists('mb_strtolower') ? mb_strtolower((string) $necesita, 'UTF-8') : strtolower((string) $necesita);
+    if (preg_match('/alquil|llog|\brent|\blet\b/u', $n)) { return 'Alquiler'; }
+    return 'Venta';
+}
+
+/* El correo que entiende el lector de Mobilia (LecturaCorreoMobilia.pdf):
+   asunto que empieza por [SOLICITUD], cuerpo HTML, y cada dato dentro de
+   un <span id="Campo"> unico. Todo lo que escribe el visitante va
+   escapado: un "<" en su mensaje no puede abrir una etiqueta ni fingir
+   otro campo. Devuelve array(asunto, cuerpo ya en base64). */
+function correoCrm($c) {
+    $e = function ($t) { return htmlspecialchars((string) $t, ENT_QUOTES, 'UTF-8'); };
+    $campos = array(
+        'Nombre'     => $c['nombre'],
+        'Telefono'   => $c['telefono'],
+        'Mensaje'    => $c['mensaje'],
+        'Operacion'  => $c['operacion'],
+        'Referencia' => $c['referencia'],
+        'Campana'    => $c['campana'],
+    );
+    $filas = '';
+    foreach ($campos as $id => $valor) {
+        if ($valor === '' && $id !== 'Nombre' && $id !== 'Operacion') { continue; }
+        $valor = str_replace(array("\r\n", "\r", "\n"), '<br />', $e($valor));
+        $filas .= $id . ': <span id="' . $id . '">' . $valor . '</span><br />' . "\n";
+    }
+    $html = "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n<meta charset=\"utf-8\" />\n<title></title>\n</head>\n<body>\n"
+          . $filas . "</body>\n</html>\n";
+    /* El asunto, solo con letras sin acento. Un asunto con acentos o con
+       "·" viaja codificado (=?UTF-8?B?...?=), y si el lector de Mobilia
+       mira la cabecera en crudo no ve que empiece por [SOLICITUD] y
+       descarta el correo. Lo que distingue una solicitud de otra ya va
+       en los campos de dentro. */
+    $asunto = '[SOLICITUD] ' . preg_replace('/[^A-Za-z0-9 ]+/', '', $c['campana']);
+    return array($asunto, rtrim(chunk_split(base64_encode($html), 76, "\r\n")));
 }
 
 /**
@@ -475,7 +548,7 @@ function direcciones($privado) {
        https://www.tophouserealestate.es/api/solicitud.php?version
    --------------------------------------------------------------- */
 
-define('VERSION_SOLICITUD', '2026-09-27.1');
+define('VERSION_SOLICITUD', '2026-11-04.1');
 define('CLAVE_MINIMA', 16);
 
 if (isset($_GET['version'])) {
@@ -502,6 +575,7 @@ if (isset($_GET['version'])) {
            pedir. Solo dice la linea, nunca el contenido. */
         'configuracion'=> $estadoCfg,
         'smtp'         => (!empty($c['smtp']) && is_array($c['smtp'])) ? 'configurado' : 'no configurado',
+        'copia_mobilia'=> buzonCrm($PRIVADO) !== '' ? buzonCrm($PRIVADO) : 'apagada',
         'tiene_prueba' => true,
         'clave_util'   => (strlen($clave) >= CLAVE_MINIMA),
         'clave_minimo' => CLAVE_MINIMA,
@@ -674,6 +748,7 @@ $titulo  = campo($d, 'titulo', 200);
 $pagina  = campo($d, 'pagina', 300);
 $idioma  = campo($d, 'idioma', 5);
 $origen  = campo($d, 'origen', 20);
+$operacion = campo($d, 'operacion', 20);   /* la del inmueble, desde la ficha */
 
 /* La direccion de la pagina la manda el navegador, asi que podria traer
    cualquier cosa. Solo se acepta si apunta a este mismo sitio: asi el
@@ -838,6 +913,33 @@ $enviado = enviar($para, $titLinea, $cuerpo, $de);
 foreach (copias($PRIVADO) as $otro) {
     if (!enviar($otro, $titLinea, $cuerpo, $de)) {
         apuntar('la copia a ' . $otro . ' no ha salido');
+    }
+}
+
+/* Y la de Mobilia, para que la solicitud entre sola en "Solicitudes
+   pendientes". Tampoco decide nada: si falla, el aviso a la oficina ya
+   ha salido. El mensaje lleva, ademas de lo que escribio el visitante,
+   lo que en Mobilia no tiene campo propio: zona, que necesita, el barco
+   o la valoracion de la calculadora y la pagina desde la que escribio. */
+$crm = buzonCrm($PRIVADO);
+if ($crm !== '') {
+    $notas = array();
+    if ($mensaje !== '')  { $notas[] = $mensaje; }
+    if ($titulo !== '')   { $notas[] = 'Inmueble: ' . $titulo; }
+    if ($zona !== '')     { $notas[] = ($esNautica ? 'Puerto: ' : 'Zona: ') . $zona; }
+    if ($necesita !== '') { $notas[] = 'Necesita: ' . $necesita; }
+    if ($extra !== '')    { $notas[] = ($esNautica ? 'Barco: ' : 'Valoración web: ') . $extra; }
+    if ($pagina !== '')   { $notas[] = 'Página: ' . $pagina; }
+    list($asuntoCrm, $cuerpoCrm) = correoCrm(array(
+        'nombre'     => $nombre,
+        'telefono'   => $tel,
+        'mensaje'    => implode("\n", $notas),
+        'operacion'  => operacionCrm($operacion, $necesita),
+        'referencia' => $esFicha ? $ref : '',
+        'campana'    => $esNautica ? 'Web Top House Marine' : 'Web Top House',
+    ));
+    if (!enviar($crm, $asuntoCrm, $cuerpoCrm, $de, true)) {
+        apuntar('la copia para Mobilia (' . $crm . ') no ha salido');
     }
 }
 

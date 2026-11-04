@@ -162,44 +162,35 @@ letras, esta prueba no existe: contesta igual que cualquier otra peticion
 mal hecha, sin decir que hay algo ahi.
 
 
-LO QUE FALTA: QUE LA SOLICITUD ENTRE TAMBIEN EN MOBILIA
+LA SOLICITUD ENTRA TAMBIEN EN MOBILIA (HECHO, 4/11/2026)
 
-Hoy la solicitud llega por correo y por WhatsApp. En Mobilia, en
-'Solicitudes Pendientes', NO entra. Eso no se ha hecho todavia y conviene
-decir por que, para no darle vueltas dos veces:
+Mobilia lee un buzon de correo y convierte en solicitud cada correo con
+un formato concreto (LecturaCorreoMobilia.pdf, lo paso su soporte el
+4/11/2026). La web manda ahora, ademas del aviso de siempre, una copia
+en ese formato:
 
-  - El manual del XML de Mobilia (InterfazExportacionMobilia.pdf, 44
-    paginas) es SOLO DE EXPORTACION. Se ha buscado entero: no aparece
-    'solicitud', ni 'peticion', ni 'lead', ni 'formulario'. Por ahi no
-    entra nada.
-  - Los servidores de Mobilia no se pueden consultar desde donde se
-    desarrolla esto (bloqueo de red), asi que la via de entrada no se
-    puede averiguar leyendo su API. Tiene que mirarlo alguien con la
-    cuenta de Mobilia delante.
+  - Asunto que empieza por [SOLICITUD]: "[SOLICITUD] Web Top House" o
+    "[SOLICITUD] Web Top House Marine". Sin acentos a proposito: un
+    asunto con acentos viaja codificado y el lector podria no verlo.
+  - Cuerpo en HTML, con cada dato en su <span id="...">: Nombre,
+    Telefono, Mensaje, Operacion, Referencia, Campana.
+  - Operacion (obligatoria para Mobilia): la del inmueble si viene de una
+    ficha; si viene de un formulario, Alquiler cuando el visitante elige
+    alquilar y Venta en todo lo demas.
+  - Lo que Mobilia no tiene como campo propio (zona, que necesita, el
+    barco, la valoracion, la pagina) va dentro del Mensaje.
 
-HAY TRES SITIOS DONDE MIRAR, y cualquiera de los tres resuelve:
+A DONDE VA. Por defecto a info@tophouseconsulting.com, que es el buzon que
+Mobilia lee hoy. Se cambia en la configuracion del servidor:
 
-  1. UNA DIRECCION DE CORREO DE ENTRADA. Es lo mas probable, porque es
-     como entran las solicitudes de Idealista y Fotocasa: el portal manda
-     un correo y el CRM lo lee. En Mobilia, buscar en Configuracion >
-     Portales, o Integraciones, o en la propia pantalla de Solicitudes,
-     una direccion del tipo algo@tophouseconsulting.mobiliagestion.es.
-     SI APARECE, ESTO YA ESTA HECHO: se pone en la configuracion del
-     servidor y funciona el mismo dia, sin tocar codigo:
+    'aviso_crm' => 'otro@buzon.es',     // '' la apaga
 
-         'aviso_copia' => 'esa@direccion',
+CUANDO SE MUDE EL CORREO: info@tophouseconsulting.com dejara de ser un
+buzon. Antes de ese dia hay que saber que buzon leera Mobilia (se le
+pregunto el 4/11/2026) y poner ese aqui. Si no, las solicitudes de la web
+dejan de entrar en Mobilia, aunque sigan llegando al correo de la oficina.
 
-  2. UN FORMULARIO WEB DE MOBILIA. Mobilia publica las fichas en
-     tophouseconsulting.mobiliagestion.es, o sea que ya tiene formularios
-     propios que acaban en Solicitudes. Si dan la direccion a la que
-     envian, se manda ahi lo mismo.
-
-  3. LA API. En api.mobiliagestion.es/swagger/index.html, con la sesion
-     de Mobilia iniciada, sale la lista de lo que la API permite hacer.
-     Si hay algo de crear solicitudes, se usa eso, que es lo mas limpio.
-
-MIENTRAS TANTO NO SE PIERDE NADA: la solicitud esta en el correo y en
-WhatsApp. Lo que falta es que ademas se apunte sola en el CRM.
+COMO SABER A DONDE VA AHORA:  /api/solicitud.php?version  ->  "copia_mobilia"
 
 
 EL CORREO DEL DOMINIO: SPF, DKIM Y DMARC
