@@ -29,6 +29,7 @@ if ($PRIVADO !== null) {
 
 $DOMINIO = 'https://www.tophouserealestate.es';
 $RUTAS = array('ca' => 'immoble', 'es' => 'es/inmueble', 'en' => 'en/property');
+$RUTAS_BARCO = array('ca' => 'vaixell', 'es' => 'es/barco', 'en' => 'en/boat');
 $ETIQUETA = array('ca' => 'ca-ES', 'es' => 'es-ES', 'en' => 'en-GB');
 
 echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
@@ -45,11 +46,13 @@ foreach ($lista as $n) {
     $vistas[$ref] = true;
 
     $fecha = !empty($n['fecha']) ? date('Y-m-d', (int) $n['fecha']) : '';
-    foreach ($RUTAS as $cod => $tramo) {
+    /* Los barcos de Top House Marine tienen su propia direccion. */
+    $rutas = (isset($n['seccion']) && $n['seccion'] === 'marine') ? $RUTAS_BARCO : $RUTAS;
+    foreach ($rutas as $cod => $tramo) {
         echo '  <url>' . "\n";
         echo '    <loc>' . $DOMINIO . '/' . $tramo . '/' . $ref . '</loc>' . "\n";
         if ($fecha !== '') { echo '    <lastmod>' . $fecha . '</lastmod>' . "\n"; }
-        foreach ($RUTAS as $otro => $tramoOtro) {
+        foreach ($rutas as $otro => $tramoOtro) {
             printf('    <xhtml:link rel="alternate" hreflang="%s" href="%s/%s/%s"/>' . "\n",
                    $ETIQUETA[$otro], $DOMINIO, $tramoOtro, $ref);
         }

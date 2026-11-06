@@ -72,6 +72,7 @@ window.T = (function () {
       'Necesitamos que acepte la política de privacidad antes de enviarnos sus datos.':
         'Necessitem que accepti la política de privacitat abans d’enviar-nos les seves dades.',
       'Hola, soy ':'Hola, sóc ',
+      ' barco':' vaixell', ' barcos':' vaixells',
       'Enviando…':'Enviant…', 'Escribir por WhatsApp':'Escriure per WhatsApp',
       'No hemos podido enviar su solicitud. Llámenos al 605 27 31 50 o escríbanos por WhatsApp, y la atendemos igual.':
         'No hem pogut enviar la seva sol·licitud. Truqui’ns al 605 27 31 50 o escrigui’ns per WhatsApp, i l’atendrem igualment.',
@@ -145,6 +146,7 @@ window.T = (function () {
       'Necesitamos que acepte la política de privacidad antes de enviarnos sus datos.':
         'Please accept the privacy policy before sending us your details.',
       'Hola, soy ':'Hello, I am ',
+      ' barco':' boat', ' barcos':' boats',
       'Enviando…':'Sending…', 'Escribir por WhatsApp':'Message us on WhatsApp',
       'No hemos podido enviar su solicitud. Llámenos al 605 27 31 50 o escríbanos por WhatsApp, y la atendemos igual.':
         'We could not send your request. Call us on 605 27 31 50 or message us on WhatsApp, and we will deal with it just the same.',

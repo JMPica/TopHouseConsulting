@@ -2079,3 +2079,7 @@ body.mar .band--center::before{opacity:.7}
 /* el boton de WhatsApp que aparece en el error del formulario */
 .form__err .form__err-wa{margin-top:.7rem;display:inline-flex}
 .form__err .form__err-ref{display:block;margin-top:.5rem;font-family:var(--m);font-size:.7rem;color:var(--text-secondary);opacity:.8}
+
+/* Los barcos en venta, en la pagina de Marine (nautica.html) */
+.mar__barcos-cap{max-width:var(--maxw);margin:0 auto clamp(22px,4vh,40px)}
+.mar__barcos-cap .cart__cuenta{margin-top:.6rem}

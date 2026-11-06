@@ -106,6 +106,10 @@
   RewriteRule ^immoble/([A-Za-z0-9._-]+)/?$      /immoble.php?ref=$1      [L,QSA]
   RewriteRule ^es/inmueble/([A-Za-z0-9._-]+)/?$  /es/inmueble.php?ref=$1  [L,QSA]
   RewriteRule ^en/property/([A-Za-z0-9._-]+)/?$  /en/property.php?ref=$1  [L,QSA]
+  # Los barcos de Top House Marine: la misma ficha, con su propia direccion.
+  RewriteRule ^vaixell/([A-Za-z0-9._-]+)/?$      /immoble.php?ref=$1      [L,QSA]
+  RewriteRule ^es/barco/([A-Za-z0-9._-]+)/?$     /es/inmueble.php?ref=$1  [L,QSA]
+  RewriteRule ^en/boat/([A-Za-z0-9._-]+)/?$      /en/property.php?ref=$1  [L,QSA]
 
   RewriteRule ^es/venta/?$        /es/comprar.html   [R=301,L]
   RewriteRule ^es/alquiler/?$     /es/alquilar.html  [R=301,L]

@@ -99,7 +99,8 @@
       error: err,
       whatsapp: lineas.join('\n'),
       datos: {
-        origen: 'ficha',
+        /* 'nautica' si es un barco de Top House Marine (lo dice la ficha) */
+        origen: art.getAttribute('data-origen') || 'ficha',
         nombre: nombre,
         telefono: tel,
         mensaje: msg,

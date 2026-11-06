@@ -128,6 +128,21 @@ $LISTAS = array(
 );
 $RUTAS = array('ca' => 'immoble', 'es' => 'es/inmueble', 'en' => 'en/property');
 
+/* LOS BARCOS. Top House Marine da de alta sus barcos en Mobilia como una
+   ficha mas, con un tipo de inmueble reservado; api/cartera.php los marca
+   con seccion 'marine'. Esta misma pagina los pinta como barco: en azul,
+   con sus datos (eslora, ano, motor...), con direcciones propias
+   (/vaixell/REF, /es/barco/REF, /en/boat/REF) y volviendo a Marine. */
+$esBarco = $n && isset($n['seccion']) && $n['seccion'] === 'marine';
+if ($esBarco) {
+    $RUTAS  = array('ca' => 'vaixell', 'es' => 'es/barco', 'en' => 'en/boat');
+    $LISTAS = array(
+        'ca' => array('venta' => 'nautica.html', 'alquiler' => 'nautica.html'),
+        'es' => array('venta' => 'nautica.html', 'alquiler' => 'nautica.html'),
+        'en' => array('venta' => 'boats.html',   'alquiler' => 'boats.html'),
+    );
+}
+
 $DOMINIO  = 'https://www.tophouserealestate.es';
 $operacio = $n && isset($n['operacion']) ? $n['operacion'] : 'venta';
 $volver   = isset($LISTAS[$L][$operacio]) ? $LISTAS[$L][$operacio] : $LISTAS[$L]['venta'];
@@ -299,6 +314,12 @@ function entradilla($partes, $max = 155) {
 
 $titulo = $n ? textoLlano(porIdioma($n, 'titulo', $L)) : '';
 $desc   = $n ? textoLlano(porIdioma($n, 'descripcio', $L)) : '';
+/* En un barco, las lineas "Eslora: 9,5 m" del principio son sus datos y se
+   ensenan como tales: se quitan del texto para no repetirlas. */
+$datosBarco = ($esBarco && isset($n['barco']) && is_array($n['barco'])) ? $n['barco'] : array();
+if ($esBarco) {
+    $desc = trim(preg_replace('/^[\p{L}][\p{L} .\/()º]{1,24}:[ \t]*[^:\n]{1,60}$/mu', '', $desc));
+}
 $partes = partesDescripcion($desc);
 $fotos  = $n && isset($n['fotos']) && is_array($n['fotos']) ? $n['fotos'] : array();
 if (!count($fotos) && $n && !empty($n['foto'])) { $fotos = array($n['foto']); }
@@ -313,11 +334,15 @@ $precioTexto = $precio > 0
     ? number_format($precio, 0, ',', $L === 'en' ? ',' : '.') . ' €'
     : '';
 $tituloPagina = $n
-    ? trim($titulo . ($precioTexto !== '' ? ' · ' . $precioTexto : '')) . ' · Top House Real Estate'
+    ? trim($titulo . ($precioTexto !== '' ? ' · ' . $precioTexto : '')) . ($esBarco ? ' · Top House Marine' : ' · Top House Real Estate')
     : 'Top House Real Estate';
 $resumen = $n
     ? trim($sitio . ($n['m2'] ? ' · ' . $n['m2'] . ' m²' : '') . ($n['hab'] ? ' · ' . $n['hab'] . ' hab.' : ''))
     : '';
+if ($esBarco) {
+    $resumen = $sitio;
+    foreach (array_slice($datosBarco, 0, 2) as $par) { $resumen .= ($resumen !== '' ? ' · ' : '') . $par[1]; }
+}
 $canonica = $n ? $DOMINIO . '/' . $RUTAS[$L] . '/' . rawurlencode($n['ref']) : $DOMINIO . '/';
 
 /* La descripcion para Google y para la vista previa: primero los datos
@@ -378,6 +403,18 @@ if ($n) {
         'mainEntity' => $item,
         'offers' => $oferta,
     );
+    /* Un barco no es un inmueble: para Google es un producto en venta. */
+    if ($esBarco) {
+        $ld = array(
+            '@context' => 'https://schema.org',
+            '@type' => 'Product',
+            'name' => $titulo,
+            'url' => $canonica,
+            'description' => $metaDesc,
+            'category' => 'Boats',
+            'offers' => $oferta,
+        );
+    }
     if (count($fotos)) {
         /* Google quiere direcciones completas: las de Mobilia ya lo son, las
            del fichero local (/assets/...) se completan con el dominio. */
@@ -429,7 +466,7 @@ if ($n) {
 <link rel="stylesheet" href="/assets/fonts.css">
 <link rel="stylesheet" href="/assets/site.css">
 </head>
-<body id="top">
+<body id="top"<?php if ($esBarco) { echo ' class="mar"'; } ?>>
 <a class="skip" href="#main">Saltar al contenido</a>
 <div class="env" aria-hidden="true"><div class="env__glow"></div><div class="env__dust"></div></div>
 <nav class="nav" id="nav" aria-label="Principal">
@@ -437,7 +474,7 @@ if ($n) {
     <img class="mark" src="/assets/logo.png" width="256" height="256" alt="" aria-hidden="true" decoding="async">
     <span class="nav__word">
       <span class="nav__name">Top House</span>
-      <span class="nav__kicker">Real Estate</span>
+      <span class="nav__kicker"><?php echo $esBarco ? 'Marine' : 'Real Estate'; ?></span>
     </span>
   </a>
   <div class="nav__links">
@@ -471,6 +508,7 @@ if ($n) {
 <?php } else { ?>
 
 <article class="fitxa" data-ref="<?php echo h($n['ref']); ?>"
+         data-origen="<?php echo $esBarco ? 'nautica' : 'ficha'; ?>"
          data-operacion="<?php echo h($operacio); ?>"
          data-extras="<?php echo h(implode(',', isset($n['extras']) ? $n['extras'] : array())); ?>">
 
@@ -503,9 +541,13 @@ if ($n) {
   <section class="fitxa__cos">
     <div class="fitxa__principal">
       <ul class="fitxa__datos">
+        <?php if ($esBarco) {
+            foreach ($datosBarco as $par) { echo '<li><span>' . h($par[0]) . '</span> <b>' . h($par[1]) . '</b></li>'; }
+        } else { ?>
         <?php if ($n['m2']) { ?><li><span>Superficie</span> <b><?php echo (int) $n['m2']; ?> m²</b></li><?php } ?>
         <?php if ($n['hab']) { ?><li><span>Habitaciones</span> <b><?php echo (int) $n['hab']; ?></b></li><?php } ?>
         <?php if ($n['banys']) { ?><li><span>Baños</span> <b><?php echo (int) $n['banys']; ?></b></li><?php } ?>
+        <?php } ?>
         <li><span>Referencia</span> <b><?php echo h($n['ref']); ?></b></li>
         <?php $en = porIdioma($n, 'energia', $L); if ($en !== '') { ?>
         <li><span>Calificación energética</span> <b><?php echo h($en); ?></b></li>

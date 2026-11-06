@@ -154,6 +154,18 @@
   </div>
 </section>
 
+<!-- Los barcos en venta. Salen de Mobilia (ver tipos_marine en
+     api/cartera.php) y la seccion entera nace escondida: assets/cartera.js
+     la destapa solo si hay al menos un barco publicado. -->
+<section class="cart mar__barcos" data-cartera="marine" data-seccion-barcos hidden aria-labelledby="mar-barcos-h">
+  <div class="mar__barcos-cap">
+    <p class="kicker">Barcos en venta</p>
+    <h2 class="d1" id="mar-barcos-h">Lo que tenemos ahora.</h2>
+    <p class="cart__cuenta mono" role="status" aria-live="polite"></p>
+  </div>
+  <ul class="cart__grid"></ul>
+</section>
+
 <figure class="mar__foto">
   <img src="/assets/arenys-vista.jpg" width="1600" height="518" alt="Arenys de Mar desde lo alto, con el puerto y el mar a la derecha." decoding="async">
   <figcaption class="mono">El puerto de Arenys de Mar, visto desde el pueblo.</figcaption>
@@ -332,6 +344,9 @@
 <script src="/assets/idioma.js" defer></script>
 <script src="/assets/menu.js" defer></script>
 <script src="/assets/aviso.js" defer></script>
+<script src="/assets/inmuebles.js" defer></script>
+<script src="/assets/extras.js" defer></script>
+<script src="/assets/cartera.js" defer></script>
 <script src="/assets/site.js" defer></script>
 <script src="/assets/nautica.js" defer></script>
 </body>

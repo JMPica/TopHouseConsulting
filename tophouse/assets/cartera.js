@@ -123,7 +123,21 @@
   traerInmuebles().then(function (INMUEBLES_OK) {
   Array.prototype.forEach.call(raices, function (raiz) {
   var OPER = raiz.getAttribute('data-cartera') || 'venta';
-  var TODOS = INMUEBLES_OK.filter(function (i) { return i.operacion === OPER; });
+  /* Los barcos (Top House Marine) viajan en la misma cartera, marcados con
+     seccion 'marine'. Salen solo en la pagina de Marine (data-cartera
+     "marine") y nunca en Comprar ni en Alquilar. */
+  var MARINE = OPER === 'marine';
+  var TODOS = INMUEBLES_OK.filter(function (i) {
+    var esBarco = i.seccion === 'marine';
+    return MARINE ? esBarco : (!esBarco && i.operacion === OPER);
+  });
+  /* En Marine, mientras no haya ningun barco publicado, la seccion entera
+     sigue escondida: mejor que no exista a que diga "no hay nada". */
+  if (MARINE) {
+    var seccion = raiz.closest('[data-seccion-barcos]') || raiz;
+    seccion.hidden = !TODOS.length;
+    if (!TODOS.length) return;
+  }
 
   var grid   = $('.cart__grid', raiz);
   var vacio  = $('.cart__vacio', raiz);
@@ -206,11 +220,11 @@
        en catalan no encontraria nada. */
     var ETIQUETA = {};
     TODOS.forEach(function (i) { if (i.tipo && !ETIQUETA[i.tipo]) ETIQUETA[i.tipo] = nombreTipo(i); });
-    opcionesDe('tipo', ETIQUETA).forEach(function (t) {
+    if (fTipo) opcionesDe('tipo', ETIQUETA).forEach(function (t) {
       var o = document.createElement('option');
       o.value = t; o.textContent = ETIQUETA[t] || t; fTipo.appendChild(o);
     });
-    opcionesDe('poblacio').forEach(function (p) {
+    if (fPob) opcionesDe('poblacio').forEach(function (p) {
       var o = document.createElement('option');
       o.value = p; o.textContent = p; fPob.appendChild(o);
     });
@@ -340,10 +354,19 @@
     cuerpo.appendChild(nodo('h3', 'inm__t', tituloDe(i) || T('Inmueble')));
 
     var datos = [];
-    var m2 = numero(i.m2), hab = numero(i.hab), banys = numero(i.banys);
-    if (m2)    datos.push(m2 + ' m²');
-    if (hab)   datos.push(hab + (hab === 1 ? T(' habitación') : T(' habitaciones')));
-    if (banys) datos.push(banys + (banys === 1 ? T(' baño') : T(' baños')));
+    if (i.seccion === 'marine') {
+      /* Un barco no tiene metros ni habitaciones: sus datos son los que
+         la agencia escribe al principio de la descripcion (eslora, ano,
+         motor...). En la tarjeta caben los tres primeros. */
+      (i.barco || []).slice(0, 3).forEach(function (par) {
+        if (par && par[1]) datos.push(String(par[1]));
+      });
+    } else {
+      var m2 = numero(i.m2), hab = numero(i.hab), banys = numero(i.banys);
+      if (m2)    datos.push(m2 + ' m²');
+      if (hab)   datos.push(hab + (hab === 1 ? T(' habitación') : T(' habitaciones')));
+      if (banys) datos.push(banys + (banys === 1 ? T(' baño') : T(' baños')));
+    }
     if (datos.length) cuerpo.appendChild(nodo('p', 'inm__datos', datos.join(' · ')));
 
     /* En la tarjeta caben pocas y ordenadas: el puente las manda ya
@@ -386,7 +409,9 @@
        tenia que describirlo de memoria. El tramo es relativo a proposito,
        asi que desde /es/comprar.html sale /es/inmueble/REF sin que haya
        que saber aqui en que carpeta estamos. */
-    var TRAMO = { ca: 'immoble/', es: 'inmueble/', en: 'property/' }[IDIOMA] || 'inmueble/';
+    var TRAMO = i.seccion === 'marine'
+      ? ({ ca: 'vaixell/', es: 'barco/', en: 'boat/' }[IDIOMA] || 'barco/')
+      : ({ ca: 'immoble/', es: 'inmueble/', en: 'property/' }[IDIOMA] || 'inmueble/');
     var cta = nodo('a', 'btn btn--ghost inm__cta', T('Quiero verlo'));
     cta.href = TRAMO + encodeURIComponent(i.ref);
     if (i.ref) cta.appendChild(nodo('span', 'sr-only', T(' (referencia ') + i.ref + ')'));
@@ -461,11 +486,13 @@
        mentira: haberlo lo habia, pero no de eso. Decirle a alguien que no
        tienes nada cuando si tienes es la forma mas tonta de perder una
        llamada. */
-    vacio.hidden  = !(!hayAlguno && !filtrando);
+    if (vacio) vacio.hidden  = !(!hayAlguno && !filtrando);
     if (sinres) sinres.hidden = !(!hayAlguno && filtrando);
 
-    cuenta.textContent = TODOS.length
-      ? lista.length + (lista.length === 1 ? T(' inmueble') : T(' inmuebles'))
+    if (cuenta) cuenta.textContent = TODOS.length
+      ? lista.length + (MARINE
+          ? (lista.length === 1 ? T(' barco') : T(' barcos'))
+          : (lista.length === 1 ? T(' inmueble') : T(' inmuebles')))
       : '';
 
     Array.prototype.forEach.call(limpiar, function (b) { b.hidden = !filtrando; });

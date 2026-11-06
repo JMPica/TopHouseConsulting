@@ -877,7 +877,6 @@
     counters.forEach(function (c) {
       c.textContent = (c.getAttribute('data-prefix') || '') + c.getAttribute('data-to');
     });
-    if (picked && !revealed) finishHold();
   }
 
   function unpinFinalStates() {

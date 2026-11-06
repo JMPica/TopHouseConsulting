@@ -204,6 +204,24 @@ if ($pedida !== '' && !$DIAG) {
     responder(array('error' => 'no disponible'), 'diagnostico', false);
 }
 
+/* ---------- 1 bis. los barcos de Top House Marine ----------
+   Los barcos se dan de alta en Mobilia como una ficha mas, con un TIPO de
+   inmueble reservado para ellos (decision de Top House, 6/11/2026: un tipo
+   y no un grupo, y que va a los portales lo deciden ellos ficha a ficha).
+   Las fichas de ese tipo no salen en Comprar ni en Alquilar: salen en la
+   pagina de Marine, con su ficha propia en azul.
+
+   El tipo se escribe aqui abajo, o en la configuracion del servidor con
+   'tipos_marine' => 'nombre del tipo' (varios separados por comas). Se
+   compara sin acentos, mayusculas ni espacios: "Trasteros" = "trasteros". */
+$TIPOS_MARINE = array();
+if (isset($cfg['tipos_marine'])) {
+    $TIPOS_MARINE = is_array($cfg['tipos_marine'])
+        ? $cfg['tipos_marine']
+        : preg_split('/[,;]+/', (string) $cfg['tipos_marine']);
+}
+$TIPOS_MARINE = array_values(array_filter(array_map('normalizar', $TIPOS_MARINE), 'strlen'));
+
 /* ---------- 2. si la copia es reciente, no se molesta a Mobilia ---------- */
 $minutos = isset($cfg['minutos']) ? (int) $cfg['minutos'] : 15;
 if (!$DIAG && is_readable($CACHE) && (time() - filemtime($CACHE)) < $minutos * 60) {
@@ -549,6 +567,28 @@ $TIPOS = array(
  * acentos y sin guiones ni barrasbajas. Asi 'Precio_Venta', 'precioVenta'
  * y 'PRECIO VENTA' son el mismo nombre.
  */
+/**
+ * Los datos de un barco, sacados de su descripcion. Mobilia no tiene
+ * campos de eslora, ano o motor, asi que se escriben al principio de la
+ * descripcion, uno por linea, como "Eslora: 9,5 m". Se devuelven como
+ * pares [dato, valor] para la tarjeta y la ficha. Solo lineas cortas con
+ * la forma "Dato: valor": una frase normal con dos puntos no cuela.
+ */
+function datosBarco($desc) {
+    $t = preg_replace('~<\s*br\s*/?\s*>|</\s*p\s*>~i', "\n", (string) $desc);
+    $t = html_entity_decode(strip_tags($t), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $t = str_replace("\xC2\xA0", ' ', $t);
+    $fuera = array();
+    foreach (preg_split('/\r?\n/', $t) as $linea) {
+        $linea = trim($linea);
+        if (preg_match('/^([\p{L}][\p{L} .\/()º]{1,24}):\s*([^:]{1,60})$/u', $linea, $m)) {
+            $fuera[] = array(trim($m[1]), rtrim(trim($m[2]), '.'));
+            if (count($fuera) >= 10) { break; }
+        }
+    }
+    return $fuera;
+}
+
 function normalizar($nombre) {
     /* strtolower solo baja la A-Z de toda la vida: una 'A con tilde' la deja
        entera, y el filtro de la ultima linea se la lleva por delante. Asi es
@@ -1121,6 +1161,14 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPO
                 if (count($entrada)) { $otros[$codigo] = $entrada; }
             }
             if (count($otros)) { $ficha['i18n'] = $otros; }
+
+            /* Un barco (ver $TIPOS_MARINE arriba): se marca para que la web
+               lo saque de Comprar y lo publique en Marine, con sus datos. */
+            if (count($TIPOS_MARINE) && in_array(normalizar($tipoCru), $TIPOS_MARINE, true)) {
+                $ficha['seccion'] = 'marine';
+                $ficha['barco'] = datosBarco($ficha['descripcio']);
+                $informe['barcos'] = isset($informe['barcos']) ? $informe['barcos'] + 1 : 1;
+            }
 
             $fuera[] = $ficha;
             $informe['publicados']++;
