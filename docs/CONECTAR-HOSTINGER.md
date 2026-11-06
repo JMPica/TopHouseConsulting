@@ -123,3 +123,35 @@ conector no las ve y se pone a buscar un navegador para hacer login.
 
 No hace falta para nada de lo de arriba. La via de GitHub es mas simple y
 no expone un token que da acceso a toda la cuenta de Hostinger.
+
+---
+
+## Estado final de la mudanza (6/11/2026)
+
+Comprobado ese dia desde fuera (DNS publico y peticiones a la web):
+
+- **tophouserealestate.es** es la web. Hostinger, publicada desde la rama
+  `deploy-web`.
+- **tophouseconsulting.com** es de Top House (registrado en Hostinger,
+  renovacion automatica, caduca 2028-05-21, bloqueo de transferencia puesto).
+  Sus DNS SIGUEN en la zona de OVH de Mobilia (dns100/ns100.ovh.net):
+  cualquier cambio de DNS del .com se le pide a Mobilia.
+  - `@` y `www` apuntan a Hostinger (A 195.35.49.212). En hPanel el .com es
+    un **dominio aparcado** de la web, con su certificado SSL.
+  - El `.htaccess` lo manda todo a www.tophouserealestate.es con 301,
+    respetando la ruta: `/es/ref-1432` -> `/es/inmueble/1432`, `/ref-1432` ->
+    `/immoble/1432`, `/es/venta` -> comprar. NO crear "Redireccionamientos"
+    en hPanel: escriben en el `.htaccess` y cada publicacion los borra.
+  - El correo NO se ha movido: MX y SPF siguen en OVH. Los buzones
+    @tophouseconsulting.com siguen donde estaban.
+- **Mobilia** enlaza ya los inmuebles a la web nueva, y lee los leads de
+  `info@tophouseconsulting.com`: los de los portales y los de la web
+  (copia en su formato, ver `docs/SOLICITUDES-POR-CORREO.txt`).
+- Los avisos de la web a la oficina van a `info@tophouserealestate.es`
+  (Hostinger).
+
+Si algun dia el correo se pasa a Hostinger: antes, preguntar a Mobilia que
+buzon leera para los leads y cambiar `aviso_crm` en la configuracion del
+servidor; despues, en la zona del .com, MX y SPF nuevos y alias de las
+direcciones viejas. Y descargar antes el historico (copias .pst de jordi@,
+info@ y Martha hechas el 4/11/2026).
