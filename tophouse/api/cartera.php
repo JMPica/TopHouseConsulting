@@ -1163,8 +1163,13 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPO
             if (count($otros)) { $ficha['i18n'] = $otros; }
 
             /* Un barco (ver $TIPOS_MARINE arriba): se marca para que la web
-               lo saque de Comprar y lo publique en Marine, con sus datos. */
-            if (count($TIPOS_MARINE) && in_array(normalizar($tipoCru), $TIPOS_MARINE, true)) {
+               lo saque de Comprar y lo publique en Marine, con sus datos.
+               OJO: $TIPOS_MARINE vive fuera de esta funcion. Sin el
+               'global', aqui valia null, y count(null) en PHP 8 tumba el
+               script entero: el 9/11/2026 la lista de pisos dio error 500
+               en cuanto caduco la copia. */
+            global $TIPOS_MARINE;
+            if (!empty($TIPOS_MARINE) && in_array(normalizar($tipoCru), $TIPOS_MARINE, true)) {
                 $ficha['seccion'] = 'marine';
                 $ficha['barco'] = datosBarco($ficha['descripcio']);
                 $informe['barcos'] = isset($informe['barcos']) ? $informe['barcos'] + 1 : 1;
