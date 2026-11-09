@@ -126,6 +126,33 @@
   RewriteRule ^es/contacto/?$     /es/#contacto      [R=301,NE,L]
   # /ca/ si es una direccion vieja: el catalan vive en la raiz.
   RewriteRule ^ca/?$              /                  [R=301,L]
+
+  # Los listados de la web vieja: /es/<pueblo>/<tipo>/ (dos carpetas o mas,
+  # sin punto: no es un fichero). Van a Comprar (o a Alquilar si la ruta
+  # habla de alquiler) con lo que venia en la ruta, y la pagina se abre ya
+  # filtrada por ese pueblo (ver cartera.js). Antes daban 404 y la portada.
+  # Solo si no existe de verdad, y despues de las fichas de arriba.
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} alquil|lloguer|llogar [NC]
+  RewriteRule ^es/((?:[^/.]+/)+[^/.]+)/?$ https://www.tophouserealestate.es/es/alquilar.html?poblacio=$1 [R=301,L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^es/((?:[^/.]+/)+[^/.]+)/?$ https://www.tophouserealestate.es/es/comprar.html?poblacio=$1 [R=301,L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} alquil|lloguer|llogar|/rent/ [NC]
+  RewriteRule ^en/((?:[^/.]+/)+[^/.]+)/?$ https://www.tophouserealestate.es/en/rent.html?poblacio=$1 [R=301,L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^en/((?:[^/.]+/)+[^/.]+)/?$ https://www.tophouserealestate.es/en/buy.html?poblacio=$1 [R=301,L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} alquil|lloguer|llogar [NC]
+  RewriteRule ^ca/((?:[^/.]+/)*[^/.]+)/?$ https://www.tophouserealestate.es/llogar.html?poblacio=$1 [R=301,L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ca/((?:[^/.]+/)*[^/.]+)/?$ https://www.tophouserealestate.es/comprar.html?poblacio=$1 [R=301,L]
 </IfModule>
 
 

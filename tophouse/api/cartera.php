@@ -213,7 +213,10 @@ if ($pedida !== '' && !$DIAG) {
 
    El tipo se escribe aqui abajo, o en la configuracion del servidor con
    'tipos_marine' => 'nombre del tipo' (varios separados por comas). Se
-   compara sin acentos, mayusculas ni espacios: "Trasteros" = "trasteros". */
+   compara sin acentos, mayusculas ni espacios: "Trasteros" = "trasteros".
+
+   SIN TIPO TAMBIEN FUNCIONA: cualquier ficha cuya descripcion empiece
+   con una linea "Eslora: ..." se trata como barco (ver traducir()). */
 $TIPOS_MARINE = array();
 if (isset($cfg['tipos_marine'])) {
     $TIPOS_MARINE = is_array($cfg['tipos_marine'])
@@ -1169,9 +1172,18 @@ function traducir($crudo, $cfg, $SINONIMOS, $SINONIMOS_ALQUILER, $IDIOMAS, $TIPO
                script entero: el 9/11/2026 la lista de pisos dio error 500
                en cuanto caduco la copia. */
             global $TIPOS_MARINE;
-            if (!empty($TIPOS_MARINE) && in_array(normalizar($tipoCru), $TIPOS_MARINE, true)) {
+            /* Y aunque el tipo no este en la lista: si la descripcion
+               empieza con los datos del barco y uno es "Eslora: ...", es un
+               barco. Ninguna casa tiene eslora, y asi un barco funciona el
+               primer dia sin tener que tocar la configuracion. */
+            $datosB = datosBarco(isset($ficha['descripcio']) ? $ficha['descripcio'] : '');
+            $tieneEslora = false;
+            foreach ($datosB as $par) {
+                if (normalizar($par[0]) === 'eslora') { $tieneEslora = true; break; }
+            }
+            if ($tieneEslora || (!empty($TIPOS_MARINE) && in_array(normalizar($tipoCru), $TIPOS_MARINE, true))) {
                 $ficha['seccion'] = 'marine';
-                $ficha['barco'] = datosBarco($ficha['descripcio']);
+                $ficha['barco'] = $datosB;
                 $informe['barcos'] = isset($informe['barcos']) ? $informe['barcos'] + 1 : 1;
             }
 

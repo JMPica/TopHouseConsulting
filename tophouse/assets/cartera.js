@@ -520,6 +520,24 @@
   }
 
   montarFiltros();
+
+  /* Llegar ya filtrado por pueblo. Las direcciones de la web vieja (los QR
+     de los carteles, lo que quede en Google) eran /es/<pueblo>/<tipo>/.
+     El .htaccess las manda aqui con ?poblacio=<lo que venia en la ruta>,
+     y aqui se busca entre los pueblos que hay ahora cualquier trozo que
+     coincida: "sant_andreu_de_llavaneres" encuentra "Sant Andreu de
+     Llavaneres". Si no coincide ninguno, se ve la lista entera. */
+  (function () {
+    if (!fPob || !window.URLSearchParams) return;
+    var pedido = new URLSearchParams(location.search).get('poblacio');
+    if (!pedido) return;
+    var trozos = pedido.split('/').map(llana).filter(Boolean);
+    Array.prototype.some.call(fPob.options, function (o) {
+      if (o.value && trozos.indexOf(llana(o.value)) !== -1) { fPob.value = o.value; return true; }
+      return false;
+    });
+  })();
+
   MANDOS.forEach(function (m) {
     /* En la referencia se filtra mientras se escribe; en los desplegables,
        al elegir. 'input' vale para los dos, pero 'change' no cubre teclear. */
