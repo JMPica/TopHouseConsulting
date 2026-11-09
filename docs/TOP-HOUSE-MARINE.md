@@ -114,3 +114,33 @@ logos, no lettering, no people anywhere.
    enganche al de nautica.js.
 5. Bandas con el copy de arriba, prueba de lectura sobre el peor fotograma de
    cada banda, y prueba de scroll a golpes.
+
+---
+
+## Publicar un barco desde Mobilia (desde el 9/11/2026)
+
+Los barcos se dan de alta en Mobilia como una ficha más: precio, fotos,
+municipio y título. Lo que la convierte en barco es **la primera línea de la
+descripción**, que tiene que ser la eslora. Debajo, el resto de datos, uno
+por línea, y después el texto normal:
+
+```
+Eslora: 9,5 m
+Año: 2015
+Motor: Yanmar 21 CV
+Horas: 850
+Puerto: Arenys de Mar
+
+Velero de crucero en muy buen estado...
+```
+
+- Con la línea `Eslora:`, la ficha sale de Comprar/Alquilar y aparece en la
+  página de Marine, con su ficha propia en azul (`/es/barco/REF`,
+  `/vaixell/REF`, `/en/boat/REF`). Tarda hasta 15 minutos (la copia de
+  Mobilia).
+- Esas líneas se convierten en la tabla de datos de la ficha (hasta 10), y
+  las tres primeras salen en la tarjeta de la lista.
+- El tipo de inmueble de Mobilia da igual. Si un día se quiere marcar por
+  tipo, se puede poner en `mobilia-config.php`: `'tipos_marine' => 'Nombre'`.
+- Que vaya o no a los portales se decide en Mobilia, ficha a ficha, como
+  siempre.
