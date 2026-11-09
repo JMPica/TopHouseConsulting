@@ -302,17 +302,21 @@ def construir():
             if idioma != 'es':
                 problemas += castellano_suelto(original, t, idioma, pagina)
 
-            # Las paginas php se sirven en direcciones con una carpeta de
-            # mas (/immoble/1432, /es/inmueble/1432), asi que un enlace
-            # relativo como "comprar.html" iba a /immoble/comprar.html, que
-            # no existe: el servidor ensenaba la portada en su lugar. Ahi
-            # todos los enlaces a paginas de la web van con la ruta entera.
+            # Todos los enlaces a paginas de la web van con la ruta entera.
+            #
+            # Antes solo en las php, que se sirven con una carpeta de mas
+            # (/immoble/1432): un "comprar.html" relativo iba a
+            # /immoble/comprar.html. Pero pasa lo mismo con CUALQUIER
+            # direccion que no existe: el servidor ensena la portada, y la
+            # portada servida en /es/sant_andreu_de_llavaneres/pisos/ref-1401
+            # (los QR de los carteles) mandaba "Comprar" a
+            # /es/sant_andreu_de_llavaneres/pisos/comprar.html, otra vez
+            # inexistente: el visitante daba vueltas sin ver un piso.
             # Los de ancla (#main), los de fuera y los que pone el php no
             # se tocan.
-            if pagina.endswith('.php'):
-                base = '/' + (CARPETA[idioma] + '/' if CARPETA[idioma] else '')
-                t = re.sub(r'(href|data-gracias)="(?!https?:|/|#|tel:|mailto:|<\?|%)([^"]+)"',
-                           lambda m: '%s="%s%s"' % (m.group(1), base, m.group(2)), t)
+            base = '/' + (CARPETA[idioma] + '/' if CARPETA[idioma] else '')
+            t = re.sub(r'(href|data-gracias)="(?!https?:|/|#|tel:|mailto:|<\?|%)([^"]+)"',
+                       lambda m: '%s="%s%s"' % (m.group(1), base, m.group(2)), t)
 
             destino = os.path.join(SALIDA, CARPETA[idioma], NOMBRES[idioma][pagina])
             generado[destino] = t
@@ -343,7 +347,7 @@ def construir():
     if os.path.isdir(api):
         shutil.copytree(api, os.path.join(SALIDA, 'api'))
 
-    for suelto in ('.htaccess', 'robots.txt', 'sitemap-immobles.php'):
+    for suelto in ('.htaccess', 'robots.txt', 'sitemap-immobles.php', '404.php'):
         origen = os.path.join(FUENTE, suelto)
         if os.path.exists(origen):
             shutil.copy2(origen, os.path.join(SALIDA, suelto))

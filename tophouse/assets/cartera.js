@@ -406,12 +406,12 @@
     /* Cada inmueble tiene su propia pagina. Antes este boton llevaba al
        formulario de la portada, que es el mismo sitio para los treinta y
        cuatro: quien lo pulsaba perdia de vista el piso que le interesaba y
-       tenia que describirlo de memoria. El tramo es relativo a proposito,
-       asi que desde /es/comprar.html sale /es/inmueble/REF sin que haya
-       que saber aqui en que carpeta estamos. */
+       tenia que describirlo de memoria. La ruta va entera (/es/inmueble/REF):
+       relativa, en una direccion que no existe y donde el servidor ensena
+       la portada, el boton llevaria a otra direccion inexistente. */
     var TRAMO = i.seccion === 'marine'
-      ? ({ ca: 'vaixell/', es: 'barco/', en: 'boat/' }[IDIOMA] || 'barco/')
-      : ({ ca: 'immoble/', es: 'inmueble/', en: 'property/' }[IDIOMA] || 'inmueble/');
+      ? ({ ca: '/vaixell/', es: '/es/barco/', en: '/en/boat/' }[IDIOMA] || '/es/barco/')
+      : ({ ca: '/immoble/', es: '/es/inmueble/', en: '/en/property/' }[IDIOMA] || '/es/inmueble/');
     var cta = nodo('a', 'btn btn--ghost inm__cta', T('Quiero verlo'));
     cta.href = TRAMO + encodeURIComponent(i.ref);
     if (i.ref) cta.appendChild(nodo('span', 'sr-only', T(' (referencia ') + i.ref + ')'));

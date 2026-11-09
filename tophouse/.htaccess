@@ -51,9 +51,17 @@
   # Si el inmueble ya no esta publicado, la ficha lo dice y ofrece
   # llamar: no se pierde el visitante.
   # -------------------------------------------------------------------
-  RewriteRule ^es/ref-([A-Za-z0-9._-]+)/?$      https://www.tophouserealestate.es/es/inmueble/$1 [R=301,NC,L]
-  RewriteRule ^en/ref-([A-Za-z0-9._-]+)/?$      https://www.tophouserealestate.es/en/property/$1 [R=301,NC,L]
-  RewriteRule ^(?:ca/)?ref-([A-Za-z0-9._-]+)/?$ https://www.tophouserealestate.es/immoble/$1     [R=301,NC,L]
+  #
+  # Los QR de los carteles impresos llevan OTRO formato de la web vieja,
+  # con el pueblo y el tipo en medio:
+  #
+  #     /es/sant_andreu_de_llavaneres/pisos/ref-1401
+  #
+  # Por eso el "(?:[^/]+/)*": cualquier carpeta entre el idioma y el
+  # ref-NNNN. Y por si algun QR acaba en .html, tambien se acepta.
+  RewriteRule ^es/(?:[^/]+/)*ref-([A-Za-z0-9_-]+?)(?:\.html?)?/?$      https://www.tophouserealestate.es/es/inmueble/$1 [R=301,NC,L]
+  RewriteRule ^en/(?:[^/]+/)*ref-([A-Za-z0-9_-]+?)(?:\.html?)?/?$      https://www.tophouserealestate.es/en/property/$1 [R=301,NC,L]
+  RewriteRule ^(?:[^/]+/)*ref-([A-Za-z0-9_-]+?)(?:\.html?)?/?$         https://www.tophouserealestate.es/immoble/$1     [R=301,NC,L]
 
   # sin https -> con https
   RewriteCond %{HTTPS} !=on
@@ -124,11 +132,12 @@
 # ---------------------------------------------------------------------
 # 3. Si alguien pide una pagina que no existe
 #
-# En vez de la pantalla de error del servidor, se le ensena la portada.
-# El servidor sigue respondiendo "no existe" por dentro, que es lo que
-# Google necesita saber.
+# En vez de la pantalla de error del servidor, se le ensena la portada,
+# en el idioma de la direccion (/es/... en castellano, /en/... en
+# ingles, el resto en catalan): lo decide 404.php. El servidor sigue
+# respondiendo "no existe" por dentro, que es lo que Google necesita saber.
 # ---------------------------------------------------------------------
-ErrorDocument 404 /index.html
+ErrorDocument 404 /404.php
 
 
 # ---------------------------------------------------------------------
