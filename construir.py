@@ -36,14 +36,15 @@ FUENTE  = os.path.join(RAIZ, 'tophouse')
 SALIDA  = os.path.join(RAIZ, 'web')
 TABLAS  = os.path.join(RAIZ, 'idiomas')
 
-PAGINAS = ['index.html', 'comprar.html', 'alquilar.html', 'nautica.html', 'legal.html', 'gracias.html', 'immoble.php']
+PAGINAS = ['index.html', 'vender.html', 'valoracion.html', 'gestion-alquileres.html', 'contacto.html',
+           'comprar.html', 'alquilar.html', 'nautica.html', 'legal.html', 'gracias.html', 'immoble.php']
 
 # Como se llama cada pagina en cada idioma. La clave es el nombre en la
 # fuente. Los enlaces entre paginas se reescriben con esto.
 NOMBRES = {
-    'ca': {'index.html':'index.html', 'comprar.html':'comprar.html', 'alquilar.html':'llogar.html',  'nautica.html':'nautica.html', 'legal.html':'legal.html', 'gracias.html':'gracies.html', 'immoble.php':'immoble.php'},
-    'es': {'index.html':'index.html', 'comprar.html':'comprar.html', 'alquilar.html':'alquilar.html', 'nautica.html':'nautica.html', 'legal.html':'legal.html', 'gracias.html':'gracias.html', 'immoble.php':'inmueble.php'},
-    'en': {'index.html':'index.html', 'comprar.html':'buy.html',     'alquilar.html':'rent.html',     'nautica.html':'boats.html', 'legal.html':'legal.html', 'gracias.html':'thanks.html', 'immoble.php':'property.php'},
+    'ca': {'index.html':'index.html', 'vender.html':'vendre.html', 'valoracion.html':'valoracio.html', 'gestion-alquileres.html':'gestio-lloguers.html', 'contacto.html':'contacte.html', 'comprar.html':'comprar.html', 'alquilar.html':'llogar.html',  'nautica.html':'nautica.html', 'legal.html':'legal.html', 'gracias.html':'gracies.html', 'immoble.php':'immoble.php'},
+    'es': {'index.html':'index.html', 'vender.html':'vender.html', 'valoracion.html':'valoracion.html', 'gestion-alquileres.html':'gestion-alquileres.html', 'contacto.html':'contacto.html', 'comprar.html':'comprar.html', 'alquilar.html':'alquilar.html', 'nautica.html':'nautica.html', 'legal.html':'legal.html', 'gracias.html':'gracias.html', 'immoble.php':'inmueble.php'},
+    'en': {'index.html':'index.html', 'vender.html':'sell.html', 'valoracion.html':'valuation.html', 'gestion-alquileres.html':'rental-management.html', 'contacto.html':'contact.html', 'comprar.html':'buy.html',     'alquilar.html':'rent.html',     'nautica.html':'boats.html', 'legal.html':'legal.html', 'gracias.html':'thanks.html', 'immoble.php':'property.php'},
 }
 CARPETA = {'ca':'', 'es':'es', 'en':'en'}
 CODIGO  = {'ca':'ca', 'es':'es', 'en':'en'}
@@ -256,9 +257,130 @@ def canonica(pagina, idioma):
     return DOMINIO + ruta.replace('/index.html', '/')
 
 
+# ---------------------------------------------------------------------
+# Datos estructurados (JSON-LD)
+#
+# Lo que Google, Bing y los asistentes de IA leen para saber, sin
+# adivinar, quien es la empresa, donde esta, que hace y de que va cada
+# pagina. TODO sale de datos que ya estan en la web (aviso legal, pie,
+# textos de cada pagina) y del propio html ya traducido: si cambia un
+# texto, cambian los datos con el. Nada de valoraciones, premios ni
+# perfiles que no se puedan comprobar.
+# ---------------------------------------------------------------------
+AGENCIA_ID = DOMINIO + '/#agencia'
+WEB_ID = DOMINIO + '/#web'
+INICIO = {'ca': 'Inici', 'es': 'Inicio', 'en': 'Home'}
+# Las paginas que son un servicio que se contrata.
+SERVICIOS = {'vender.html', 'valoracion.html', 'gestion-alquileres.html'}
+# Las preguntas solo se marcan en una pagina por pregunta: en la portada
+# se repiten las de vender, y marcarlas dos veces no aporta nada.
+CON_FAQ = {'vender.html', 'valoracion.html'}
+NO_INDEXABLES = {'gracias.html'}
+
+
+def _texto(fragmento):
+    t = re.sub(r'<[^>]+>', ' ', fragmento)
+    return re.sub(r'\s+', ' ', html.unescape(t)).strip()
+
+
+def datos_estructurados(pagina, idioma, t, desc_agencia):
+    canon = canonica(pagina, idioma)
+    titulo = _texto((re.search(r'<title>(.*?)</title>', t, re.S) or [None, ''])[1] or '')
+    m = re.search(r'<meta name="description" content="([^"]*)"', t)
+    desc = html.unescape(m.group(1)) if m else ''
+    h1 = re.search(r'<h1[^>]*>(.*?)</h1>', t, re.S)
+    nombre_h1 = _texto(h1.group(1)) if h1 else titulo
+
+    agencia = {
+        '@type': 'RealEstateAgent',
+        '@id': AGENCIA_ID,
+        'name': 'Top House Real Estate',
+        'legalName': 'Top House Real Estate, S.L.',
+        'taxID': 'B06925135',
+        'url': canonica('index.html', idioma),
+        'logo': DOMINIO + '/assets/logo.png',
+        'image': DOMINIO + '/assets/hero-ending.jpg',
+        'description': desc_agencia,
+        'telephone': '+34 605 27 31 50',
+        'email': 'info@tophouserealestate.es',
+        'address': {
+            '@type': 'PostalAddress',
+            'streetAddress': 'Riera del Bisbe Pol, 56',
+            'postalCode': '08350',
+            'addressLocality': 'Arenys de Mar',
+            'addressRegion': 'Barcelona',
+            'addressCountry': 'ES',
+        },
+        'areaServed': {'@type': 'AdministrativeArea', 'name': 'Maresme'},
+        'knowsLanguage': ['ca', 'es', 'en'],
+        'identifier': {'@type': 'PropertyValue', 'propertyID': 'AICAT',
+                       'name': "Registre d'Agents Immobiliaris de Catalunya", 'value': '11152'},
+        'contactPoint': {'@type': 'ContactPoint', 'telephone': '+34 605 27 31 50',
+                         'email': 'info@tophouserealestate.es', 'contactType': 'customer service',
+                         'availableLanguage': ['ca', 'es', 'en']},
+    }
+    web = {'@type': 'WebSite', '@id': WEB_ID, 'url': canonica('index.html', idioma),
+           'name': 'Top House Real Estate', 'publisher': {'@id': AGENCIA_ID},
+           'inLanguage': CODIGO[idioma]}
+    pagina_ld = {'@type': 'WebPage', '@id': canon + '#pagina', 'url': canon, 'name': titulo,
+                 'description': desc, 'inLanguage': CODIGO[idioma], 'isPartOf': {'@id': WEB_ID},
+                 'about': {'@id': AGENCIA_ID}}
+    if pagina == 'contacto.html':
+        pagina_ld['@type'] = 'ContactPage'
+    grafo = [agencia, web, pagina_ld]
+
+    if pagina != 'index.html':
+        miga = {'@type': 'BreadcrumbList', '@id': canon + '#migas', 'itemListElement': [
+            {'@type': 'ListItem', 'position': 1, 'name': INICIO[idioma], 'item': canonica('index.html', idioma)},
+            {'@type': 'ListItem', 'position': 2, 'name': nombre_h1, 'item': canon}]}
+        pagina_ld['breadcrumb'] = {'@id': canon + '#migas'}
+        grafo.append(miga)
+
+    if pagina in SERVICIOS:
+        grafo.append({'@type': 'Service', '@id': canon + '#servicio', 'name': nombre_h1,
+                      'description': desc, 'url': canon, 'provider': {'@id': AGENCIA_ID},
+                      'areaServed': {'@type': 'AdministrativeArea', 'name': 'Maresme'},
+                      'availableChannel': {'@type': 'ServiceChannel', 'serviceUrl': canon,
+                                           'servicePhone': '+34 605 27 31 50'}})
+        pagina_ld['mainEntity'] = {'@id': canon + '#servicio'}
+
+    if pagina in CON_FAQ:
+        preguntas = []
+        for q, a in re.findall(r'<details class="qa[^"]*">\s*<summary><span>(.*?)</span></summary>\s*<p>(.*?)</p>', t, re.S):
+            preguntas.append({'@type': 'Question', 'name': _texto(q),
+                              'acceptedAnswer': {'@type': 'Answer', 'text': _texto(a)}})
+        if preguntas:
+            grafo.append({'@type': 'FAQPage', '@id': canon + '#preguntas', 'mainEntity': preguntas,
+                          'inLanguage': CODIGO[idioma], 'isPartOf': {'@id': canon + '#pagina'}})
+
+    js = json.dumps({'@context': 'https://schema.org', '@graph': grafo}, ensure_ascii=False, separators=(',', ':'))
+    # '</' dentro de un <script> cerraria la etiqueta antes de tiempo.
+    js = js.replace('</', '<\\/')
+    return '<script type="application/ld+json">' + js + '</script>\n'
+
+
+def fecha_git(*rutas):
+    """La fecha del ultimo commit que toco estos ficheros: la de verdad,
+    para el lastmod del sitemap. Antes era una fecha fija que no cambiaba
+    nunca, y Google aprende a no fiarse de un lastmod que miente."""
+    import subprocess
+    fechas = []
+    for r in rutas:
+        try:
+            f = subprocess.run(['git', 'log', '-1', '--format=%cs', '--', r], cwd=RAIZ,
+                               capture_output=True, text=True, timeout=10).stdout.strip()
+        except Exception:
+            f = ''
+        if f:
+            fechas.append(f)
+    return max(fechas) if fechas else None
+
+
 def construir():
     problemas = []
     generado = {}
+    desc_es = re.search(r'<meta name="description" content="([^"]*)"',
+                        open(os.path.join(FUENTE, 'index.html'), encoding='utf-8').read()).group(1)
 
     for idioma in ('ca', 'es', 'en'):
         tabla = cargar_tabla(idioma)
@@ -286,6 +408,9 @@ def construir():
                                                                      cabecera_idiomas(pagina, idioma)), t)
                 t = re.sub(r'<meta property="og:url" content="[^"]*">',
                            '<meta property="og:url" content="%s">' % canonica(pagina, idioma), t)
+            if pagina.endswith('.html') and pagina not in NO_INDEXABLES:
+                t = t.replace('</head>', datos_estructurados(
+                    pagina, idioma, t, html.unescape(traducir(desc_es, tabla))) + '</head>', 1)
             # Marcas para las paginas php: necesitan saber en que idioma se
             # han generado para elegir los textos de Mobilia que tocan y
             # para componer sus propias direcciones.
@@ -379,7 +504,16 @@ def escribir_sitemap():
             for otro in ('ca', 'es', 'en'):
                 filas.append('    <xhtml:link rel="alternate" hreflang="%s" href="%s"/>'
                              % (CODIGO[otro], canonica(pagina, otro)))
-            filas.append('    <lastmod>2026-09-07</lastmod>')
+            filas.append('    <xhtml:link rel="alternate" hreflang="x-default" href="%s"/>'
+                         % canonica(pagina, 'ca'))
+            # La pagina cambia cuando cambia su fuente o, en catalan e
+            # ingles, su tabla de traduccion.
+            fuentes = [os.path.join('tophouse', pagina)]
+            if idioma != 'es':
+                fuentes.append(os.path.join('idiomas', idioma + '.json'))
+            fecha = fecha_git(*fuentes)
+            if fecha:
+                filas.append('    <lastmod>%s</lastmod>' % fecha)
             filas.append('    <priority>%s</priority>' % ('1.0' if pagina == 'index.html' else '0.8'))
             filas.append('  </url>')
     filas.append('</urlset>')

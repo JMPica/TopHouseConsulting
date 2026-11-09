@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Top House Real Estate · Inmobiliaria en el Maresme</title>
-<meta name="description" content="Inmobiliaria en el Maresme, con oficina en Arenys de Mar. Compra, venta y alquiler en los treinta municipios de la comarca, de Montgat a Tordera. Valoración gratuita y sin compromiso.">
+<title>Inmobiliaria en Arenys de Mar y el Maresme · Top House</title>
+<meta name="description" content="Inmobiliaria con oficina en Arenys de Mar. Compra, venta y alquiler en todo el Maresme, de Montgat a Tordera. Valoración gratuita y sin compromiso.">
 <meta name="theme-color" content="#0B1417">
 <meta name="author" content="Top House Real Estate">
 <!-- ===================================================================
@@ -26,7 +26,7 @@
 <meta property="og:type" content="website">
 <meta property="og:locale" content="es_ES">
 <meta property="og:site_name" content="Top House Real Estate">
-<meta property="og:title" content="Top House Real Estate · Inmobiliaria en el Maresme">
+<meta property="og:title" content="Inmobiliaria en Arenys de Mar y el Maresme · Top House">
 <meta property="og:description" content="Compra, venta y alquiler en todo el Maresme. Le decimos lo que vale su vivienda en media hora, gratis y sin compromiso.">
 <meta name="twitter:card" content="summary_large_image">
 
@@ -52,20 +52,20 @@
 <!-- ============ NAVEGACIÓN ============ -->
 <nav class="nav" id="nav" aria-label="Principal">
   <a class="nav__brand" href="#top" aria-label="Top House Real Estate, inicio">
-    <img class="mark" src="/assets/logo.png" width="256" height="256" alt="" aria-hidden="true" decoding="async">
+    <img class="mark" src="/assets/logo-96.png" width="96" height="96" alt="" aria-hidden="true" decoding="async">
     <span class="nav__word">
       <span class="nav__name">Top House</span>
       <span class="nav__kicker">Real Estate</span>
     </span>
   </a>
   <div class="nav__links">
-    <a href="#vender">Vender</a>
+    <a href="vender.html">Vender</a>
     <a href="comprar.html">Comprar</a>
     <a href="alquilar.html">Alquilar</a>
-    <a href="#valorar">Valoración</a>
-    <a href="#servicios">Servicios</a>
+    <a href="valoracion.html">Valoración</a>
+    <a href="index.html#servicios">Servicios</a>
     <a href="nautica.html">Marine</a>
-    <a href="#contacto">Contacto</a>
+    <a href="contacto.html">Contacto</a>
   </div>
   <div class="nav__actions">
     <a class="btn btn--ghost nav__tel" href="tel:+34605273150">605 27 31 50</a>
@@ -167,7 +167,10 @@
         <li>Comparada con lo que se ha firmado en su tramo</li>
         <li>Sin coste, sin compromiso y sin exclusiva obligatoria</li>
       </ul>
-      <a class="btn btn--solid" href="#contacto">Pedir mi valoración</a>
+      <div class="door__btns">
+        <a class="btn btn--solid" href="#contacto">Pedir mi valoración</a>
+        <a class="btn btn--ghost" href="vender.html">Cómo vendemos</a>
+      </div>
     </article>
 
     <article class="door door--small part" id="comprar">
@@ -191,7 +194,10 @@
         <li>Solvencia del inquilino comprobada antes de firmar</li>
         <li>Contrato y papeles incluidos</li>
       </ul>
-      <a class="btn btn--ghost" href="alquilar.html">Ver los alquileres</a>
+      <div class="door__btns">
+        <a class="btn btn--ghost" href="alquilar.html">Ver los alquileres</a>
+        <a class="btn btn--ghost" href="gestion-alquileres.html">Soy propietario</a>
+      </div>
     </article>
 
   </div>
@@ -386,15 +392,15 @@
   <ul class="svc__list">
     <li class="svc__item part">
       <h3>Valoración gratuita</h3>
-      <p>La vemos por dentro y la comparamos con lo que se ha vendido cerca. Sin coste y sin compromiso.</p>
+      <p>La vemos por dentro y la comparamos con lo que se ha vendido cerca. Sin coste y sin compromiso. <a class="svc__link" href="valoracion.html">Cómo la hacemos</a></p>
     </li>
     <li class="svc__item part">
       <h3>Venta de inmuebles</h3>
-      <p>Llevamos la venta desde el primer día hasta la firma ante notario. De todo lo de en medio nos encargamos nosotros.</p>
+      <p>Llevamos la venta desde el primer día hasta la firma ante notario. De todo lo de en medio nos encargamos nosotros. <a class="svc__link" href="vender.html">Vender con nosotros</a></p>
     </li>
     <li class="svc__item part">
       <h3>Alquiler garantizado</h3>
-      <p>Buscamos el inquilino, comprobamos que puede pagar y preparamos el contrato.</p>
+      <p>Buscamos el inquilino, comprobamos que puede pagar y preparamos el contrato. <a class="svc__link" href="gestion-alquileres.html">Gestión de alquileres</a></p>
     </li>
     <li class="svc__item part">
       <h3>Financiación</h3>
@@ -489,8 +495,8 @@
       <select id="f-que" name="necesita">
         <option value="Vender">Vender</option>
         <option value="Comprar">Comprar</option>
-        <option value="Alquilar">Alquilar</option>
-        <option value="Alquilar">Alquilar</option>
+        <option value="Alquilar mi vivienda">Alquilar mi vivienda</option>
+        <option value="Busco vivienda de alquiler">Busco vivienda de alquiler</option>
         <option value="Solo saber el precio">Solo saber el precio</option>
       </select>
     </div>
@@ -518,7 +524,7 @@
 <footer class="foot">
   <div class="foot__top">
     <a class="nav__brand" href="#top" aria-label="Top House Real Estate, inicio">
-      <img class="mark" src="/assets/logo.png" width="256" height="256" alt="" aria-hidden="true" decoding="async">
+      <img class="mark" src="/assets/logo-96.png" width="96" height="96" alt="" aria-hidden="true" decoding="async">
       <span class="nav__word">
         <span class="nav__name">Top House</span>
         <span class="nav__kicker">Real Estate</span>
@@ -532,7 +538,16 @@
       <div>
         <p class="mono foot__l">Hablar</p>
         <p><a href="tel:+34605273150">605 27 31 50</a><br>
-           <a href="https://wa.me/34605273150" rel="noopener">WhatsApp</a></p>
+           <a href="https://wa.me/34605273150" rel="noopener">WhatsApp</a><br>
+           <a href="mailto:info@tophouserealestate.es">info@tophouserealestate.es</a></p>
+      </div>
+      <div>
+        <p class="mono foot__l">Servicios</p>
+        <p><a href="vender.html">Vender su casa</a><br>
+           <a href="valoracion.html">Valoración gratuita</a><br>
+           <a href="gestion-alquileres.html">Gestión de alquileres</a><br>
+           <a href="comprar.html">Comprar</a><br>
+           <a href="nautica.html">Top House Marine</a></p>
       </div>
       <div>
         <p class="mono foot__l">Legal</p>
@@ -549,6 +564,7 @@
 </footer>
 
 <script src="/assets/poblacions.js" defer></script>
+<script src="/assets/medida.js" defer></script>
 <script src="/assets/idioma.js" defer></script>
 <script src="/assets/menu.js" defer></script>
 <script src="/assets/aviso.js" defer></script>

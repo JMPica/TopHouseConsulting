@@ -63,6 +63,7 @@ window.enviarSolicitud = (function () {
     var motivo = '';
 
     function fallo() {
+      if (window.contar) window.contar('fallo', { o: datos.origen || '' });
       form.removeAttribute('data-enviando');
       if (boton) { boton.disabled = false; boton.textContent = textoBoton; }
       if (!err) return;
@@ -100,6 +101,9 @@ window.enviarSolicitud = (function () {
       .then(function (llegado) {
         clearTimeout(reloj);
         if (!llegado) { fallo(); return; }
+        /* Se cuenta solo cuando el servidor ha confirmado: una solicitud
+           que no ha llegado no es un contacto (ver assets/medida.js). */
+        if (window.contar) window.contar('solicitud', { o: datos.origen || '' });
         try {
           sessionStorage.setItem('th-solicitud', JSON.stringify({
             whatsapp: o.whatsapp || '',

@@ -49,8 +49,13 @@ if [ -n "$PENDIENTES" ]; then
   exit 1
 fi
 
+echo "==> Revisando enlaces, datos estructurados, hreflang y sitemap"
+# Si algo de esto falla, la web publicada tendria un enlace roto o datos
+# que Google no puede leer. Ver pruebas/revisar_web.py.
+python3 pruebas/revisar_web.py "$ORIGEN" || { echo "ERROR: la revision ha encontrado problemas. No se publica."; exit 1; }
+
 echo "==> Comprobando que estan las tres portadas y los recursos"
-for necesario in index.html es/index.html en/index.html assets/site.css assets/hero-scrub.mp4 assets/hero-mobil/f-001.webp api/cartera.php .htaccess immoble.php es/inmueble.php en/property.php assets/fitxa.js assets/extras.js sitemap-immobles.php; do
+for necesario in index.html es/index.html en/index.html vendre.html es/gestion-alquileres.html api/evento.php assets/medida.js assets/site.css assets/hero-scrub.mp4 assets/hero-mobil/f-001.webp api/cartera.php .htaccess immoble.php es/inmueble.php en/property.php assets/fitxa.js assets/extras.js sitemap-immobles.php; do
   [ -e "$ORIGEN/$necesario" ] || { echo "ERROR: falta $necesario en $ORIGEN/"; exit 1; }
 done
 

@@ -386,6 +386,10 @@ if ($n) {
         'businessFunction' => $operacio === 'alquiler' ? 'http://purl.org/goodrelations/v1#LeaseOut' : 'http://purl.org/goodrelations/v1#Sell',
         'offeredBy' => array(
             '@type' => 'RealEstateAgent',
+            /* El mismo identificador que la empresa en el resto de la web
+               (ver datos_estructurados() en construir.py): asi Google sabe
+               que quien ofrece el piso es la inmobiliaria de la portada. */
+            '@id' => $DOMINIO . '/#agencia',
             'name' => 'Top House Real Estate',
             'telephone' => '+34605273150',
             'url' => $DOMINIO . '/',
@@ -423,6 +427,21 @@ if ($n) {
         }, array_values(array_slice($fotos, 0, 6)));
     }
     $jsonLd = json_encode($ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP);
+
+    /* La miga de pan: Inicio > Comprar (o Alquilar, o Marine) > esta ficha.
+       Google la ensena en el resultado en lugar de la direccion. */
+    $raizIdioma = $DOMINIO . ($L === 'ca' ? '/' : '/' . $L . '/');
+    $nomInicio = array('ca' => 'Inici', 'es' => 'Inicio', 'en' => 'Home');
+    $nomLista = $esBarco ? 'Top House Marine' : ($operacio === 'alquiler'
+        ? array('ca' => 'Llogar', 'es' => 'Alquilar', 'en' => 'Rent')
+        : array('ca' => 'Comprar', 'es' => 'Comprar', 'en' => 'Buy'));
+    if (is_array($nomLista)) { $nomLista = $nomLista[$L]; }
+    $migas = array('@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => array(
+        array('@type' => 'ListItem', 'position' => 1, 'name' => $nomInicio[$L], 'item' => $raizIdioma),
+        array('@type' => 'ListItem', 'position' => 2, 'name' => $nomLista, 'item' => $DOMINIO . $volver),
+        array('@type' => 'ListItem', 'position' => 3, 'name' => $titulo, 'item' => $canonica),
+    ));
+    $jsonLdMigas = json_encode($migas, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP);
 }
 ?>
 <!DOCTYPE html>
@@ -460,6 +479,7 @@ if ($n) {
 <?php } ?>
 
 <?php if ($jsonLd !== '') { echo '<script type="application/ld+json">' . $jsonLd . '</script>' . "\n"; } ?>
+<?php if (!empty($jsonLdMigas)) { echo '<script type="application/ld+json">' . $jsonLdMigas . '</script>' . "\n"; } ?>
 <link rel="icon" type="image/png" href="/assets/favicon.png">
 <link rel="preload" href="/assets/fonts/fraunces-var-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/manrope-var-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -471,24 +491,24 @@ if ($n) {
 <div class="env" aria-hidden="true"><div class="env__glow"></div><div class="env__dust"></div></div>
 <nav class="nav" id="nav" aria-label="Principal">
   <a class="nav__brand" href="index.html" aria-label="Top House Real Estate, inicio">
-    <img class="mark" src="/assets/logo.png" width="256" height="256" alt="" aria-hidden="true" decoding="async">
+    <img class="mark" src="/assets/logo-96.png" width="96" height="96" alt="" aria-hidden="true" decoding="async">
     <span class="nav__word">
       <span class="nav__name">Top House</span>
       <span class="nav__kicker"><?php echo $esBarco ? 'Marine' : 'Real Estate'; ?></span>
     </span>
   </a>
   <div class="nav__links">
-    <a href="index.html#vender">Vender</a>
+    <a href="vender.html">Vender</a>
     <a href="comprar.html">Comprar</a>
     <a href="alquilar.html">Alquilar</a>
-    <a href="index.html#valorar">Valoración</a>
+    <a href="valoracion.html">Valoración</a>
     <a href="index.html#servicios">Servicios</a>
     <a href="nautica.html">Marine</a>
-    <a href="index.html#contacto">Contacto</a>
+    <a href="contacto.html">Contacto</a>
   </div>
   <div class="nav__actions">
     <a class="btn btn--ghost nav__tel" href="tel:+34605273150">605 27 31 50</a>
-    <a class="btn btn--solid" href="index.html#contacto">Pedir mi valoración</a>
+    <a class="btn btn--solid" href="valoracion.html#form">Pedir mi valoración</a>
   </div>
 </nav>
 
@@ -524,12 +544,14 @@ if ($n) {
 
   <?php if (count($fotos)) { ?>
   <section class="fitxa__galeria" aria-label="Fotografías">
-    <img class="fitxa__grande" id="fitxa-grande" src="<?php echo h($fotos[0]); ?>" alt="" decoding="async">
+    <img class="fitxa__grande" id="fitxa-grande" src="<?php echo h($fotos[0]); ?>" alt="<?php echo h($titulo); ?>" decoding="async">
     <?php if (count($fotos) > 1) { ?>
     <ul class="fitxa__tiras">
       <?php foreach ($fotos as $i => $f) { ?>
       <li><button type="button" class="fitxa__tira<?php echo $i === 0 ? ' is-on' : ''; ?>"
-                  data-foto="<?php echo h($f); ?>">
+                  data-foto="<?php echo h($f); ?>"
+                  aria-label="<?php echo h(($L === 'en' ? 'Photo ' : 'Foto ') . ($i + 1)); ?>"
+                  aria-pressed="<?php echo $i === 0 ? 'true' : 'false'; ?>">
             <img src="<?php echo h($f); ?>" alt="" loading="lazy" decoding="async">
           </button></li>
       <?php } ?>
@@ -631,7 +653,7 @@ if ($n) {
 <footer class="foot">
   <div class="foot__top">
     <a class="nav__brand" href="index.html" aria-label="Top House Real Estate, inicio">
-      <img class="mark" src="/assets/logo.png" width="256" height="256" alt="" aria-hidden="true" decoding="async">
+      <img class="mark" src="/assets/logo-96.png" width="96" height="96" alt="" aria-hidden="true" decoding="async">
       <span class="nav__word">
         <span class="nav__name">Top House</span>
         <span class="nav__kicker">Real Estate</span>
@@ -645,7 +667,16 @@ if ($n) {
       <div>
         <p class="mono foot__l">Hablar</p>
         <p><a href="tel:+34605273150">605 27 31 50</a><br>
-           <a href="https://wa.me/34605273150" rel="noopener">WhatsApp</a></p>
+           <a href="https://wa.me/34605273150" rel="noopener">WhatsApp</a><br>
+           <a href="mailto:info@tophouserealestate.es">info@tophouserealestate.es</a></p>
+      </div>
+      <div>
+        <p class="mono foot__l">Servicios</p>
+        <p><a href="vender.html">Vender su casa</a><br>
+           <a href="valoracion.html">Valoración gratuita</a><br>
+           <a href="gestion-alquileres.html">Gestión de alquileres</a><br>
+           <a href="comprar.html">Comprar</a><br>
+           <a href="nautica.html">Top House Marine</a></p>
       </div>
       <div>
         <p class="mono foot__l">Legal</p>
@@ -660,6 +691,7 @@ if ($n) {
     <p class="foot__note">Precios y superficies orientativos. La información definitiva de cada inmueble se entrega por escrito antes de cualquier reserva.</p>
   </div>
 </footer>
+<script src="/assets/medida.js" defer></script>
 <script src="/assets/idioma.js" defer></script>
 <script src="/assets/menu.js" defer></script>
 <script src="/assets/base.js" defer></script>

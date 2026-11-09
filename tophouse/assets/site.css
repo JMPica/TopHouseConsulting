@@ -1376,7 +1376,7 @@ section{
   font-family:var(--m);font-size:.68rem;letter-spacing:.16em;
   text-transform:uppercase;color:var(--text-secondary);
 }
-.opt{text-transform:none;letter-spacing:0;opacity:.7}
+.opt{text-transform:none;letter-spacing:0}
 .field input,.field select,.field textarea{
   font-family:var(--b);font-size:.98rem;color:var(--text-primary);
   background:var(--panel);
@@ -1395,7 +1395,7 @@ section{
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23566A6C' stroke-width='1.6'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
 .form__go{grid-column:1/-1;margin-top:.4rem}
-.form__note{grid-column:1/-1;color:var(--text-secondary);margin:.2rem 0 0;opacity:.72;
+.form__note{grid-column:1/-1;color:var(--text-secondary);margin:.2rem 0 0;
   text-transform:none;letter-spacing:.02em;font-size:.78rem}
 .form__err{grid-column:1/-1;color:#A32118;margin:0;font-size:.9rem}
 .form__ok{
@@ -1594,7 +1594,7 @@ section{
   gap:clamp(28px,5vw,80px);align-items:start;
 }
 .foot__cols{
-  display:grid;grid-template-columns:repeat(3,1fr);
+  display:grid;grid-template-columns:repeat(4,1fr);
   gap:clamp(18px,3vw,44px);
   color:var(--text-secondary);font-size:.94rem;
 }
@@ -1609,7 +1609,7 @@ section{
   color:var(--text-secondary);font-size:.8rem;
 }
 .foot__bar p{margin:0}
-.foot__note{opacity:.66;max-width:52ch}
+.foot__note{max-width:52ch;color:var(--text-secondary)}
 
 @media (max-width:760px){
   .foot__top{grid-template-columns:1fr}
@@ -2083,3 +2083,21 @@ body.mar .band--center::before{opacity:.7}
 /* Los barcos en venta, en la pagina de Marine (nautica.html) */
 .mar__barcos-cap{max-width:var(--maxw);margin:0 auto clamp(22px,4vh,40px)}
 .mar__barcos-cap .cart__cuenta{margin-top:.6rem}
+
+/* ---------- paginas de servicio (vender, valoracion, alquileres, contacto) ----------
+   Reutilizan las piezas de la portada (svc, faq, steps, close) sin la
+   animacion de entrada, que depende del motor de la portada (site.js):
+   aqui todo esta visible desde el principio. */
+.pag__btns{display:flex;flex-wrap:wrap;gap:12px;margin-top:1.6rem}
+.pag__bloque .kicker{margin-bottom:.6rem}
+.pag__bloque .cart__cierre-in{text-align:left}
+.pag__bloque .cart__cierre-btns{justify-content:flex-start}
+.door__btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:.4rem;align-self:flex-start}
+.door__btns .btn{margin-top:0}
+.contacto .svc__list{margin-top:0}
+.contacto .svc__item p + p{margin-top:.5rem}
+.steps .step{opacity:1;transform:none}
+@media (max-width:1100px) and (min-width:761px){
+  .foot__cols{grid-template-columns:repeat(2,1fr)}
+}
+.contacto__legal{max-width:var(--maxw);margin:1.2rem auto 0;color:var(--text-secondary);font-size:.9rem}

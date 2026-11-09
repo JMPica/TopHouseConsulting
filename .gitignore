@@ -4,3 +4,6 @@ node_modules/
 web/
 mobilia-config.php
 __pycache__/
+
+# Recuentos de la web (api/evento.php) si se prueba en local
+medida-*.json

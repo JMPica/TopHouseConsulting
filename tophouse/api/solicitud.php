@@ -845,9 +845,13 @@ $esNautica = ($origen === 'nautica');
 if ($esNautica) {
     $titLinea = 'Náutica · ' . ($necesita !== '' ? $necesita . ' · ' : '') . $nombre;
 } else {
+    /* Fuera de las fichas, el asunto dice lo que pidio el visitante
+       ("Vender", "Poner mi vivienda en alquiler"...): antes decia siempre
+       "Valoración", y un propietario que queria alquilar se leia como uno
+       que queria vender. */
     $titLinea = $esFicha
         ? 'Visita: ' . ($ref !== '' ? 'ref ' . $ref : 'inmueble') . ' · ' . $nombre
-        : 'Valoración · ' . $nombre;
+        : ($necesita !== '' ? $necesita : 'Valoración') . ' · ' . $nombre;
 }
 
 $lineas = array();

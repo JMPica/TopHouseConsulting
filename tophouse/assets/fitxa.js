@@ -29,8 +29,9 @@
       var f = b.getAttribute('data-foto');
       if (!f || !grande) return;
       grande.src = f;
-      Array.prototype.forEach.call(tiras, function (o) { o.classList.remove('is-on'); });
+      Array.prototype.forEach.call(tiras, function (o) { o.classList.remove('is-on'); o.setAttribute('aria-pressed', 'false'); });
       b.classList.add('is-on');
+      b.setAttribute('aria-pressed', 'true');
     });
   });
 
