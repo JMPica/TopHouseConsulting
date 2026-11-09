@@ -691,7 +691,7 @@ if ($n) {
     <p class="foot__note">Precios y superficies orientativos. La información definitiva de cada inmueble se entrega por escrito antes de cualquier reserva.</p>
   </div>
 </footer>
-<script src="/assets/medida.js" defer></script>
+<script src="/assets/medida.js" async></script>
 <script src="/assets/idioma.js" defer></script>
 <script src="/assets/menu.js" defer></script>
 <script src="/assets/base.js" defer></script>

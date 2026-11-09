@@ -75,6 +75,12 @@
 
   /* La calculadora de la portada: es una senal de que alguien piensa en
      vender, aunque luego no escriba. */
-  var calc = document.querySelector('#calc-form');
-  if (calc) calc.addEventListener('submit', function () { enviar('calculadora'); });
+  /* Este fichero carga con async (no retrasa a los demas), asi que puede
+     llegar antes de que exista el formulario de la calculadora. */
+  function calculadora() {
+    var calc = document.querySelector('#calc-form');
+    if (calc) calc.addEventListener('submit', function () { enviar('calculadora'); });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', calculadora);
+  else calculadora();
 })();
