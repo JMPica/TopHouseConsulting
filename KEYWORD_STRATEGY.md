@@ -30,6 +30,7 @@ pròpies competeixin per la mateixa consulta.
 | Contacte, oficina, telèfon | `/contacte.html` · `/es/contacto.html` · `/en/contact.html` | D |
 | Comprar | `/comprar.html` · `/es/comprar.html` · `/en/buy.html` | C |
 | Llogar per viure-hi | `/llogar.html` · `/es/alquilar.html` · `/en/rent.html` | C |
+| Comprar en un poble concret (només pobles amb 3+ immobles; avui Arenys de Mar i Canet de Mar) | `/comprar/arenys-de-mar` · `/es/comprar/arenys-de-mar` · `/en/buy/arenys-de-mar` | C |
 | Un immoble concret | `/immoble/REF` · `/es/inmueble/REF` · `/en/property/REF` | C |
 | Vaixells i amarraments | `/nautica.html` · `/es/nautica.html` · `/en/boats.html` | (línia a part) |
 
@@ -73,7 +74,8 @@ pròpies competeixin per la mateixa consulta.
 ### Compra (C) → `comprar.html`
 | Consulta | Com la cobreix |
 |---|---|
-| pisos en venda Arenys de Mar / pisos en venta Arenys de Mar | Llistat amb filtre de població; fitxes amb `RealEstateListing` |
+| pisos en venda Arenys de Mar / pisos en venta Arenys de Mar | **Pàgina pròpia** `/comprar/arenys-de-mar` (des de l'11/11/2026), amb els immobles a l'HTML i `ItemList` |
+| pisos en venda Canet de Mar | Pàgina pròpia `/comprar/canet-de-mar` |
 | cases en venda al Maresme / comprar casa Maresme | Llistat i fitxes. Els portals (Idealista, Fotocasa) dominen aquestes consultes: la via realista són les fitxes individuals |
 
 ## 3. Consultes conversacionals (ChatGPT i altres assistents)
@@ -91,9 +93,10 @@ exactament la pregunta i que tenen dades clares de qui és l'empresa.
 | «Telèfon / adreça de Top House Real Estate» | `contacte.html`, `ContactPage` |
 
 **No s'ha fet** (i no s'ha de fer): pàgines per a cada poble amb el mateix
-text, text amagat per a les IA ni repetició de paraules clau. Les pàgines per
-municipi només tindran sentit quan hi hagi contingut propi de cada poble
-(vendes tancades, preus, barris).
+text, text amagat per a les IA ni repetició de paraules clau. Les pàgines de
+poble que hi ha són llistes reals d'immobles i només existeixen on n'hi ha 3
+o més. Per anar més enllà (text propi de cada poble: vendes tancades, preus,
+barris) cal contingut que només pot donar Top House.
 
 ## 4. Pròxim pas amb dades reals
 

@@ -102,3 +102,23 @@ descodificant els fotogrames de mica en mica en lloc de demanar-los tots alhora,
 però és l'element signatura de la web i tocar-lo té risc de trencar-lo. Cal
 decidir-ho amb dades de camp (INP a Search Console): si l'INP real és bo, no
 cal tocar-lo.
+
+---
+
+## Segona passada (11/11/2026) — publicat i verificat a la web real
+
+Commit `SEO/GEO: listas hechas en el servidor...`. Què s'ha trobat i què s'ha fet:
+
+| Problema trobat (verificat) | Canvi | Fitxers |
+|---|---|---|
+| **Un robot sense JavaScript veia 0 immobles a Comprar i a Llogar.** La llista només la pintava el navegador. OAI-SearchBot, PerplexityBot i ClaudeBot no executen JavaScript. | Les llistes surten ja fetes del servidor: targetes, recompte, cercador i `ItemList`. El navegador reconeix la llista (`data-ssr`) i no la torna a pintar: CLS 0. Si alguna cosa falla, surt la pàgina de sempre i la pinta el navegador. | `tophouse/llista.php` (nou), `.htaccess`, `assets/cartera.js` |
+| **Cap pàgina per a «pisos en venda a Arenys de Mar»**, amb 20 immobles en venda allà (i 6 a Canet de Mar). | Pàgines per població: `/comprar/arenys-de-mar`, `/es/comprar/arenys-de-mar`, `/en/buy/arenys-de-mar` (i Canet). Títol, H1, descripció, canònica, hreflang, molles de pa i `ItemList` propis. **Només per a pobles amb 3 immobles o més**: la resta redirigeix (302) a la llista general filtrada, i no hi ha pàgines buides. El títol només anomena els tipus que hi ha de veritat. Enllaçades des de les llistes, des de cada fitxa («Més a Arenys de Mar») i des del sitemap. | `llista.php`, `immoble.php`, `sitemap-immobles.php`, `site.css` |
+| `/index.html` i `/` responien igual, i els enllaços interns anaven a `/index.html`. | 301 de `/index.html` (i `/es/`, `/en/`) a `/`. Tots els enllaços interns van a `/`. | `.htaccess`, `construir.py` |
+| H1 de les llistes poc descriptius («El que tenim en venda»). | «Pisos i cases en venda al Maresme» / «…de lloguer al Maresme», també als títols. | `comprar.html`, `alquilar.html`, `idiomas/*` |
+| El sitemap de fitxes i les fitxes feien servir `ca-ES/es-ES/en-GB`, i la resta de la web `ca/es/en`. Faltava `x-default` al sitemap de fitxes. | Els mateixos codis a tot arreu, i `x-default`. | `immoble.php`, `sitemap-immobles.php` |
+| Cap text que digui, en una frase citable, qui és Top House i què fa. | Bloc «Qui som» a Contacte (només fets ja publicats) amb enllaços als serveis. | `contacto.html` |
+| — | `/llms.txt`: resum de l'empresa i de les pàgines per a assistents d'IA, generat a partir dels títols i les descripcions reals. **És una convenció nova: cap cercador no ha confirmat que la faci servir.** Costa poc i no fa mal. | `construir.py` |
+| La primera foto de la fitxa esperava la connexió amb el servidor de fotos. | `preconnect` al servidor de Mobilia i `fetchpriority="high"` a la foto principal. | `immoble.php`, `comprar.html`, `alquilar.html` |
+| L'error del 9/11 (un PHP trencat publicat). | `publicar.sh` comprova la sintaxi de tots els PHP abans de publicar. | `publicar.sh` |
+
+No s'ha fet: minificar CSS i JS. L'estalvi real amb gzip és d'uns 2 KB i no compensa el risc.

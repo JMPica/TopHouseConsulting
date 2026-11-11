@@ -99,3 +99,30 @@ Com cal llegir-ho:
 | Un fitxer de proves local (`medida-2026-11.json`) va aparèixer a l'arrel del repo | Esborrat i afegit a `.gitignore` |
 | La graella de serveis amb 5 elements deixava una cel·la buida | Corregit: 4 elements per pàgina |
 | A la fitxa, la miga de pa duplicava la carpeta de l'idioma | Corregit abans de publicar |
+
+---
+
+## Segona passada (11/11/2026)
+
+Provat en local (Apache 2.4 + PHP 8.3 amb la cartera real) i després a la web real.
+
+| Prova | Resultat |
+|---|---|
+| Robot sense JavaScript a `/es/comprar/arenys-de-mar` (OAI-SearchBot, PerplexityBot, Googlebot, ClaudeBot), web real | ✅ 200, 20 immobles i 20 enllaços a fitxes a l'HTML (abans: 0) |
+| Comprar / Llogar / pàgines de poble, mòbil i escriptori, web real | ✅ CLS 0; la llista **no** es torna a pintar; recompte i filtre correctes |
+| Treure el filtre a la pàgina d'un poble | ✅ torna a mostrar els 37 |
+| Adreça antiga amb `?poblacio=` | ✅ es repinta filtrada (CLS 0–0,002) |
+| Poble amb menys de 3 immobles o inexistent | ✅ 302 a la llista general filtrada |
+| `/llista.php` demanat directament | ✅ 301 a `/comprar.html` |
+| `/index.html`, `/es/index.html`, `/en/index.html` | ✅ 301 a `/`, `/es/`, `/en/` |
+| Selector d'idioma a la pàgina d'un poble | ✅ porta al mateix poble en l'altre idioma |
+| Fitxa: enllaç «Més a Arenys de Mar» en ca/es/en i molles de pa amb el poble | ✅ (les proves van trobar un enllaç duplicat `/es//es/...` **abans de publicar**; corregit) |
+| Sitemap de fitxes | ✅ XML vàlid, 120 URL (114 fitxes + 6 de poble), hreflang `ca/es/en/x-default` |
+| **Casos dolents de `llista.php`**: sense còpia de la cartera, còpia corrupta, sense cap lloguer, sense el fitxer de textos | ✅ sempre surt la pàgina sencera (la de sempre); mai un 500 ni una pàgina en blanc |
+| Títol maliciós (`<script>`), foto `javascript:`, preu no numèric, entrades escombraria | ✅ escapat o ignorat; JSON-LD llegible |
+| Els 38 QR dels cartells (domini antic) | ✅ 38/38 |
+| Regressió: formularis de fitxa i Marine, menú mòbil, moviment reduït | ✅, cap error de JavaScript |
+| `revisar_web.py` | ✅ 30 pàgines, 0 errors, 0 avisos |
+| Lighthouse mòbil, web real | Comprar 99/100/96/100 (LCP 2,1 s, CLS 0); pàgina d'Arenys 97/100/96/100; fitxa 96/100/96/100; Contacte 99/100/100/100; Llogar 98/100/96/100. El 96 de Best Practices són les fotos de Mobilia, bloquejades al meu entorn de proves. |
+
+**bingbot**: amb el seu *user-agent* des de la meva IP, de vegades 200 i de vegades 403 a **totes** les adreces alhora (també `robots.txt`). És el comportament d'un tallafoc que frena qui diu ser Bing sense ser-ho. Segueix pendent de confirmar a Bing Webmaster Tools.
