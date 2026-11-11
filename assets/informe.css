@@ -1,0 +1,14 @@
+/* Estilos del cuadro de mando de /api/evento.php?informe=...
+   En fichero propio: la politica de seguridad de la web (CSP en
+   .htaccess) no deja estilos escritos dentro del html. */
+body{font:15px/1.5 system-ui,sans-serif;margin:0 auto;max-width:860px;padding:24px 16px;color:#1B2A2E;background:#F7F3EC}
+h1{font-size:1.5rem;margin:0 0 4px}
+h2{font-size:1.05rem;margin:28px 0 8px}
+p.s{color:#566A6C;margin:0 0 18px}
+.k{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.k div{background:#fff;border:1px solid #e3dccf;border-radius:10px;padding:12px}
+.k b{display:block;font-size:1.6rem}
+table{border-collapse:collapse;width:100%;background:#fff}
+td,th{border:1px solid #e3dccf;padding:6px 10px;text-align:left}
+td:last-child,th:last-child{text-align:right;width:90px}
+.v{color:#566A6C}
