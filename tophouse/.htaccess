@@ -119,6 +119,28 @@
   RewriteRule ^es/barco/([A-Za-z0-9._-]+)/?$     /es/inmueble.php?ref=$1  [L,QSA]
   RewriteRule ^en/boat/([A-Za-z0-9._-]+)/?$      /en/property.php?ref=$1  [L,QSA]
 
+  # LAS LISTAS, HECHAS EN EL SERVIDOR
+  #
+  # Comprar y Alquilar pasan por llista.php, que mete en la pagina las
+  # tarjetas de los inmuebles antes de enviarla. Sin esto, un buscador que
+  # no ejecuta javascript (los de los asistentes de IA, por ejemplo) veia
+  # la lista vacia. La direccion que ve el visitante no cambia.
+  #
+  # Y las paginas por poblacion: /comprar/arenys-de-mar, que solo existen
+  # para los pueblos con varios inmuebles (lo decide llista.php).
+  RewriteRule ^(comprar|llogar)\.html$            /llista.php?l=ca&pag=$1        [L,QSA]
+  RewriteRule ^es/(comprar|alquilar)\.html$       /llista.php?l=es&pag=$1        [L,QSA]
+  RewriteRule ^en/(buy|rent)\.html$               /llista.php?l=en&pag=$1        [L,QSA]
+  RewriteRule ^(comprar|llogar)/([a-z0-9-]+)/?$      /llista.php?l=ca&pag=$1&pob=$2 [L,QSA]
+  RewriteRule ^es/(comprar|alquilar)/([a-z0-9-]+)/?$ /llista.php?l=es&pag=$1&pob=$2 [L,QSA]
+  RewriteRule ^en/(buy|rent)/([a-z0-9-]+)/?$         /llista.php?l=en&pag=$1&pob=$2 [L,QSA]
+
+  # La portada es "/", no "/index.html": la segunda ensenaba lo mismo con
+  # otra direccion. Solo cuando lo pide el visitante (THE_REQUEST): por
+  # dentro el servidor sigue sirviendo index.html al pedir "/".
+  RewriteCond %{THE_REQUEST} \s/+(es/|en/)?index\.html[\s?]
+  RewriteRule ^(es/|en/)?index\.html$ /$1 [R=301,L]
+
   RewriteRule ^es/venta/?$        /es/comprar.html   [R=301,L]
   RewriteRule ^es/alquiler/?$     /es/alquilar.html  [R=301,L]
   RewriteRule ^es/alquileres/?$   /es/alquilar.html  [R=301,L]

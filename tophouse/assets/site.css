@@ -2101,3 +2101,9 @@ body.mar .band--center::before{opacity:.7}
   .foot__cols{grid-template-columns:repeat(2,1fr)}
 }
 .contacto__legal{max-width:var(--maxw);margin:1.2rem auto 0;color:var(--text-secondary);font-size:.9rem}
+
+/* Los enlaces por poblacion bajo la entradilla de Comprar y Alquilar
+   (los pone llista.php): Arenys de Mar (20) · Canet de Mar (6). */
+.cart__pobles{margin:1.1rem 0 0;font-size:.74rem;letter-spacing:.08em;color:var(--text-secondary);line-height:1.9}
+.cart__pobles a{color:var(--accent-ink);border-bottom:1px solid var(--accent-muted);white-space:nowrap}
+.cart__pobles a:hover{border-bottom-color:var(--accent-ink)}

@@ -474,8 +474,32 @@
       return (b.precio || 0) - (a.precio || 0);
     });
 
-    grid.innerHTML = '';
-    lista.forEach(function (i) { grid.appendChild(ficha(i)); });
+    /* LA LISTA QUE YA VIENE PUESTA. El servidor (llista.php) manda la pagina
+       con las tarjetas pintadas, para que la vean los buscadores que no
+       ejecutan javascript, y apunta en data-ssr que inmuebles ha puesto y
+       en que orden. Si es justo lo que toca pintar, no se rehace: rehacerla
+       seria tirar las fotos que ya estan cargando para volver a pedirlas.
+       Solo se les engancha el aviso de foto caida, que el servidor no puede
+       poner. En cuanto alguien filtra, la lista ya no coincide y se pinta
+       de nuevo como siempre. */
+    var puesta = grid.getAttribute('data-ssr');
+    if (puesta !== null) grid.removeAttribute('data-ssr');
+    if (puesta !== null && puesta === lista.map(function (i) { return String(i.ref); }).join('|')) {
+      Array.prototype.forEach.call(grid.querySelectorAll('.inm__foto img'), function (img) {
+        var caida = function () {
+          var caja = img.parentNode;
+          if (!caja) return;
+          caja.className = 'inm__foto inm__foto--sin';
+          caja.textContent = '';
+          caja.appendChild(nodo('span', 'mono', T('Sin foto todavía')));
+        };
+        if (img.complete && !img.naturalWidth && img.currentSrc) caida();
+        else img.addEventListener('error', caida);
+      });
+    } else {
+      grid.innerHTML = '';
+      lista.forEach(function (i) { grid.appendChild(ficha(i)); });
+    }
 
     var hayAlguno = lista.length > 0;
     var filtrando = hayFiltro();
@@ -528,8 +552,11 @@
      coincida: "sant_andreu_de_llavaneres" encuentra "Sant Andreu de
      Llavaneres". Si no coincide ninguno, se ve la lista entera. */
   (function () {
-    if (!fPob || !window.URLSearchParams) return;
-    var pedido = new URLSearchParams(location.search).get('poblacio');
+    if (!fPob) return;
+    /* Las paginas de un pueblo (/comprar/arenys-de-mar) lo traen escrito
+       en la propia seccion: lo pone llista.php. */
+    var pedido = raiz.getAttribute('data-poblacio')
+      || (window.URLSearchParams ? new URLSearchParams(location.search).get('poblacio') : '');
     if (!pedido) return;
     var trozos = pedido.split('/').map(llana).filter(Boolean);
     Array.prototype.some.call(fPob.options, function (o) {

@@ -30,7 +30,10 @@ if ($PRIVADO !== null) {
 $DOMINIO = 'https://www.tophouserealestate.es';
 $RUTAS = array('ca' => 'immoble', 'es' => 'es/inmueble', 'en' => 'en/property');
 $RUTAS_BARCO = array('ca' => 'vaixell', 'es' => 'es/barco', 'en' => 'en/boat');
-$ETIQUETA = array('ca' => 'ca-ES', 'es' => 'es-ES', 'en' => 'en-GB');
+/* Los mismos codigos que llevan las propias paginas (ca, es, en y
+   x-default). Antes aqui decia ca-ES, es-ES y en-GB: no era un error, pero
+   el sitemap y las paginas se contradecian. */
+$ETIQUETA = array('ca' => 'ca', 'es' => 'es', 'en' => 'en');
 
 echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
 echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"' . "\n";
@@ -56,7 +59,46 @@ foreach ($lista as $n) {
             printf('    <xhtml:link rel="alternate" hreflang="%s" href="%s/%s/%s"/>' . "\n",
                    $ETIQUETA[$otro], $DOMINIO, $tramoOtro, $ref);
         }
+        printf('    <xhtml:link rel="alternate" hreflang="x-default" href="%s/%s/%s"/>' . "\n",
+               $DOMINIO, $rutas['ca'], $ref);
         echo '    <priority>0.7</priority>' . "\n";
+        echo '  </url>' . "\n";
+    }
+}
+
+/* Las listas por poblacion (/comprar/arenys-de-mar...). Solo las de los
+   pueblos con 3 inmuebles o mas, que son las que llista.php sirve: el
+   minimo y la forma de escribir el nombre tienen que coincidir con los de
+   alli. */
+$TRAMOS = array('venta'    => array('ca' => 'comprar', 'es' => 'es/comprar',  'en' => 'en/buy'),
+                'alquiler' => array('ca' => 'llogar',  'es' => 'es/alquilar', 'en' => 'en/rent'));
+$pueblos = array();
+foreach ($lista as $n) {
+    if (!is_array($n) || empty($n['ref']) || empty($n['poblacio']) || empty($n['operacion'])) { continue; }
+    if (isset($n['seccion']) && $n['seccion'] === 'marine') { continue; }
+    if (!isset($TRAMOS[$n['operacion']])) { continue; }
+    $s = function_exists('mb_strtolower') ? mb_strtolower(trim((string) $n['poblacio']), 'UTF-8') : strtolower(trim((string) $n['poblacio']));
+    $s = strtr($s, array('à' => 'a', 'á' => 'a', 'è' => 'e', 'é' => 'e', 'í' => 'i', 'ï' => 'i', 'ò' => 'o', 'ó' => 'o',
+                         'ú' => 'u', 'ü' => 'u', 'ç' => 'c', 'ñ' => 'n', '·' => '', '’' => '', "'" => ''));
+    $s = trim(preg_replace('/[^a-z0-9]+/', '-', $s), '-');
+    if ($s === '') { continue; }
+    $k = $n['operacion'] . '|' . $s;
+    if (!isset($pueblos[$k])) { $pueblos[$k] = array('n' => 0, 'fecha' => 0); }
+    $pueblos[$k]['n']++;
+    if (!empty($n['fecha']) && (int) $n['fecha'] > $pueblos[$k]['fecha']) { $pueblos[$k]['fecha'] = (int) $n['fecha']; }
+}
+foreach ($pueblos as $k => $info) {
+    if ($info['n'] < 3) { continue; }
+    list($oper, $s) = explode('|', $k, 2);
+    foreach ($TRAMOS[$oper] as $cod => $tramo) {
+        echo '  <url>' . "\n";
+        echo '    <loc>' . $DOMINIO . '/' . $tramo . '/' . $s . '</loc>' . "\n";
+        if ($info['fecha']) { echo '    <lastmod>' . date('Y-m-d', $info['fecha']) . '</lastmod>' . "\n"; }
+        foreach ($TRAMOS[$oper] as $otro => $tramoOtro) {
+            printf('    <xhtml:link rel="alternate" hreflang="%s" href="%s/%s/%s"/>' . "\n", $otro, $DOMINIO, $tramoOtro, $s);
+        }
+        printf('    <xhtml:link rel="alternate" hreflang="x-default" href="%s/%s/%s"/>' . "\n", $DOMINIO, $TRAMOS[$oper]['ca'], $s);
+        echo '    <priority>0.8</priority>' . "\n";
         echo '  </url>' . "\n";
     }
 }

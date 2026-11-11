@@ -54,8 +54,17 @@ echo "==> Revisando enlaces, datos estructurados, hreflang y sitemap"
 # que Google no puede leer. Ver pruebas/revisar_web.py.
 python3 pruebas/revisar_web.py "$ORIGEN" || { echo "ERROR: la revision ha encontrado problemas. No se publica."; exit 1; }
 
+# Un php con un error de sintaxis tumba la pagina entera en el servidor.
+# Se comprueban todos antes de publicar (si hay php en esta maquina).
+if command -v php >/dev/null 2>&1; then
+  echo "==> Comprobando la sintaxis de los php"
+  for f in $(find "$ORIGEN" -name "*.php"); do
+    php -l "$f" >/dev/null 2>&1 || { echo "ERROR: $f tiene un error de sintaxis:"; php -l "$f"; exit 1; }
+  done
+fi
+
 echo "==> Comprobando que estan las tres portadas y los recursos"
-for necesario in index.html es/index.html en/index.html vendre.html es/gestion-alquileres.html api/evento.php assets/medida.js assets/site.css assets/hero-scrub.mp4 assets/hero-mobil/f-001.webp api/cartera.php .htaccess immoble.php es/inmueble.php en/property.php assets/fitxa.js assets/extras.js sitemap-immobles.php; do
+for necesario in index.html es/index.html en/index.html llista.php api/textos-llista.json llms.txt vendre.html es/gestion-alquileres.html api/evento.php assets/medida.js assets/site.css assets/hero-scrub.mp4 assets/hero-mobil/f-001.webp api/cartera.php .htaccess immoble.php es/inmueble.php en/property.php assets/fitxa.js assets/extras.js sitemap-immobles.php; do
   [ -e "$ORIGEN/$necesario" ] || { echo "ERROR: falta $necesario en $ORIGEN/"; exit 1; }
 done
 

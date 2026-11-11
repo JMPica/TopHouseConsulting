@@ -442,6 +442,12 @@ def construir():
             base = '/' + (CARPETA[idioma] + '/' if CARPETA[idioma] else '')
             t = re.sub(r'(href|data-gracias)="(?!https?:|/|#|tel:|mailto:|<\?|%)([^"]+)"',
                        lambda m: '%s="%s%s"' % (m.group(1), base, m.group(2)), t)
+            # La portada es "/" (o "/es/", "/en/"), no "/index.html". Las
+            # dos direcciones ensenan lo mismo, y enlazar a la segunda le
+            # dice a Google que hay dos portadas. Los enlaces van a la
+            # buena y el .htaccess redirige la otra.
+            t = re.sub(r'href="%sindex\.html(#[^"]*)?"' % re.escape(base),
+                       lambda m: 'href="%s%s"' % (base, m.group(1) or ''), t)
 
             destino = os.path.join(SALIDA, CARPETA[idioma], NOMBRES[idioma][pagina])
             generado[destino] = t
@@ -472,14 +478,86 @@ def construir():
     if os.path.isdir(api):
         shutil.copytree(api, os.path.join(SALIDA, 'api'))
 
-    for suelto in ('.htaccess', 'robots.txt', 'sitemap-immobles.php', '404.php'):
+    for suelto in ('.htaccess', 'robots.txt', 'sitemap-immobles.php', '404.php', 'llista.php'):
         origen = os.path.join(FUENTE, suelto)
         if os.path.exists(origen):
             shutil.copy2(origen, os.path.join(SALIDA, suelto))
 
     escribir_sitemap()
+    escribir_textos_llista()
+    escribir_llms(generado)
     print('Generado web/ con %d paginas en tres idiomas.' % len(generado))
     return 0
+
+
+def escribir_textos_llista():
+    """Los textos de las tarjetas, para llista.php.
+
+    Las listas de Comprar y Alquilar salen ya pintadas del servidor
+    (tophouse/llista.php) con las mismas tarjetas que pinta cartera.js. Para
+    que digan lo mismo en los tres idiomas sin escribir las traducciones dos
+    veces, se sacan de donde ya estan: assets/idioma.js (las frases) y
+    assets/extras.js (el nombre de cada caracteristica). Si un dia cambia el
+    formato de esos ficheros y no se encuentra nada, se para aqui en vez de
+    publicar una lista a medio traducir.
+    """
+    par = re.compile(r"'((?:[^'\\]|\\.)*)'\s*:\s*'((?:[^'\\]|\\.)*)'")
+    limpia = lambda s: s.replace("\\'", "'").replace('\\\\', '\\')
+    js = open(os.path.join(FUENTE, 'assets', 'idioma.js'), encoding='utf-8').read()
+    ini_ca, ini_en = js.find('ca: {'), js.find('en: {')
+    if ini_ca < 0 or ini_en < ini_ca:
+        raise SystemExit('idioma.js: no encuentro las tablas ca y en')
+    tablas = {'ca': dict((limpia(k), limpia(v)) for k, v in par.findall(js[ini_ca:ini_en])),
+              'en': dict((limpia(k), limpia(v)) for k, v in par.findall(js[ini_en:]))}
+    ex = open(os.path.join(FUENTE, 'assets', 'extras.js'), encoding='utf-8').read()
+    tablas['extras'] = dict(re.findall(r"'([a-z0-9-]+)'\s*:\s*T\('((?:[^'\\]|\\.)*)'\)", ex))
+    for idioma in ('ca', 'en'):
+        for frase in ('Quiero verlo', ' habitaciones', ' inmuebles', 'A consultar', 'Terraza'):
+            if frase not in tablas[idioma]:
+                raise SystemExit('idioma.js: falta "%s" en %s; llista.php saldria a medio traducir' % (frase, idioma))
+    if len(tablas['extras']) < 20:
+        raise SystemExit('extras.js: solo he encontrado %d caracteristicas' % len(tablas['extras']))
+    with open(os.path.join(SALIDA, 'api', 'textos-llista.json'), 'w', encoding='utf-8') as f:
+        json.dump(tablas, f, ensure_ascii=False)
+
+
+def escribir_llms(generado):
+    """/llms.txt: la web contada en una pagina de texto, para asistentes de IA.
+
+    Es una convencion reciente (llmstxt.org) y ningun buscador ha confirmado
+    que la use; cuesta poco y no hace dano. Todo sale de lo que ya dice la
+    web: los datos de la empresa del aviso legal y el titulo y la descripcion
+    de cada pagina ya generada, asi que no se puede quedar atras.
+    """
+    orden = ['index.html', 'vender.html', 'valoracion.html', 'gestion-alquileres.html',
+             'comprar.html', 'alquilar.html', 'contacto.html', 'nautica.html', 'legal.html']
+    nombre = {'ca': 'Català', 'es': 'Castellano', 'en': 'English'}
+    filas = ['# Top House Real Estate', '',
+             "> Immobiliària amb oficina a Arenys de Mar (Barcelona) que treballa als trenta municipis del Maresme, "
+             "de Montgat a Tordera: venda, compra i lloguer d'habitatges, valoració gratuïta i gestió de lloguers per a propietaris. "
+             "Atén en català, castellà i anglès.", '',
+             '- Empresa: Top House Real Estate, S.L. (NIF B06925135)',
+             "- Registre d'agents immobiliaris de Catalunya: AICAT 11152",
+             '- Oficina: Riera del Bisbe Pol, 56, 08350 Arenys de Mar, Barcelona',
+             '- Telèfon i WhatsApp: +34 605 27 31 50',
+             '- Correu: info@tophouserealestate.es',
+             '- Web: %s/' % DOMINIO,
+             "- Honoraris de venda: un percentatge sobre el preu final, acordat abans de signar; si l'habitatge no es ven, el propietari no paga res.",
+             "- Immobles en venda i lloguer, actualitzats: %s/comprar.html i %s/llogar.html (una pàgina per immoble a /immoble/REFERÈNCIA)." % (DOMINIO, DOMINIO),
+             '']
+    for idioma in ('ca', 'es', 'en'):
+        filas.append('## ' + nombre[idioma])
+        filas.append('')
+        for pagina in orden:
+            t = generado.get(os.path.join(SALIDA, CARPETA[idioma], NOMBRES[idioma][pagina]))
+            if not t:
+                continue
+            titulo = _texto(re.search(r'<title>(.*?)</title>', t, re.S).group(1))
+            desc = html.unescape(re.search(r'<meta name="description" content="([^"]*)"', t).group(1))
+            filas.append('- [%s](%s): %s' % (titulo, canonica(pagina, idioma), desc))
+        filas.append('')
+    with open(os.path.join(SALIDA, 'llms.txt'), 'w', encoding='utf-8') as f:
+        f.write('\n'.join(filas))
 
 
 def escribir_sitemap():

@@ -150,6 +150,30 @@ $volver   = isset($LISTAS[$L][$operacio]) ? $LISTAS[$L][$operacio] : $LISTAS[$L]
    secas apuntaria a /immoble/comprar.html. */
 $volver   = '/' . ($CARPETA !== '' ? $CARPETA . '/' : '') . $volver;
 
+/* LA PAGINA DE SU PUEBLO. Los pueblos con varios inmuebles tienen lista
+   propia (/comprar/arenys-de-mar; la sirve llista.php, y el minimo de 3 y
+   la forma de escribir el nombre tienen que ser los mismos que alli). Si
+   este inmueble esta en uno de esos, la ficha enlaza a esa lista: quien
+   mira un piso en Arenys suele querer ver los demas de Arenys. */
+$urlPueblo = '';
+if ($n && !$esBarco && !empty($n['poblacio'])) {
+    $cuantos = 0;
+    foreach ($lista as $otra) {
+        if (is_array($otra) && isset($otra['poblacio'], $otra['operacion'])
+            && trim((string) $otra['poblacio']) === trim((string) $n['poblacio'])
+            && $otra['operacion'] === $operacio
+            && !(isset($otra['seccion']) && $otra['seccion'] === 'marine')) { $cuantos++; }
+    }
+    if ($cuantos >= 3) {
+        $s = function_exists('mb_strtolower') ? mb_strtolower(trim((string) $n['poblacio']), 'UTF-8') : strtolower(trim((string) $n['poblacio']));
+        $s = strtr($s, array('à' => 'a', 'á' => 'a', 'è' => 'e', 'é' => 'e', 'í' => 'i', 'ï' => 'i', 'ò' => 'o', 'ó' => 'o',
+                             'ú' => 'u', 'ü' => 'u', 'ç' => 'c', 'ñ' => 'n', '·' => '', '’' => '', "'" => ''));
+        $s = trim(preg_replace('/[^a-z0-9]+/', '-', $s), '-');
+        if ($s !== '') { $urlPueblo = preg_replace('/\.html$/', '', $volver) . '/' . $s; }
+    }
+}
+$masEn = array('ca' => 'Més a ', 'es' => 'Más en ', 'en' => 'More in ');
+
 /* Los textos de Mobilia vienen a veces con restos del editor de su panel:
    "&nbsp;", "&amp;", alguna <br> o <p>. Como aqui se escapan para que nadie
    pueda colar codigo, esos restos salian tal cual en la ficha ("pasos.&nbsp;
@@ -436,11 +460,14 @@ if ($n) {
         ? array('ca' => 'Llogar', 'es' => 'Alquilar', 'en' => 'Rent')
         : array('ca' => 'Comprar', 'es' => 'Comprar', 'en' => 'Buy'));
     if (is_array($nomLista)) { $nomLista = $nomLista[$L]; }
-    $migas = array('@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => array(
-        array('@type' => 'ListItem', 'position' => 1, 'name' => $nomInicio[$L], 'item' => $raizIdioma),
-        array('@type' => 'ListItem', 'position' => 2, 'name' => $nomLista, 'item' => $DOMINIO . $volver),
-        array('@type' => 'ListItem', 'position' => 3, 'name' => $titulo, 'item' => $canonica),
-    ));
+    $pasos = array(array($nomInicio[$L], $raizIdioma), array($nomLista, $DOMINIO . $volver));
+    if ($urlPueblo !== '') { $pasos[] = array(trim((string) $n['poblacio']), $DOMINIO . $urlPueblo); }
+    $pasos[] = array($titulo, $canonica);
+    $elementos = array();
+    foreach ($pasos as $i => $paso) {
+        $elementos[] = array('@type' => 'ListItem', 'position' => $i + 1, 'name' => $paso[0], 'item' => $paso[1]);
+    }
+    $migas = array('@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => $elementos);
     $jsonLdMigas = json_encode($migas, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP);
 }
 ?>
@@ -459,7 +486,7 @@ if ($n) {
 /* Las tres versiones de la MISMA ficha, para que Google sepa que son la
    misma cosa en tres idiomas y no las tome por copias. */
 if ($n) {
-    foreach (array('ca' => 'ca-ES', 'es' => 'es-ES', 'en' => 'en-GB') as $cod => $etiqueta) {
+    foreach (array('ca' => 'ca', 'es' => 'es', 'en' => 'en') as $cod => $etiqueta) {
         printf('<link rel="alternate" hreflang="%s" href="%s/%s/%s">' . "\n",
                $etiqueta, $DOMINIO, $RUTAS[$cod], rawurlencode($n['ref']));
     }
@@ -480,6 +507,9 @@ if ($n) {
 
 <?php if ($jsonLd !== '') { echo '<script type="application/ld+json">' . $jsonLd . '</script>' . "\n"; } ?>
 <?php if (!empty($jsonLdMigas)) { echo '<script type="application/ld+json">' . $jsonLdMigas . '</script>' . "\n"; } ?>
+<!-- Las fotos de los inmuebles vienen del servidor de Mobilia: se abre la
+     conexion ya, para que la primera foto no espere a negociarla. -->
+<link rel="preconnect" href="https://media.mobiliagestion.es" crossorigin>
 <link rel="icon" type="image/png" href="/assets/favicon.png">
 <link rel="preload" href="/assets/fonts/fraunces-var-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/manrope-var-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -532,7 +562,11 @@ if ($n) {
          data-operacion="<?php echo h($operacio); ?>"
          data-extras="<?php echo h(implode(',', isset($n['extras']) ? $n['extras'] : array())); ?>">
 
-  <p class="fitxa__volver"><a href="<?php echo h($volver); ?>">Volver a la lista</a></p>
+  <p class="fitxa__volver"><a href="<?php echo h($volver); ?>">Volver a la lista</a><?php
+    /* El href empieza por "<?php" a proposito: el generador pone la carpeta
+       del idioma delante de cualquier href que no empiece asi, y esta
+       direccion ya la trae. */
+    if ($urlPueblo !== '') { ?> · <a href="<?php echo h($urlPueblo); ?>"><?php echo h($masEn[$L] . trim((string) $n['poblacio'])); ?></a><?php } ?></p>
 
   <header class="fitxa__cap">
     <p class="kicker"><?php echo h($sitio); ?></p>
@@ -544,7 +578,7 @@ if ($n) {
 
   <?php if (count($fotos)) { ?>
   <section class="fitxa__galeria" aria-label="Fotografías">
-    <img class="fitxa__grande" id="fitxa-grande" src="<?php echo h($fotos[0]); ?>" alt="<?php echo h($titulo); ?>" decoding="async">
+    <img class="fitxa__grande" id="fitxa-grande" src="<?php echo h($fotos[0]); ?>" alt="<?php echo h($titulo); ?>" decoding="async" fetchpriority="high">
     <?php if (count($fotos) > 1) { ?>
     <ul class="fitxa__tiras">
       <?php foreach ($fotos as $i => $f) { ?>
