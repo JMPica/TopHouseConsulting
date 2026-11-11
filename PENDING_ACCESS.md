@@ -9,7 +9,8 @@ Només el que ha impedit acabar alguna cosa. Per ordre d'impacte.
    camp. Com fer-ho: a https://search.google.com/search-console, «Afegeix una
    propietat» → «Domini» → copieu el registre TXT i poseu-lo a la zona DNS de
    `tophouserealestate.es` a Hostinger. Després envieu els dos sitemaps:
-   `sitemap.xml` i `sitemap-immobles.php`. Si em doneu accés de lectura,
+   `sitemap.xml` i `sitemap-immobles.php` (aquest ja inclou les pàgines per
+   població, com `/comprar/arenys-de-mar`). Si em doneu accés de lectura,
    refaig `KEYWORD_STRATEGY.md` amb dades reals.
 2. **Bing Webmaster Tools** (es pot importar des de Search Console). Cal per:
    - confirmar si Hostinger bloqueja el **bingbot** de veritat (en la meva prova, el bingbot rep un 403);
