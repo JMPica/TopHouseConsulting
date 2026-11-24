@@ -425,31 +425,63 @@
     var fets = 0;
     return new Promise(function (resol, rebutja) {
       var fallats = 0;
-      for (var i = 0; i < SEQ_N; i++) {
-        (function (i) {
-          var img = new Image();
-          img.decoding = 'async';
-          img.onload = function () {
-            fets++;
-            if (ring) ring.style.setProperty('--ld', String(Math.round(126 * (1 - fets / SEQ_N))));
-            /* El primero se pinta en cuanto llega: mas vale ver el
-               principio del plano que un hueco mientras cargan los 48
-               que faltan. */
-            if (i === 0) { seqLlest = true; seqPinta(heroProgress()); }
-            /* Con la mitad dentro ya se puede ensenar: se ve movimiento y
-               los que faltan van entrando sin que nadie lo note. Esperar a
-               los 97 seria tener la pantalla en blanco de balde. */
-            if (fets === Math.ceil(SEQ_N / 2)) mostrar();
-            if (fets + fallats === SEQ_N) acabar();
-          };
-          img.onerror = function () {
-            fallats++;
-            if (fets + fallats === SEQ_N) acabar();
-          };
-          img.src = seqRuta(i + 1);
-          seqImgs[i] = img;
-        })(i);
+      /* EN ORDEN Y DE SEIS EN SEIS (24/11/2026).
+
+         Antes se pedian los 97 fotogramas a la vez. En un movil con 4G
+         flojo se repartian el ancho de banda entre todos y hasta el
+         PRIMERO llegaba tarde: medido con un movil medio simulado, el
+         plano no aparecia hasta los 6,5 segundos; hasta entonces, texto
+         sobre fondo liso y el anillo.
+
+         Ahora van en el orden del plano, con seis peticiones abiertas a
+         la vez: el primero llega enseguida y los que vienen despues son
+         justo los que pide el dedo al bajar. Se empiezan a pedir despues
+         del primer pintado de la pagina, para no quitarle tiempo. */
+      var EN_VUELO = 6;
+      var siguiente = 0;
+      var anillo = 0;   /* el anillo se repinta como mucho una vez por fotograma de pantalla */
+      function pintaAnillo() {
+        anillo = 0;
+        if (ring) ring.style.setProperty('--ld', String(Math.round(126 * (1 - fets / SEQ_N))));
       }
+      function pide() {
+        if (siguiente >= SEQ_N) return;
+        var i = siguiente++;
+        var img = new Image();
+        img.decoding = 'async';
+        img.onload = function () {
+          fets++;
+          if (!anillo) anillo = requestAnimationFrame(pintaAnillo);
+          /* El primero se pinta y se ensena en cuanto llega: mas vale ver
+             el principio del plano que un fondo liso mientras cargan los
+             demas. */
+          if (i === 0) {
+            seqLlest = true;
+            seqPinta(heroProgress());
+            if (stage) stage.classList.add('seq-primer');
+          }
+          /* Si quien mira ya ha bajado hasta este fotograma, se pinta
+             ahora, sin esperar a que vuelva a mover el dedo. */
+          else seqPinta(shown);
+          /* Con la mitad dentro ya hay movimiento: se quita el anillo y
+             sale la pista de bajar, como siempre. */
+          if (fets === Math.ceil(SEQ_N / 2)) mostrar();
+          if (fets + fallats === SEQ_N) acabar();
+          pide();
+        };
+        img.onerror = function () {
+          fallats++;
+          if (fets + fallats === SEQ_N) acabar();
+          pide();
+        };
+        img.src = seqRuta(i + 1);
+        seqImgs[i] = img;
+      }
+      requestAnimationFrame(function () {
+        setTimeout(function () {
+          for (var k = 0; k < EN_VUELO; k++) pide();
+        }, 0);
+      });
       function mostrar() {
         seqLlest = true;
         if (stage) stage.classList.add('video-ready');

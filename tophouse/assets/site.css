@@ -493,7 +493,8 @@ a{color:inherit;text-decoration:none}
 }
 .stage--seq .hero__lienzo{display:block}
 .stage--seq .hero__video{display:none}
-.stage--seq.video-ready .hero__lienzo{opacity:1}
+.stage--seq.video-ready .hero__lienzo,
+.stage--seq.seq-primer .hero__lienzo{opacity:1}
 .stage--seq.video-failed .hero__lienzo{display:none}
 
 /* La vineta, del reves: marfil en los laterales, limpio en el centro.
