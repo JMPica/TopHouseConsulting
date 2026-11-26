@@ -44,9 +44,9 @@ window.POBLACIONS = {
 
   /* ---- El Maresme, el mercado propio ---- */
   'arenys-de-mar':      { nom:'Arenys de Mar',        comarca:'El Maresme', base:2871, costa:true, font:'publicado',
-      zones:[ ['passeig','Primera línia i passeig',1.25], ['centre','Centre i la Riera',1.05],
-              ['eixample','Eixample i estació',1.00], ['alta','Zona alta',0.92],
-              ['afores','Afores i Sant Elm',0.85] ] },
+      zones:[ ['passeig','Primera línea y paseo',1.25], ['centre','Centro y la Riera',1.05],
+              ['eixample','Ensanche y estación',1.00], ['alta','Zona alta',0.92],
+              ['afores','Afueras y Sant Elm',0.85] ] },
   'arenys-de-munt':     { nom:'Arenys de Munt',       comarca:'El Maresme', base:2200, costa:false, font:'estimado' },
   'caldes-destrac':     { nom:"Caldes d'Estrac",      comarca:'El Maresme', base:3300, costa:true, font:'estimado' },
   'sant-vicenc-montalt':{ nom:'Sant Vicenç de Montalt',comarca:'El Maresme', base:3300, costa:true, font:'estimado' },
@@ -117,17 +117,81 @@ window.POBLACIONS = {
   'sitges':             { nom:'Sitges',               comarca:'Garraf', base:4600, costa:true, font:'estimado' },
   'vilanova':           { nom:'Vilanova i la Geltrú', comarca:'Garraf', base:2700, costa:true, font:'estimado' },
 
-  /* ---- Girona i Costa Brava ---- */
+  /* ---- Costa Brava (26/11/2026) ----
+
+     De Blanes a Portbou, todos los municipios con mar y los de al lado
+     que se buscan con ellos. Antes habia diez, todos estimados por mi.
+
+     DE DONDE SALEN. Informes mensuales de precios de idealista (precio
+     de OFERTA, como el resto de la tabla: el AJUSTE_OFERTA de arriba lo
+     baja a precio de cierre). Casi todos son de septiembre de 2026, de la
+     tabla de la provincia de Girona; los que no, llevan su mes en
+     'fecha' y la calculadora lo ensena.
+
+     LAS ZONAS salen del MISMO informe y del MISMO mes que el precio del
+     municipio: precio de la zona / precio del municipio. Ejemplo, Roses
+     en agosto: Salatar 4.475 / 3.481 = 1,29. Donde idealista no da zonas,
+     van las genericas de costa.
+
+     LO QUE HAY QUE MIRAR CON LUPA, de mas a menos:
+       - Palafrugell: el precio (2.539) y sus zonas salen de la pagina de
+         valoracion de idealista de junio, no del informe mensual. Calella
+         y Llafranc doblan al pueblo: son otro mercado, y por eso tienen
+         su zona.
+       - Castello d'Empuries y Empuriabrava: idealista las cuenta por
+         separado. El pueblo (la vila) esta a 2.004 y Empuriabrava a
+         3.590; otras fuentes dan para todo el municipio 3.381-3.737
+         (Engel & Volkers, RealAdvisor). Por eso van como dos poblaciones.
+       - Tossa de Mar: pagina de valoracion de idealista, sin mes.
+       - Portbou y Colera: no hay informe; media de los anuncios de la
+         zona (1.918), que es oferta pura. Marcados como estimados.
+       - Girona: no he encontrado dato de 2026. Sigue estimado.
+       - Los factores de zona por encima de 1,5 (Calella, Llafranc, Cala
+         Sant Francesc) son reales, pero de muy pocos anuncios y casi
+         todos de casas grandes. Se dejan, porque bajarlos seria
+         inventar; pero ahi, mas que en ningun sitio, hay que ir a verla. */
+  'blanes':             { nom:'Blanes',               comarca:'Costa Brava · La Selva', base:2512, costa:true, font:'publicado', fecha:'septiembre de 2026',
+      zones:[ ['sant-francesc','Cala Sant Francesc y Santa Cristina',1.68], ['pins','Els Pins y paseo marítimo',1.25],
+              ['centre','Centro',0.98], ['pavos','Els Pavos',0.90], ['plantera','La Plantera',0.78] ] },
+  'lloret':             { nom:'Lloret de Mar',        comarca:'Costa Brava · La Selva', base:2597, costa:true, font:'publicado', fecha:'junio de 2026',
+      zones:[ ['canyelles','Canyelles y Montgoda',1.29], ['primera-linia','Primera línea de mar',1.22],
+              ['centre','Centro',1.00], ['rieral','El Molí y El Rieral',0.85], ['afores','Afueras y urbanizaciones',0.86] ] },
+  'tossa':              { nom:'Tossa de Mar',         comarca:'Costa Brava · La Selva', base:3109, costa:true, font:'publicado',
+      zones:[ ['llorell','Santa Maria de Llorell',1.12], ['primera-linia','Primera línea de mar',1.22],
+              ['centre','Tossa, pueblo',0.97], ['afores','Afueras y urbanizaciones',0.86] ] },
+  'sant-feliu-guixols': { nom:'Sant Feliu de Guíxols',comarca:'Costa Brava · Baix Empordà', base:3315, costa:true, font:'publicado', fecha:'septiembre de 2026' },
+  'platja-daro':        { nom:"Castell-Platja d'Aro", comarca:'Costa Brava · Baix Empordà', base:4026, costa:true, font:'publicado', fecha:'septiembre de 2026',
+      zones:[ ['platja-llarga','Platja Llarga y primera línea',1.19], ['platja-daro','Platja d\'Aro, centro',1.00],
+              ['pinos','Los Pinos y Politur',0.87], ['castell','Castell d\'Aro y urbanizaciones',0.86] ] },
+  'santa-cristina-aro': { nom:"Santa Cristina d'Aro", comarca:'Costa Brava · Baix Empordà', base:2581, costa:false, font:'publicado', fecha:'septiembre de 2026' },
+  'calonge':            { nom:'Calonge i Sant Antoni',comarca:'Costa Brava · Baix Empordà', base:3367, costa:true, font:'publicado', fecha:'septiembre de 2026' },
+  'palamos':            { nom:'Palamós',              comarca:'Costa Brava · Baix Empordà', base:3018, costa:true, font:'publicado', fecha:'enero de 2026',
+      zones:[ ['platja-gran','Platja Gran',1.14], ['centre','Centro',1.02],
+              ['eixample','Ensanche',1.00], ['afores','Afueras y urbanizaciones',0.86] ] },
+  'palafrugell':        { nom:'Palafrugell',          comarca:'Costa Brava · Baix Empordà', base:2539, costa:true, font:'publicado', fecha:'junio de 2026',
+      zones:[ ['llafranc','Llafranc',2.21], ['calella','Calella de Palafrugell',2.00],
+              ['tamariu','Tamariu',1.56], ['vila','Palafrugell, pueblo',0.75] ] },
+  'begur':              { nom:'Begur',                comarca:'Costa Brava · Baix Empordà', base:4239, costa:true, font:'publicado', fecha:'septiembre de 2026' },
+  'pals':               { nom:'Pals',                 comarca:'Costa Brava · Baix Empordà', base:3458, costa:true, font:'publicado', fecha:'septiembre de 2026',
+      zones:[ ['platja-pals','Platja de Pals',1.13], ['centre','Pals, pueblo',1.00], ['afores','Afueras y urbanizaciones',0.86] ] },
+  'torroella':          { nom:'Torroella de Montgrí', comarca:'Costa Brava · Baix Empordà', base:2620, costa:true, font:'publicado', fecha:'septiembre de 2026',
+      zones:[ ['estartit','L\'Estartit',1.13], ['centre','Torroella, pueblo',1.00], ['afores','Afueras y urbanizaciones',0.86] ] },
+  'lescala':            { nom:"L'Escala",             comarca:'Costa Brava · Alt Empordà', base:3219, costa:true, font:'publicado', fecha:'septiembre de 2026' },
+  'sant-pere-pescador': { nom:'Sant Pere Pescador',   comarca:'Costa Brava · Alt Empordà', base:2092, costa:true, font:'publicado', fecha:'julio de 2026' },  /* serie muy movida: 2.386 en abril */
+  'castello-empuries':  { nom:"Castelló d'Empúries",  comarca:'Costa Brava · Alt Empordà', base:2004, costa:false, font:'publicado', fecha:'octubre de 2026' },  /* la vila; Empuriabrava va aparte */
+  'empuriabrava':       { nom:'Empuriabrava',         comarca:'Costa Brava · Alt Empordà', base:3590, costa:true, font:'publicado', fecha:'septiembre de 2026',
+      zones:[ ['canals','Canales y puertos (Port Banyuls, Port Alegre, Port Empordà)',1.01],
+              ['interior','Puigmal y Mas Nou',0.68] ] },
+  'roses':              { nom:'Roses',                comarca:'Costa Brava · Alt Empordà', base:3494, costa:true, font:'publicado', fecha:'septiembre de 2026',
+      zones:[ ['salatar','Salatar',1.29], ['canyelles','Puerto deportivo, Puig Rom y Canyelles',1.21],
+              ['santa-margarida','Santa Margarida',0.98], ['nord','Norte',0.83], ['centre','Centro',0.79] ] },
+  'cadaques':           { nom:'Cadaqués',             comarca:'Costa Brava · Alt Empordà', base:6769, costa:true, font:'publicado', fecha:'septiembre de 2026' },  /* el mas caro de la costa */
+  'port-de-la-selva':   { nom:'El Port de la Selva',  comarca:'Costa Brava · Alt Empordà', base:3640, costa:true, font:'publicado', fecha:'junio de 2026' },
+  'llanca':             { nom:'Llançà',               comarca:'Costa Brava · Alt Empordà', base:2935, costa:true, font:'publicado', fecha:'septiembre de 2026' },
+  'colera':             { nom:'Colera',               comarca:'Costa Brava · Alt Empordà', base:1800, costa:true, font:'estimado' },
+  'portbou':            { nom:'Portbou',              comarca:'Costa Brava · Alt Empordà', base:1800, costa:true, font:'estimado' },
+  'figueres':           { nom:'Figueres',             comarca:'Costa Brava · Alt Empordà', base:1655, costa:false, font:'publicado', fecha:'septiembre de 2026' },
   'girona':             { nom:'Girona',               comarca:'Gironès', base:2600, costa:false, font:'estimado' },
-  'blanes':             { nom:'Blanes',               comarca:'La Selva', base:2150, costa:true, font:'estimado' },
-  'lloret':             { nom:'Lloret de Mar',        comarca:'La Selva', base:2300, costa:true, font:'estimado' },
-  'tossa':              { nom:'Tossa de Mar',         comarca:'La Selva', base:2900, costa:true, font:'estimado' },
-  'sant-feliu-guixols': { nom:'Sant Feliu de Guíxols',comarca:'Baix Empordà', base:2950, costa:true, font:'estimado' },
-  'palamos':            { nom:'Palamós',              comarca:'Baix Empordà', base:2850, costa:true, font:'estimado' },
-  'begur':              { nom:'Begur',                comarca:'Baix Empordà', base:4200, costa:true, font:'estimado' },
-  'cadaques':           { nom:'Cadaqués',             comarca:'Alt Empordà', base:4500, costa:true, font:'estimado' },
-  'roses':              { nom:'Roses',                comarca:'Alt Empordà', base:2500, costa:true, font:'estimado' },
-  'figueres':           { nom:'Figueres',             comarca:'Alt Empordà', base:1750, costa:false, font:'estimado' },
 
   /* ---- Tarragona i Costa Daurada ---- */
   'tarragona':          { nom:'Tarragona',            comarca:'Tarragonès', base:2100, costa:true, font:'estimado' },

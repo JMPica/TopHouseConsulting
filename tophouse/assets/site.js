@@ -684,12 +684,12 @@
     });
     orden.forEach(function (c) {
       var g = document.createElement('optgroup');
-      g.label = c;
+      g.label = T(c);
       porComarca[c].sort(function (a, b) {
         return POBLES[a].nom.localeCompare(POBLES[b].nom, 'es');
       }).forEach(function (k) {
         var o = document.createElement('option');
-        o.value = k; o.textContent = POBLES[k].nom;
+        o.value = k; o.textContent = T(POBLES[k].nom);
         if (k === 'arenys-de-mar') o.selected = true;
         g.appendChild(o);
       });
@@ -702,7 +702,9 @@
     selZona.innerHTML = '';
     z.forEach(function (par, i) {
       var o = document.createElement('option');
-      o.value = par[0]; o.textContent = par[1];
+      /* Los nombres de las zonas estan en castellano en poblacions.js y
+         se traducen aqui, como el resto de textos del javascript. */
+      o.value = par[0]; o.textContent = T(par[1]);
       if (i === Math.min(1, z.length - 1)) o.selected = true;
       selZona.appendChild(o);
     });
@@ -730,7 +732,7 @@
     var zonas = zonasDe(poble);
     var fZona = 1, nomZona = '';
     for (var z = 0; z < zonas.length; z++) {
-      if (zonas[z][0] === zona) { fZona = zonas[z][2]; nomZona = zonas[z][1]; }
+      if (zonas[z][0] === zona) { fZona = zonas[z][2]; nomZona = T(zonas[z][1]); }
     }
 
     /* El ajuste de oferta baja el precio de portal hacia precio de cierre.
@@ -758,7 +760,10 @@
       bajo: total * (1 - PRECIO.horquilla),
       alto: total * (1 + PRECIO.horquilla),
       eur_m2: eur_m2, generica: !!P.generica, font: P.font || 'estimado',
-      tipo: tipo, poble: P.nom, zona: nomZona, estado: estado, m2: m2, extras: extras,
+      /* Cada poblacion puede llevar el mes de su dato (las de la Costa
+         Brava, por ejemplo); si no, el de la tabla general. */
+      fecha: P.fecha || PRECIO.fecha,
+      tipo: tipo, poble: T(P.nom), zona: nomZona, estado: estado, m2: m2, extras: extras,
       hab: String(d.get('hab') || '')
     };
   }
@@ -781,7 +786,7 @@
       $('#calc-unit').textContent  =
         T('Unos ') + new Intl.NumberFormat('es-ES').format(Math.round(r.eur_m2)) +
         ' €/m² · ' + r.m2 + ' m² · ' + r.poble + (r.zona ? ', ' + r.zona : '') +
-        T(' · precios de ') + PRECIO.fecha;
+        T(' · precios de ') + T(r.fecha);
 
       /* Si han elegido el comodin, el numero es mucho mas grueso y hay que
          decirlo, no dejar que parezca igual de fino que el de una poblacion
